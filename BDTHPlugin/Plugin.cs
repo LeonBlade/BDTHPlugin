@@ -13,7 +13,7 @@ namespace BDTHPlugin
         private DalamudPluginInterface pi;
         private Configuration configuration;
         private PluginUI ui;
-        private Thread memoryThread;
+        private PluginMemory memory;
 
         public void Initialize(DalamudPluginInterface pluginInterface)
         {
@@ -22,19 +22,13 @@ namespace BDTHPlugin
             this.configuration = this.pi.GetPluginConfig() as Configuration ?? new Configuration();
             this.configuration.Initialize(this.pi);
 
-            // Initialize the memory handler.
-            PluginMemory.Initialize(this.pi);
-
-            this.ui = new PluginUI(this.configuration);
+            this.memory = new PluginMemory(this.pi);
+            this.ui = new PluginUI(this.configuration, this.memory);
 
             this.pi.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
             {
                 HelpMessage = "Opens the controls for Burning Down the House plugin."
             });
-
-            // Create a thread for the plugin memory.
-            memoryThread = new Thread(PluginMemory.Loop);
-            memoryThread.Start();
 
             this.pi.UiBuilder.OnBuildUi += DrawUI;
         }
@@ -44,10 +38,7 @@ namespace BDTHPlugin
             this.ui.Dispose();
 
             // Dispose for stuff in Plugin Memory class.
-            PluginMemory.Dispose();
-
-            // Abort the thread.
-            memoryThread.Abort();
+            this.memory.Dispose();
 
             this.pi.CommandManager.RemoveHandler(commandName);
             this.pi.Dispose();

@@ -8,7 +8,8 @@ namespace BDTHPlugin
     // to do any cleanup
     class PluginUI : IDisposable
     {
-        private Configuration configuration;
+        private readonly Configuration configuration;
+        private readonly PluginMemory memory;
 
         // this extra bool exists for ImGui, since you can't ref a property
         private bool visible = false;
@@ -19,13 +20,13 @@ namespace BDTHPlugin
         }
 
         private float drag = 0.05f;
-
         private bool placeAnywhere = false;
-        private Vector3 position = Vector3.Zero;
+        private readonly Vector4 orangeColor = new Vector4(0.871f, 0.518f, 0f, 1f);
 
-        public PluginUI(Configuration configuration)
+        public PluginUI(Configuration configuration, PluginMemory memory)
         {
             this.configuration = configuration;
+            this.memory = memory;
         }
 
         public void Dispose()
@@ -44,35 +45,52 @@ namespace BDTHPlugin
                 return;
             }
 
-            ImGui.SetNextWindowSize(new Vector2(350, 230), ImGuiCond.FirstUseEver);
-            ImGui.SetNextWindowSizeConstraints(new Vector2(350, 230), new Vector2(350, 230));
+            ImGui.PushStyleColor(ImGuiCol.TitleBgActive, orangeColor);
+            ImGui.PushStyleColor(ImGuiCol.CheckMark, orangeColor);
+
+            ImGui.SetNextWindowSize(new Vector2(320, 230), ImGuiCond.FirstUseEver);
+            ImGui.SetNextWindowSizeConstraints(new Vector2(320, 230), new Vector2(320, 230));
 
             if (ImGui.Begin("Burning Down the House", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
             {
                 if (ImGui.Checkbox("Place Anywhere", ref this.placeAnywhere))
                 {
                     // Set the place anywhere based on the checkbox state.
-                    PluginMemory.SetPlaceAnywhere(this.placeAnywhere);
+                    this.memory.SetPlaceAnywhere(this.placeAnywhere);
                 }
 
-                // When position is moved from the UI.
-                if (ImGui.DragFloat3("Position", ref PluginMemory.position, this.drag))
-                {
-                    PluginMemory.WritePosition(PluginMemory.position);
-                }
+                // Disabled if the housing mode isn't on and there isn't a selected item.
+                var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
 
-                ImGui.InputFloat("Drag Amount", ref this.drag);
+                // Set the opacity based on if housing is on.
+                if (disabled)
+                    ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
 
-                if (ImGui.CollapsingHeader("Debug"))
-                {
-                    ImGui.Text($"Place Anywhere: {PluginMemory.placeAnywhere.ToInt64():X}");
-                    ImGui.Text($"Wall Anywhere: {PluginMemory.wallAnywhere.ToInt64():X}");
-                    ImGui.Text($"Active Item Func: {PluginMemory.selectedItemFunc.ToInt64():X}");
-                    ImGui.Text($"Active Item: {PluginMemory.selectedItem.ToInt64():X}");
-                }
+                // The refs used below swap between the static this.position for a disabled effect.
 
+                // Write the position if we update the values.
+                if (ImGui.DragFloat3("position", ref this.memory.position, this.drag))
+                    this.memory.WritePosition(this.memory.position);
+
+                // Separate XYZ coordinates.
+                if (ImGui.InputFloat("x coord", ref this.memory.position.X, this.drag))
+                    this.memory.WritePosition(this.memory.position);
+                if (ImGui.InputFloat("y coord", ref this.memory.position.Y, this.drag))
+                    this.memory.WritePosition(this.memory.position);
+                if (ImGui.InputFloat("z coord", ref this.memory.position.Z, this.drag))
+                    this.memory.WritePosition(this.memory.position);
+
+                ImGui.NewLine();
+
+                if (disabled)
+                    ImGui.PopStyleVar();
+
+                // Drag ammount for the inputs.
+                ImGui.InputFloat("drag", ref this.drag, 0.05f);
             }
             ImGui.End();
+
+            ImGui.PopStyleColor(2);
         }
     }
 }

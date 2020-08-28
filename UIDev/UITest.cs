@@ -60,6 +60,9 @@ namespace UIDev
 
         private float drag = 0.05f;
         private string testing = "";
+        private int test;
+
+        private bool disabled = false;
         // this is where you'd have to start mocking objects if you really want to match
         // but for simple UI creation purposes, just hardcoding values works
 
@@ -80,30 +83,23 @@ namespace UIDev
                     this.testBool = this.placeAnywhere;
                 }
 
-                ImGui.Text(this.testing);
+                ImGui.SameLine(); ImGui.Checkbox("Disable", ref this.disabled);
 
-                if (ImGui.DragFloat3("Position", ref this.position, this.drag))
-                {
-                    this.testing = $"Position: {this.position}";
-                }
+                if (this.disabled)
+                    ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
 
-                if (ImGui.Button("Drink Me"))
-                {
-                    this.position = new Vector3(4, 2, 0);
-                }
+                ImGui.DragFloat3("position", ref this.position, this.drag);
 
-                ImGui.BeginChild("test");
+                ImGui.InputFloat("x coord", ref this.position.X, this.drag);
+                ImGui.InputFloat("y coord", ref this.position.Y, this.drag);
+                ImGui.InputFloat("z coord", ref this.position.Z, this.drag);
 
-                ImGui.Columns(3, "testing", false);
+                ImGui.NewLine();
 
-                ImGui.ArrowButton("_left", ImGuiDir.Left); ImGui.NextColumn();
-                ImGui.InputFloat("", ref this.drag); ImGui.NextColumn();
-                ImGui.ArrowButton("_right", ImGuiDir.Right); ImGui.NextColumn();
+                ImGui.InputFloat("drag", ref this.drag, 0.05f);
 
-                ImGui.Columns();
-
-                ImGui.EndChild();
-
+                if (this.disabled)
+                    ImGui.PopStyleVar();
             }
             ImGui.End();
         }
