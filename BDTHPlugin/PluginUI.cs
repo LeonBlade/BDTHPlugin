@@ -48,11 +48,16 @@ namespace BDTHPlugin
             ImGui.PushStyleColor(ImGuiCol.TitleBgActive, orangeColor);
             ImGui.PushStyleColor(ImGuiCol.CheckMark, orangeColor);
 
-            ImGui.SetNextWindowSize(new Vector2(320, 230), ImGuiCond.FirstUseEver);
-            ImGui.SetNextWindowSizeConstraints(new Vector2(320, 230), new Vector2(320, 230));
+            var scale = ImGui.GetIO().FontGlobalScale;
+            var size = new Vector2(300 * scale, 220 * scale);
+
+            ImGui.SetNextWindowSize(size, ImGuiCond.Always);
+            ImGui.SetNextWindowSizeConstraints(size, size);
 
             if (ImGui.Begin("Burning Down the House", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
             {
+                ImGui.BeginGroup();
+
                 if (ImGui.Checkbox("Place Anywhere", ref this.placeAnywhere))
                 {
                     // Set the place anywhere based on the checkbox state.
@@ -66,19 +71,64 @@ namespace BDTHPlugin
                 if (disabled)
                     ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
 
-                // The refs used below swap between the static this.position for a disabled effect.
+                ImGui.PushItemWidth(73f);
 
-                // Write the position if we update the values.
-                if (ImGui.DragFloat3("position", ref this.memory.position, this.drag))
-                    this.memory.WritePosition(this.memory.position);
+                if (ImGui.DragFloat("##xdrag", ref this.memory.position.X, this.drag))
+                    memory.WritePosition(this.memory.position);
+                ImGui.SameLine(0, 4);
+                var xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-                // Separate XYZ coordinates.
+                if (ImGui.DragFloat("##ydrag", ref this.memory.position.Y, this.drag))
+                    memory.WritePosition(this.memory.position);
+                ImGui.SameLine(0, 4);
+                var yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+                if (ImGui.DragFloat("##zdrag", ref this.memory.position.Z, this.drag))
+                    memory.WritePosition(this.memory.position);
+                ImGui.SameLine(0, 4);
+                var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+                ImGui.PopItemWidth();
+
+                ImGui.Text("position");
+
+                // Mouse wheel direction.
+                var delta = ImGui.GetIO().MouseWheel * this.drag;
+
+                // Move position based on which control is being hovered.
+                if (xHover)
+                    this.memory.position.X += delta;
+                if (yHover)
+                    this.memory.position.Y += delta;
+                if (zHover)
+                    this.memory.position.Z += delta;
+                if (xHover || yHover || zHover)
+                    memory.WritePosition(this.memory.position);
+
                 if (ImGui.InputFloat("x coord", ref this.memory.position.X, this.drag))
-                    this.memory.WritePosition(this.memory.position);
+                    memory.WritePosition(this.memory.position);
+                xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
                 if (ImGui.InputFloat("y coord", ref this.memory.position.Y, this.drag))
-                    this.memory.WritePosition(this.memory.position);
+                    memory.WritePosition(this.memory.position);
+                yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
                 if (ImGui.InputFloat("z coord", ref this.memory.position.Z, this.drag))
-                    this.memory.WritePosition(this.memory.position);
+                    memory.WritePosition(this.memory.position);
+                zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+                // Mouse wheel direction.
+                delta = ImGui.GetIO().MouseWheel * this.drag;
+
+                // Move position based on which control is being hovered.
+                if (xHover)
+                    this.memory.position.X += delta;
+                if (yHover)
+                    this.memory.position.Y += delta;
+                if (zHover)
+                    this.memory.position.Z += delta;
+                if (xHover || yHover || zHover)
+                    memory.WritePosition(this.memory.position);
 
                 ImGui.NewLine();
 

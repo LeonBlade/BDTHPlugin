@@ -85,10 +85,36 @@ namespace UIDev
 
                 ImGui.SameLine(); ImGui.Checkbox("Disable", ref this.disabled);
 
-                if (this.disabled)
-                    ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
+                //if (this.disabled)
+                //    ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
 
-                ImGui.DragFloat3("position", ref this.position, this.drag);
+                // ImGui.DragFloat3("position", ref this.position, this.drag);
+
+                ImGui.PushItemWidth(73f);
+
+                ImGui.DragFloat("##xdrag", ref this.position.X, this.drag); ImGui.SameLine(0, 4);
+                var xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+                ImGui.DragFloat("##ydrag", ref this.position.Y, this.drag); ImGui.SameLine(0, 4);
+                var yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+                ImGui.DragFloat("##zdrag", ref this.position.Z, this.drag); ImGui.SameLine(0, 4);
+                var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+                ImGui.PopItemWidth();
+
+                ImGui.Text("position");
+
+                // Mouse wheel direction.
+                var delta = ImGui.GetIO().MouseWheel * this.drag;
+
+                // Move position based on which control is being hovered.
+                if (xHover)
+                    this.position.X += delta;
+                if (yHover)
+                    this.position.Y += delta;
+                if (zHover)
+                    this.position.Z += delta;
 
                 ImGui.InputFloat("x coord", ref this.position.X, this.drag);
                 ImGui.InputFloat("y coord", ref this.position.Y, this.drag);
@@ -98,8 +124,8 @@ namespace UIDev
 
                 ImGui.InputFloat("drag", ref this.drag, 0.05f);
 
-                if (this.disabled)
-                    ImGui.PopStyleVar();
+                //if (this.disabled)
+                //    ImGui.PopStyleVar();
             }
             ImGui.End();
         }
