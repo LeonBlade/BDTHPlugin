@@ -29,4 +29,4 @@ Thank you for using my tool, I'm very grateful to everyone who uses my tools and
 
 **Patreon:** https://patreon.com/LeonBlade
 
-**Discord:** https://discord.gg/EenZwsN
+**Discord:** https://discord.com/invite/crystallinemeans
