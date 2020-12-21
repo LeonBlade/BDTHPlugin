@@ -8,14 +8,12 @@ BDTHPlugin is the plugin version of [Burning Down the House](https://github.com/
 ## How do I install it?
 First, you must use the [FFXIVQuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher) to run your game. The Quick Launcher allows for custom plugins to be installed to add new functionality to the game. To install, you first need to have the Quick Launcher setup for your game, instructions can be found on the [FFXIVQuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher) page.
 
-Once you've installed and configured the Quick Launcher properly, you can now download the latest [release](https://github.com/LeonBlade/BDTHPlugin/releases/latest). Unzip the file, and place the containing BDTHPlugin folder in `%appdata%\XIVLauncher\installedPlugins`.
-
-Due to the nature of how this plugin is developed, you shouldn't need to update it anything when a new patch arrives. However, please visit the [FAQ](https://github.com/LeonBlade/BDTHPlugin/wiki/FAQ) if you are having trouble. In the event that an update is needed, simply check back here for a new release.
+Please visit [this](https://github.com/LeonBlade/DalamudPlugins) page on how to install my plugin via third party repository support.
 
 ## How do I use it?
 To actually use the plugin, you need to start the game via the Quick Launcher. Once you've started the game, you should be able to type in `/bdth` into the game's chat and press enter. This will then bring up the UI for the plugin.
 
-The "Place Anywhere" checkbox can be enabled to allow you to place housing items more freely. Selecting a housing item will then allow you to move its coordinates around to give you full control over its position. You **MUST be in ROTATE mode** in order to use this tool. Once you finished changing the position, rotate the item slightly in order to lock in the changes.
+The "Place Anywhere" checkbox can be enabled to allow you to place housing items more freely. Selecting a housing item will then allow you to move its coordinates around to give you full control over its position. You **MUST be in ROTATE mode** in order to use this tool. Once you finished changing the position you may need to rotate the item slightly in order to lock in the changes or just click to confirm the position.
 
 The UI controls let you use the mouse wheel to increment and decrement the values. You can also drag the top three coordinates left and right to adjust them as well. The "drag" input at the bottom controls the increment amount.
 
