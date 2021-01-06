@@ -1,5 +1,6 @@
 ﻿using Dalamud.Game.Command;
 using Dalamud.Plugin;
+using System;
 using System.Threading;
 
 namespace BDTHPlugin
@@ -46,8 +47,27 @@ namespace BDTHPlugin
 
         private void OnCommand(string command, string args)
         {
-            // in response to the slash command, just display our main ui
-            this.ui.Visible = true;
+            args = args.Trim().ToLower();
+            if(args != "")
+            {
+                var arg_list = args.Split(' ');
+                var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
+                if (arg_list.Length == 3 && !disabled)
+                {
+                    float x = float.Parse(arg_list[0]);
+                    float y = float.Parse(arg_list[1]);
+                    float z = float.Parse(arg_list[2]);
+                    this.memory.position.X = x;
+                    this.memory.position.Y = y;
+                    this.memory.position.Z = z;
+                    this.memory.WritePosition(this.memory.position);
+                }
+            }
+            else
+            {
+                // in response to the slash command, just display our main ui
+                this.ui.Visible = true;
+            }
         }
 
         private void DrawUI()
