@@ -17,6 +17,9 @@ namespace BDTHPlugin
 		public IntPtr placeAnywhere;
 		public IntPtr wallAnywhere;
 		public IntPtr wallmountAnywhere;
+		public IntPtr showcaseAnywhereRotate;
+		public IntPtr showcaseAnywherePlace;
+
 		public IntPtr housingStructure;
 		public IntPtr selectedItem;
 
@@ -34,6 +37,8 @@ namespace BDTHPlugin
 			this.placeAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
 			this.wallAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
 			this.wallmountAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
+			this.showcaseAnywhereRotate = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
+			this.showcaseAnywherePlace = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
 
 			// Active item address, the sig is a call to the function I'm hooking plus 9 byte padding to skip test and a jump which can't be hooked
 			// Thanks Wintermute <3
@@ -215,7 +220,7 @@ namespace BDTHPlugin
 			var bstate = (byte)(state ? 1 : 0);
 
 			// Write the bytes for place anywhere.
-			VirtualProtect(this.placeAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out Protection oldProtection);
+			VirtualProtect(this.placeAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out var oldProtection);
 			Marshal.WriteByte(this.placeAnywhere, bstate);
 			VirtualProtect(this.placeAnywhere, 1, oldProtection, out _);
 
@@ -228,7 +233,25 @@ namespace BDTHPlugin
 			VirtualProtect(this.wallmountAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
 			Marshal.WriteByte(this.wallmountAnywhere, bstate);
 			VirtualProtect(this.wallmountAnywhere, 1, oldProtection, out _);
-			
+
+			// Which bytes to write.
+			var showcaseBytes = state ? new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 } : new byte[] { 0x88, 0x87, 0x73, 0x01, 0x00, 0x00 };
+
+			// Write bytes for showcase anywhere (nop or original bytes).
+			VirtualProtect(this.showcaseAnywhereRotate, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
+			WriteBytes(this.showcaseAnywhereRotate, showcaseBytes);
+			VirtualProtect(this.showcaseAnywhereRotate, 1, oldProtection, out _);
+
+			// Write bytes for showcase anywhere (nop or original bytes).
+			VirtualProtect(this.showcaseAnywherePlace, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
+			WriteBytes(this.showcaseAnywherePlace, showcaseBytes);
+			VirtualProtect(this.showcaseAnywherePlace, 1, oldProtection, out _);
+		}
+
+		private void WriteBytes(IntPtr ptr, byte[] bytes)
+		{
+			for (var i = 0; i < bytes.Length; i++)
+				Marshal.WriteByte(ptr + i, bytes[i]);
 		}
 
 		#region Kernel32
