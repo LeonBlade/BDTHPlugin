@@ -189,12 +189,11 @@ namespace BDTHPlugin
 				Marshal.Copy(rotation1, bytes, 0, 4);
 				Marshal.Copy(rotation2, bytes, 4, 4);
 
-				// Convert coords for the vector.
 				var r1 = BitConverter.ToSingle(bytes, 0);
 				var r2 = BitConverter.ToSingle(bytes, 4);
-				var sign = (r1 * r2) < 0 ? -1 : 1;
-				// Return the rotation angle.
-				return Math.Asin(Math.Abs(r1)) * 2 * sign;
+
+				// Return the rotation radian.
+				return Math.Atan2(r1, r2) * 2;
 			}
 			catch (Exception ex)
 			{
@@ -251,9 +250,9 @@ namespace BDTHPlugin
 
 				unsafe
 				{
-					// Write the position to memory.
+					// Write the rotation to memory.
 					float sin = (float)Math.Sin(newRotation / 2);
-					float cos = (float)Math.Sqrt(1 - sin * sin);
+					float cos = (float)Math.Cos(newRotation / 2);
 					*(float*)rotation1 = sin;
 					*(float*)rotation2 = cos;
 				}
@@ -266,6 +265,7 @@ namespace BDTHPlugin
 
 		public void WriteRotation(int newAngle)
 		{
+			// from angle to radian
 			this.rotation = newAngle * 1.0 / 180 * Math.PI;
 			WriteRotation(this.rotation);
 		}
