@@ -24,6 +24,8 @@ namespace BDTHPlugin
 		public IntPtr selectedItem;
 
 		public Vector3 position;
+		public double rotation;
+		public int angle;
 
 		public IntPtr selectedItemFunc;
 		[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
@@ -94,6 +96,8 @@ namespace BDTHPlugin
 
 			// Set the housing struct address.
 			this.housingStructure = housing;
+			PluginLog.LogInformation($"housingStructure addr:{housingStructure:X}");
+
 			// Set the active item address to the one passed in the function.
 			this.selectedItem = item;
 		}
@@ -129,7 +133,6 @@ namespace BDTHPlugin
 
 				// Get the item from the structure to see when it's also invalid.
 				var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
-
 				this.selectedItem = item;
 
 				// Ensure we have a valid pointer for the item.
@@ -158,6 +161,47 @@ namespace BDTHPlugin
 			}
 
 			return Vector3.Zero;
+		}
+
+		public double ReadRotation()
+		{
+			try
+			{
+				// Ensure that we're hooked and have the housing structure address.
+				if (this.housingStructure == IntPtr.Zero)
+					return 0;
+
+				// Get the item from the structure to see when it's also invalid.
+				var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
+				this.selectedItem = item;
+
+				// Ensure we have a valid pointer for the item.
+				if (item == IntPtr.Zero)
+					return 0;
+
+				// Rotation offset from the selected item.
+				var rotation1 = item + 0x64;
+				var rotation2 = item + 0x6C;
+
+				// Set up bytes to marshal over the data.
+				var bytes = new byte[8];
+				// Copy rotation into managed bytes array.
+				Marshal.Copy(rotation1, bytes, 0, 4);
+				Marshal.Copy(rotation2, bytes, 4, 4);
+
+				// Convert coords for the vector.
+				var r1 = BitConverter.ToSingle(bytes, 0);
+				var r2 = BitConverter.ToSingle(bytes, 4);
+				var sign = (r1 * r2) < 0 ? -1 : 1;
+				// Return the rotation angle.
+				return Math.Asin(Math.Abs(r1)) * 2 * sign;
+			}
+			catch (Exception ex)
+			{
+				PluginLog.LogError(ex, $"Error occured while reading rotation at {this.housingStructure:X}.");
+			}
+
+			return 0;
 		}
 
 		/// <summary>
@@ -190,6 +234,42 @@ namespace BDTHPlugin
 			}
 		}
 
+		public void WriteRotation(double newRotation)
+		{
+			try
+			{
+				// Get the item from the structure to see when it's also invalid.
+				var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
+
+				// Ensure we have a valid pointer for the item.
+				if (item == IntPtr.Zero)
+					return;
+
+				// Rotation offset from the selected item.
+				var rotation1 = item + 0x64;
+				var rotation2 = item + 0x6C;
+
+				unsafe
+				{
+					// Write the position to memory.
+					float sin = (float)Math.Sin(newRotation / 2);
+					float cos = (float)Math.Sqrt(1 - sin * sin);
+					*(float*)rotation1 = sin;
+					*(float*)rotation2 = cos;
+				}
+			}
+			catch (Exception ex)
+			{
+				PluginLog.LogError(ex, "Error occured while writing rotation.");
+			}
+		}
+
+		public void WriteRotation(int newAngle)
+		{
+			this.rotation = newAngle * 1.0 / 180 * Math.PI;
+			WriteRotation(this.rotation);
+		}
+
 		/// <summary>
 		/// Thread loop for reading memory.
 		/// </summary>
@@ -200,6 +280,8 @@ namespace BDTHPlugin
 				try
 				{
 					this.position = this.ReadPosition();
+					this.rotation = this.ReadRotation();
+					this.angle = (int)(this.rotation / Math.PI * 180);
 
 					Thread.Sleep(50);
 				}
