@@ -53,7 +53,7 @@ namespace BDTHPlugin
             {
                 var arg_list = args.Split(' ');
                 var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
-                if (arg_list.Length == 3 && !disabled)
+                if (arg_list.Length >= 3 && !disabled)
                 {
                     try
                     {
@@ -64,6 +64,11 @@ namespace BDTHPlugin
                         this.memory.position.Y = y;
                         this.memory.position.Z = z;
                         this.memory.WritePosition(this.memory.position);
+                    if(arg_list.Length == 4)
+                    {
+                        this.memory.rotation = double.Parse(arg_list[3]);
+                        this.memory.WriteRotation(this.memory.rotation);
+                    }
                     }
                     catch (Exception ex)
 					{
