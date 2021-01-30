@@ -1,6 +1,8 @@
 using ImGuiNET;
 using System;
+using System.Diagnostics;
 using System.Numerics;
+using System.Reflection;
 
 namespace BDTHPlugin
 {
@@ -22,11 +24,14 @@ namespace BDTHPlugin
         private float drag = 0.05f;
         private bool placeAnywhere = false;
         private readonly Vector4 orangeColor = new Vector4(0.871f, 0.518f, 0f, 1f);
+        private readonly string version;
 
         public PluginUI(Configuration configuration, PluginMemory memory)
         {
             this.configuration = configuration;
             this.memory = memory;
+            var fv = Assembly.GetExecutingAssembly().GetName().Version;
+            version = $"{fv.Major}.{fv.Minor}.{fv.Build}";
         }
 
         public void Dispose()
@@ -54,7 +59,7 @@ namespace BDTHPlugin
             ImGui.SetNextWindowSize(size, ImGuiCond.Always);
             ImGui.SetNextWindowSizeConstraints(size, size);
 
-            if (ImGui.Begin("Burning Down the House", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
+            if (ImGui.Begin($"Burning Down the House v{version}", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
             {
                 ImGui.BeginGroup();
 
@@ -89,9 +94,8 @@ namespace BDTHPlugin
                 var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
                 if (ImGui.DragInt("##angledrag", ref this.memory.angle, 1, -180, 180))
-                {
                     memory.WriteRotation(this.memory.angle);
-                }
+
                 ImGui.SameLine(0, 4);
                 var angleHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
@@ -127,7 +131,6 @@ namespace BDTHPlugin
                 if (ImGui.InputFloat("z coord", ref this.memory.position.Z, this.drag))
                     memory.WritePosition(this.memory.position);
                 zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
 
                 if (ImGui.InputInt("angle", ref this.memory.angle, 1, 10))
                     memory.WriteRotation(this.memory.angle);

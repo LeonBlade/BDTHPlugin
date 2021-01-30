@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-	<Version>1.2.0</Version>
+	<Version>1.2.1</Version>
 	<TargetFramework>net472</TargetFramework>
 	<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
