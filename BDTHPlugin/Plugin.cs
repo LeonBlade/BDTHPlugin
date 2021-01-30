@@ -1,6 +1,7 @@
 ﻿using Dalamud.Game.Command;
 using Dalamud.Plugin;
 using System;
+using System.Globalization;
 using System.Threading;
 
 namespace BDTHPlugin
@@ -54,19 +55,26 @@ namespace BDTHPlugin
                 var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
                 if (arg_list.Length == 3 && !disabled)
                 {
-                    float x = float.Parse(arg_list[0]);
-                    float y = float.Parse(arg_list[1]);
-                    float z = float.Parse(arg_list[2]);
-                    this.memory.position.X = x;
-                    this.memory.position.Y = y;
-                    this.memory.position.Z = z;
-                    this.memory.WritePosition(this.memory.position);
+                    try
+                    {
+                        var x = float.Parse(arg_list[0], NumberStyles.Any, CultureInfo.InvariantCulture);
+                        var y = float.Parse(arg_list[1], NumberStyles.Any, CultureInfo.InvariantCulture);
+                        var z = float.Parse(arg_list[2], NumberStyles.Any, CultureInfo.InvariantCulture);
+                        this.memory.position.X = x;
+                        this.memory.position.Y = y;
+                        this.memory.position.Z = z;
+                        this.memory.WritePosition(this.memory.position);
+                    }
+                    catch (Exception ex)
+					{
+                        PluginLog.LogError(ex, "Error when positioning with command");
+					}
                 }
             }
             else
             {
-                // in response to the slash command, just display our main ui
-                this.ui.Visible = true;
+                // Hide or show the UI.
+                this.ui.Visible = !this.ui.Visible;
             }
         }
 
