@@ -254,6 +254,10 @@ namespace BDTHPlugin
 					float cos = (float)Math.Cos(newRotation / 2);
 					*(float*)rotation1 = sin;
 					*(float*)rotation2 = cos;
+					*(float*)rotation1 = sin;
+					*(float*)rotation2 = cos;
+					*(float*)rotation1 = sin;
+					*(float*)rotation2 = cos;
 				}
 			}
 			catch (Exception ex)
@@ -280,7 +284,7 @@ namespace BDTHPlugin
 				{
 					this.position = this.ReadPosition();
 					this.rotation = this.ReadRotation();
-					this.angle = (int)(this.rotation / Math.PI * 180);
+					this.angle = (int)((((this.rotation / Math.PI * 180) + 540) % 360) - 180);
 
 					Thread.Sleep(50);
 				}
