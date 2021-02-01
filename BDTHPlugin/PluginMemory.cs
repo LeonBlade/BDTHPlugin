@@ -25,7 +25,7 @@ namespace BDTHPlugin
 
 		public Vector3 position;
 		public double rotation;
-		public int angle;
+		public float angle;
 
 		public IntPtr selectedItemFunc;
 		[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
@@ -96,6 +96,7 @@ namespace BDTHPlugin
 
 			// Set the housing struct address.
 			this.housingStructure = housing;
+
 			// Set the active item address to the one passed in the function.
 			this.selectedItem = item;
 		}
@@ -179,17 +180,15 @@ namespace BDTHPlugin
 					return 0;
 
 				// Rotation offset from the selected item.
-				var rotation1 = item + 0x64;
-				var rotation2 = item + 0x6C;
+				var rotation = item + 0x64;
 
 				// Set up bytes to marshal over the data.
-				var bytes = new byte[8];
+				var bytes = new byte[12];
 				// Copy rotation into managed bytes array.
-				Marshal.Copy(rotation1, bytes, 0, 4);
-				Marshal.Copy(rotation2, bytes, 4, 4);
+				Marshal.Copy(rotation, bytes, 0, 12);
 
 				var r1 = BitConverter.ToSingle(bytes, 0);
-				var r2 = BitConverter.ToSingle(bytes, 4);
+				var r2 = BitConverter.ToSingle(bytes, 8);
 
 				// Return the rotation radian.
 				return Math.Atan2(r1, r2) * 2;
@@ -244,20 +243,21 @@ namespace BDTHPlugin
 					return;
 
 				// Rotation offset from the selected item.
-				var rotation1 = item + 0x64;
-				var rotation2 = item + 0x6C;
+				var rotation = item + 0x64;
+
+				var bytes = new byte[12];
+				// Copy rotation into managed bytes array.
+				Marshal.Copy(rotation, bytes, 0, 12);
+
+				byte[] sinBytes = BitConverter.GetBytes((float)Math.Sin(newRotation / 2));
+				byte[] cosBytes = BitConverter.GetBytes((float)Math.Cos(newRotation / 2));
+				Buffer.BlockCopy(sinBytes, 0, bytes, 0, 4);
+				Buffer.BlockCopy(cosBytes, 0, bytes, 8, 4);
 
 				unsafe
 				{
 					// Write the rotation to memory.
-					float sin = (float)Math.Sin(newRotation / 2);
-					float cos = (float)Math.Cos(newRotation / 2);
-					*(float*)rotation1 = sin;
-					*(float*)rotation2 = cos;
-					*(float*)rotation1 = sin;
-					*(float*)rotation2 = cos;
-					*(float*)rotation1 = sin;
-					*(float*)rotation2 = cos;
+					Marshal.Copy(bytes, 0, rotation, 12);
 				}
 			}
 			catch (Exception ex)
@@ -284,7 +284,7 @@ namespace BDTHPlugin
 				{
 					this.position = this.ReadPosition();
 					this.rotation = this.ReadRotation();
-					this.angle = (int)((((this.rotation / Math.PI * 180) + 540) % 360) - 180);
+					this.angle = (float)(((this.rotation / Math.PI * 180 + 540) % 360) - 180);
 
 					Thread.Sleep(50);
 				}
