@@ -24,8 +24,7 @@ namespace BDTHPlugin
 		public IntPtr selectedItem;
 
 		public Vector3 position;
-		public double rotation;
-		public float angle;
+		public Vector3 rotation;
 
 		public IntPtr selectedItemFunc;
 		[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
@@ -163,13 +162,13 @@ namespace BDTHPlugin
 			return Vector3.Zero;
 		}
 
-		public double ReadRotation()
+		public Vector3 ReadRotation()
 		{
 			try
 			{
 				// Ensure that we're hooked and have the housing structure address.
 				if (this.housingStructure == IntPtr.Zero)
-					return 0;
+					return Vector3.Zero;
 
 				// Get the item from the structure to see when it's also invalid.
 				var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
@@ -177,28 +176,30 @@ namespace BDTHPlugin
 
 				// Ensure we have a valid pointer for the item.
 				if (item == IntPtr.Zero)
-					return 0;
+					return Vector3.Zero;
 
 				// Rotation offset from the selected item.
-				var rotation = item + 0x64;
+				var rotation = item + 0x60;
 
 				// Set up bytes to marshal over the data.
-				var bytes = new byte[12];
+				var bytes = new byte[16];
 				// Copy rotation into managed bytes array.
-				Marshal.Copy(rotation, bytes, 0, 12);
+				Marshal.Copy(rotation, bytes, 0, 16);
 
-				var r1 = BitConverter.ToSingle(bytes, 0);
-				var r2 = BitConverter.ToSingle(bytes, 8);
+				var x = BitConverter.ToSingle(bytes, 0);
+				var y = BitConverter.ToSingle(bytes, 4);
+				var z = BitConverter.ToSingle(bytes, 8);
+				var w = BitConverter.ToSingle(bytes, 12);
 
 				// Return the rotation radian.
-				return Math.Atan2(r1, r2) * 2;
+				return RotationMath.FromQ(new Quaternion(x, y, z, w));
 			}
 			catch (Exception ex)
 			{
 				PluginLog.LogError(ex, $"Error occured while reading rotation at {this.housingStructure:X}.");
 			}
 
-			return 0;
+			return Vector3.Zero;
 		}
 
 		/// <summary>
@@ -231,7 +232,7 @@ namespace BDTHPlugin
 			}
 		}
 
-		public void WriteRotation(double newRotation)
+		public void WriteRotation(Vector3 newRotation)
 		{
 			try
 			{
@@ -243,34 +244,26 @@ namespace BDTHPlugin
 					return;
 
 				// Rotation offset from the selected item.
-				var rotation = item + 0x64;
+				var x = item + 0x60;
+				var y = item + 0x64;
+				var z = item + 0x68;
+				var w = item + 0x6C;
 
-				var bytes = new byte[12];
-				// Copy rotation into managed bytes array.
-				Marshal.Copy(rotation, bytes, 0, 12);
-
-				byte[] sinBytes = BitConverter.GetBytes((float)Math.Sin(newRotation / 2));
-				byte[] cosBytes = BitConverter.GetBytes((float)Math.Cos(newRotation / 2));
-				Buffer.BlockCopy(sinBytes, 0, bytes, 0, 4);
-				Buffer.BlockCopy(cosBytes, 0, bytes, 8, 4);
+				var q = RotationMath.ToQ(newRotation);
 
 				unsafe
 				{
 					// Write the rotation to memory.
-					Marshal.Copy(bytes, 0, rotation, 12);
+					*(float*)w = q.W;
+					*(float*)x = q.X;
+					*(float*)y = q.Y;
+					*(float*)z = q.Z;
 				}
 			}
 			catch (Exception ex)
 			{
 				PluginLog.LogError(ex, "Error occured while writing rotation.");
 			}
-		}
-
-		public void WriteRotation(int newAngle)
-		{
-			// from angle to radian
-			this.rotation = newAngle * 1.0 / 180 * Math.PI;
-			WriteRotation(this.rotation);
 		}
 
 		/// <summary>
@@ -284,7 +277,6 @@ namespace BDTHPlugin
 				{
 					this.position = this.ReadPosition();
 					this.rotation = this.ReadRotation();
-					this.angle = (float)(((this.rotation / Math.PI * 180 + 540) % 360) - 180);
 
 					Thread.Sleep(50);
 				}
