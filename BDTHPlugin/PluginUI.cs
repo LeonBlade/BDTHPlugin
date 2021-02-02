@@ -54,7 +54,7 @@ namespace BDTHPlugin
             ImGui.PushStyleColor(ImGuiCol.CheckMark, orangeColor);
 
             var scale = ImGui.GetIO().FontGlobalScale;
-            var size = new Vector2(320 * scale, 340 * scale);
+            var size = new Vector2(320 * scale, 280 * scale);
 
             ImGui.SetNextWindowSize(size, ImGuiCond.Always);
             ImGui.SetNextWindowSizeConstraints(size, size);
@@ -95,24 +95,10 @@ namespace BDTHPlugin
 
                 ImGui.Text("position");
 
-                ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
-                if (ImGui.DragFloat("##rxdrag", ref this.memory.rotation.X, this.drag))
-                    memory.WriteRotation(this.memory.rotation);
-                ImGui.SameLine(0, 4);
-                var rxHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-                ImGui.PopStyleVar();
-
                 if (ImGui.DragFloat("##rydrag", ref this.memory.rotation.Y, this.drag))
                     memory.WriteRotation(this.memory.rotation);
                 ImGui.SameLine(0, 4);
                 var ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-                ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
-                if (ImGui.DragFloat("##rzdrag", ref this.memory.rotation.Z, this.drag))
-                    memory.WriteRotation(this.memory.rotation);
-                ImGui.SameLine(0, 4);
-                var rzHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-                ImGui.PopStyleVar();
 
                 ImGui.Text("rotation");
 
@@ -132,13 +118,9 @@ namespace BDTHPlugin
                     memory.WritePosition(this.memory.position);
                 
                 // Move rotation based on which control is being hovered.
-                if (rxHover)
-                    this.memory.rotation.X += delta;
                 if (ryHover)
                     this.memory.rotation.Y += delta;
-                if (rzHover)
-                    this.memory.rotation.Z += delta;
-                if ((rxHover || ryHover || rzHover) && delta > 0)
+                if (ryHover && delta > 0)
                     memory.WriteRotation(this.memory.rotation);
 
                 if (ImGui.InputFloat("x coord", ref this.memory.position.X, this.drag))
@@ -153,21 +135,9 @@ namespace BDTHPlugin
                     memory.WritePosition(this.memory.position);
                 zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-                ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
-                if (ImGui.InputFloat("rx degree", ref this.memory.rotation.X, this.drag))
-                    memory.WriteRotation(this.memory.rotation);
-                rxHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-                ImGui.PopStyleVar();
-
                 if (ImGui.InputFloat("ry degree", ref this.memory.rotation.Y, this.drag))
                     memory.WriteRotation(this.memory.rotation);
                 ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-                ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
-                if (ImGui.InputFloat("rz degree", ref this.memory.rotation.Z, this.drag))
-                    memory.WriteRotation(this.memory.rotation);
-                rzHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-                ImGui.PopStyleVar();
 
                 // Mouse wheel direction.
                 delta = ImGui.GetIO().MouseWheel * this.drag;
@@ -183,13 +153,9 @@ namespace BDTHPlugin
                     memory.WritePosition(this.memory.position);
 
                 // Move rotation based on which control is being hovered.
-                if (rxHover)
-                    this.memory.rotation.X += delta;
                 if (ryHover)
                     this.memory.rotation.Y += delta;
-                if (rzHover)
-                    this.memory.rotation.Z += delta;
-                if ((rxHover || ryHover || rzHover) && delta > 0)
+                if (ryHover && delta > 0)
                     memory.WriteRotation(this.memory.rotation);
 
                 ImGui.NewLine();
