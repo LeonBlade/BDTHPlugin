@@ -66,7 +66,7 @@ namespace BDTHPlugin
                         this.memory.WritePosition(this.memory.position);
                     if(arg_list.Length == 4)
                     {
-                        this.memory.rotation = double.Parse(arg_list[3]);
+                        this.memory.rotation.Y = (float)(double.Parse(arg_list[3]) * 180 / Math.PI);
                         this.memory.WriteRotation(this.memory.rotation);
                     }
                     }

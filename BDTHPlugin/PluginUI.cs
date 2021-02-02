@@ -54,7 +54,7 @@ namespace BDTHPlugin
             ImGui.PushStyleColor(ImGuiCol.CheckMark, orangeColor);
 
             var scale = ImGui.GetIO().FontGlobalScale;
-            var size = new Vector2(380 * scale, 260 * scale);
+            var size = new Vector2(320 * scale, 280 * scale);
 
             ImGui.SetNextWindowSize(size, ImGuiCond.Always);
             ImGui.SetNextWindowSizeConstraints(size, size);
@@ -93,15 +93,16 @@ namespace BDTHPlugin
                 ImGui.SameLine(0, 4);
                 var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-                if (ImGui.DragInt("##angledrag", ref this.memory.angle, 1, -180, 180))
-                    memory.WriteRotation(this.memory.angle);
+                ImGui.Text("position");
 
+                if (ImGui.DragFloat("##rydrag", ref this.memory.rotation.Y, this.drag))
+                    memory.WriteRotation(this.memory.rotation);
                 ImGui.SameLine(0, 4);
-                var angleHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+                var ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+                ImGui.Text("rotation");
 
                 ImGui.PopItemWidth();
-
-                ImGui.Text("position");
 
                 // Mouse wheel direction.
                 var delta = ImGui.GetIO().MouseWheel * this.drag;
@@ -113,12 +114,14 @@ namespace BDTHPlugin
                     this.memory.position.Y += delta;
                 if (zHover)
                     this.memory.position.Z += delta;
-                if (angleHover && Math.Abs(delta) > 0)
-                    this.memory.angle += delta > 0 ? 1 : -1;
                 if (xHover || yHover || zHover)
                     memory.WritePosition(this.memory.position);
-                if (angleHover)
-                    memory.WriteRotation(this.memory.angle);
+                
+                // Move rotation based on which control is being hovered.
+                if (ryHover)
+                    this.memory.rotation.Y += delta;
+                if (ryHover && delta > 0)
+                    memory.WriteRotation(this.memory.rotation);
 
                 if (ImGui.InputFloat("x coord", ref this.memory.position.X, this.drag))
                     memory.WritePosition(this.memory.position);
@@ -132,9 +135,9 @@ namespace BDTHPlugin
                     memory.WritePosition(this.memory.position);
                 zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-                if (ImGui.InputInt("angle", ref this.memory.angle, 1, 10))
-                    memory.WriteRotation(this.memory.angle);
-                angleHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+                if (ImGui.InputFloat("ry degree", ref this.memory.rotation.Y, this.drag))
+                    memory.WriteRotation(this.memory.rotation);
+                ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
                 // Mouse wheel direction.
                 delta = ImGui.GetIO().MouseWheel * this.drag;
@@ -146,12 +149,14 @@ namespace BDTHPlugin
                     this.memory.position.Y += delta;
                 if (zHover)
                     this.memory.position.Z += delta;
-                if (angleHover && Math.Abs(delta) > 0)
-                    this.memory.angle += delta > 0 ? 1 : -1;
                 if (xHover || yHover || zHover)
                     memory.WritePosition(this.memory.position);
-                if (angleHover)
-                    memory.WriteRotation(this.memory.angle);
+
+                // Move rotation based on which control is being hovered.
+                if (ryHover)
+                    this.memory.rotation.Y += delta;
+                if (ryHover && delta > 0)
+                    memory.WriteRotation(this.memory.rotation);
 
                 ImGui.NewLine();
 
