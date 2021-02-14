@@ -59,7 +59,7 @@ namespace BDTHPlugin
             ImGui.SetNextWindowSize(size, ImGuiCond.Always);
             ImGui.SetNextWindowSizeConstraints(size, size);
 
-            if (ImGui.Begin($"Burning Down the House v{version}", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
+            if (ImGui.Begin($"Burning Down the House", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
             {
                 ImGui.BeginGroup();
 
