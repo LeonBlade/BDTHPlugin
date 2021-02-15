@@ -49,26 +49,41 @@ namespace BDTHPlugin
         private void OnCommand(string command, string args)
         {
             args = args.Trim().ToLower();
-            if(args != "")
+
+            // Arguments are being passed in.
+            if(!string.IsNullOrEmpty(args))
             {
-                var arg_list = args.Split(' ');
+                // Split the arguments into an array.
+                var argArray = args.Split(' ');
+
+                // Check valid state for modifying memory.
                 var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
-                if (arg_list.Length >= 3 && !disabled)
+
+                // Position or rotation values are being passed in, and we're not disabled.
+                if (argArray.Length >= 3 && !disabled)
                 {
                     try
                     {
-                        var x = float.Parse(arg_list[0], NumberStyles.Any, CultureInfo.InvariantCulture);
-                        var y = float.Parse(arg_list[1], NumberStyles.Any, CultureInfo.InvariantCulture);
-                        var z = float.Parse(arg_list[2], NumberStyles.Any, CultureInfo.InvariantCulture);
+                        // Parse the coordinates into floats.
+                        var x = float.Parse(argArray[0], NumberStyles.Any, CultureInfo.InvariantCulture);
+                        var y = float.Parse(argArray[1], NumberStyles.Any, CultureInfo.InvariantCulture);
+                        var z = float.Parse(argArray[2], NumberStyles.Any, CultureInfo.InvariantCulture);
+
+                        // Set the position in the memory object.
                         this.memory.position.X = x;
                         this.memory.position.Y = y;
                         this.memory.position.Z = z;
+
+                        // Write the position.
                         this.memory.WritePosition(this.memory.position);
-                    if(arg_list.Length == 4)
-                    {
-                        this.memory.rotation.Y = (float)(double.Parse(arg_list[3]) * 180 / Math.PI);
-                        this.memory.WriteRotation(this.memory.rotation);
-                    }
+
+                        // Specifying the rotation as well.
+                        if(argArray.Length == 4)
+                        {
+                            // Parse and write the rotation.
+                            this.memory.rotation.Y = (float)(double.Parse(argArray[3]) * 180 / Math.PI);
+                            this.memory.WriteRotation(this.memory.rotation);
+                        }
                     }
                     catch (Exception ex)
 					{

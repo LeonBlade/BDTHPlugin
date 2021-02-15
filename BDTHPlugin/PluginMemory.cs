@@ -1,6 +1,7 @@
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 using System;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -27,9 +28,9 @@ namespace BDTHPlugin
 		public Vector3 rotation;
 
 		public IntPtr selectedItemFunc;
-		[UnmanagedFunctionPointer(CallingConvention.ThisCall)]
-		private delegate void SelectedItemDelegate(IntPtr housing, IntPtr item);
-		private readonly Hook<SelectedItemDelegate> selectedItemHook;
+		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
+		private delegate void HousingLoopDelegate(IntPtr housing);
+		private readonly Hook<HousingLoopDelegate> housingHook;
 
 		public PluginMemory(DalamudPluginInterface pluginInterface)
 		{
@@ -41,15 +42,13 @@ namespace BDTHPlugin
 			this.showcaseAnywhereRotate = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
 			this.showcaseAnywherePlace = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
 
-			// Active item address, the sig is a call to the function I'm hooking plus 9 byte padding to skip test and a jump which can't be hooked
-			// Thanks Wintermute <3
-			this.selectedItemFunc = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? 00 00 48 8B CE E8 ?? ?? 00 00 48 8B 6C 24 ?? 48 8B CE") + 9;
-			this.selectedItemHook = new Hook<SelectedItemDelegate>(
+			this.selectedItemFunc = this.pi.TargetModuleScanner.ScanText("40 53 48 83 EC 20 48 8B D9 8B 49 08 83 E9 02");
+			this.housingHook = new Hook<HousingLoopDelegate>(
 				selectedItemFunc, 
-				new SelectedItemDelegate(ActiveItemDetour)
+				new HousingLoopDelegate(HousingLoopDetour)
 			);
 
-			this.selectedItemHook.Enable();
+			this.housingHook.Enable();
 
 			this.thread = new Thread(new ThreadStart(this.Loop));
 			this.thread.Start();
@@ -67,10 +66,10 @@ namespace BDTHPlugin
 				SetPlaceAnywhere(false);
 
 				// Kill the hook assuming it's not already dead.
-				if (this.selectedItemHook != null)
+				if (this.housingHook != null)
 				{
-					this.selectedItemHook.Disable();
-					this.selectedItemHook.Dispose();
+					this.housingHook.Disable();
+					this.housingHook.Dispose();
 				}
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
@@ -84,20 +83,16 @@ namespace BDTHPlugin
 		}
 
 		/// <summary>
-		/// The active item func detour.
+		/// Housing loop detour.
 		/// </summary>
-		/// <param name="housing">Housing data structure.</param>
-		/// <param name="item">The selected item address</param>
-		private void ActiveItemDetour(IntPtr housing, IntPtr item)
+		/// <param name="housing">Housing data structure</param>
+		private void HousingLoopDetour(IntPtr housing)
 		{
 			// Call the original function.
-			this.selectedItemHook.Original(housing, item);
+			this.housingHook.Original(housing);
 
 			// Set the housing struct address.
 			this.housingStructure = housing;
-
-			// Set the active item address to the one passed in the function.
-			this.selectedItem = item;
 		}
 
 
@@ -113,6 +108,18 @@ namespace BDTHPlugin
 			// Read the tool ID
 			var toolID = Marshal.ReadByte(this.housingStructure);
 
+			// Valid territory array.
+			var valid = new ushort[]
+			{
+				345, 346, 347, 386, // The Goblet
+				342, 343, 344, 358, // Lavender Beds
+				282, 283, 284, 384, // Mist
+				649, 650, 651, 652, // Shirogane
+			};
+
+			if (!valid.Contains(this.pi.ClientState.TerritoryType))
+				return false;
+
 			// Tool ID is set to rotation.
 			return toolID == 2;
 		}
@@ -123,83 +130,73 @@ namespace BDTHPlugin
 		/// <returns>Vector3 of the position.</returns>
 		public Vector3 ReadPosition()
 		{
-			try
-			{
-				// Ensure that we're hooked and have the housing structure address.
-				if (this.housingStructure == IntPtr.Zero)
-					return Vector3.Zero;
+			// Ensure that we're hooked and have the housing structure address.
+			if (this.housingStructure == IntPtr.Zero)
+				throw new Exception("Housing structure is invalid!");
 
-				// Get the item from the structure to see when it's also invalid.
-				var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
+			// Get the item from the structure to see when it's also invalid.
+			var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
 
-				this.selectedItem = item;
+			// Set the selected item.
+			this.selectedItem = item;
 
-				// Ensure we have a valid pointer for the item.
-				if (item == IntPtr.Zero)
-					return Vector3.Zero;
+			// Ensure we have a valid pointer for the item.
+			if (item == IntPtr.Zero)
+				throw new Exception("No valid item selected!");
 
-				// Position offset from the selected item.
-				var position = item + 0x50;
+			// Position offset from the selected item.
+			var position = item + 0x50;
 
-				// Set up bytes to marshal over the data.
-				var bytes = new byte[12];
-				// Copy position into managed bytes array.
-				Marshal.Copy(position, bytes, 0, 12);
+			// Set up bytes to marshal over the data.
+			var bytes = new byte[12];
+			// Copy position into managed bytes array.
+			Marshal.Copy(position, bytes, 0, 12);
 
-				// Convert coords for the vector.
-				var x = BitConverter.ToSingle(bytes, 0);
-				var y = BitConverter.ToSingle(bytes, 4);
-				var z = BitConverter.ToSingle(bytes, 8);
+			// Convert coords for the vector.
+			var x = BitConverter.ToSingle(bytes, 0);
+			var y = BitConverter.ToSingle(bytes, 4);
+			var z = BitConverter.ToSingle(bytes, 8);
 
-				// Return the position vector.
-				return new Vector3(x, y, z);
-			}
-			catch (Exception ex)
-			{
-				PluginLog.LogError(ex, $"Error occured while reading position at {this.housingStructure:X}.");
-			}
-
-			return Vector3.Zero;
+			// Return the position vector.
+			return new Vector3(x, y, z);
 		}
 
+		/// <summary>
+		/// Reads the rotation of the item.
+		/// </summary>
+		/// <returns></returns>
 		public Vector3 ReadRotation()
 		{
-			try
-			{
-				// Ensure that we're hooked and have the housing structure address.
-				if (this.housingStructure == IntPtr.Zero)
-					return Vector3.Zero;
+			// Ensure that we're hooked and have the housing structure address.
+			if (this.housingStructure == IntPtr.Zero)
+				throw new Exception("Housing structure is invalid!");
 
-				// Get the item from the structure to see when it's also invalid.
-				var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
-				this.selectedItem = item;
+			// Get the item from the structure to see when it's also invalid.
+			var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
 
-				// Ensure we have a valid pointer for the item.
-				if (item == IntPtr.Zero)
-					return Vector3.Zero;
+			// Sets the item.
+			this.selectedItem = item;
 
-				// Rotation offset from the selected item.
-				var rotation = item + 0x60;
+			// Ensure we have a valid pointer for the item.
+			if (item == IntPtr.Zero)
+				throw new Exception("No valid item selected!");
 
-				// Set up bytes to marshal over the data.
-				var bytes = new byte[16];
-				// Copy rotation into managed bytes array.
-				Marshal.Copy(rotation, bytes, 0, 16);
+			// Rotation offset from the selected item.
+			var rotation = item + 0x60;
 
-				var x = BitConverter.ToSingle(bytes, 0);
-				var y = BitConverter.ToSingle(bytes, 4);
-				var z = BitConverter.ToSingle(bytes, 8);
-				var w = BitConverter.ToSingle(bytes, 12);
+			// Set up bytes to marshal over the data.
+			var bytes = new byte[16];
+			// Copy rotation into managed bytes array.
+			Marshal.Copy(rotation, bytes, 0, 16);
 
-				// Return the rotation radian.
-				return RotationMath.FromQ(new Quaternion(x, y, z, w));
-			}
-			catch (Exception ex)
-			{
-				PluginLog.LogError(ex, $"Error occured while reading rotation at {this.housingStructure:X}.");
-			}
+			// Convert bytes for the quaternion.
+			var x = BitConverter.ToSingle(bytes, 0);
+			var y = BitConverter.ToSingle(bytes, 4);
+			var z = BitConverter.ToSingle(bytes, 8);
+			var w = BitConverter.ToSingle(bytes, 12);
 
-			return Vector3.Zero;
+			// Return the rotation radian.
+			return RotationMath.FromQ(new Quaternion(x, y, z, w));
 		}
 
 		/// <summary>
@@ -208,6 +205,10 @@ namespace BDTHPlugin
 		/// <param name="newPosition">Position vector to write.</param>
 		public void WritePosition(Vector3 newPosition)
 		{
+			// Don't write if housing mode isn't on.
+			if (!this.IsHousingModeOn())
+				return;
+
 			try
 			{
 				// Get the item from the structure to see when it's also invalid.
@@ -228,12 +229,16 @@ namespace BDTHPlugin
 			}
 			catch (Exception ex)
 			{
-				PluginLog.LogError(ex, "Error occured while writing position.");
+				PluginLog.LogError(ex, "Error occured while writing position!");
 			}
 		}
 
 		public void WriteRotation(Vector3 newRotation)
 		{
+			// Don't write if housing mode isn't on.
+			if (!this.IsHousingModeOn())
+				return;
+
 			try
 			{
 				// Get the item from the structure to see when it's also invalid.
@@ -249,6 +254,7 @@ namespace BDTHPlugin
 				var z = item + 0x68;
 				var w = item + 0x6C;
 
+				// Convert into a quaternion.
 				var q = RotationMath.ToQ(newRotation);
 
 				unsafe
@@ -262,7 +268,7 @@ namespace BDTHPlugin
 			}
 			catch (Exception ex)
 			{
-				PluginLog.LogError(ex, "Error occured while writing rotation.");
+				PluginLog.LogError(ex, "Error occured while writing rotation!");
 			}
 		}
 
@@ -275,14 +281,18 @@ namespace BDTHPlugin
 			{
 				try
 				{
-					this.position = this.ReadPosition();
-					this.rotation = this.ReadRotation();
+					if (this.IsHousingModeOn())
+					{
+						this.position = this.ReadPosition();
+						this.rotation = this.ReadRotation();
+					}
 
 					Thread.Sleep(50);
 				}
-				catch (ThreadAbortException)
+				catch (Exception)
 				{
-					// Catching thread abort since this is how the thread is getting nuked.
+					this.position = Vector3.Zero;
+					this.rotation = Vector3.Zero;
 				}
 			}
 		}
@@ -325,6 +335,11 @@ namespace BDTHPlugin
 			VirtualProtect(this.showcaseAnywherePlace, 1, oldProtection, out _);
 		}
 
+		/// <summary>
+		/// Writes a series of bytes.
+		/// </summary>
+		/// <param name="ptr">Pointer to write to</param>
+		/// <param name="bytes">The bytes to write</param>
 		private void WriteBytes(IntPtr ptr, byte[] bytes)
 		{
 			for (var i = 0; i < bytes.Length; i++)
