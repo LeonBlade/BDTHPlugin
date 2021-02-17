@@ -112,9 +112,9 @@ namespace BDTHPlugin
 			var valid = new ushort[]
 			{
 				345, 346, 347, 386, 610, // The Goblet
-				342, 343, 344, 358, 609, // Lavender Beds
+				342, 343, 344, 385, 609, // The Lavender Beds
 				282, 283, 284, 384, 608, // Mist
-				649, 650, 651, 652, 655 // Shirogane
+				649, 650, 651, 652, 655  // Shirogane
 			};
 
 			if (!valid.Contains(this.pi.ClientState.TerritoryType))
