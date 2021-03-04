@@ -66,6 +66,7 @@ namespace BDTHPlugin
 
 				// Disabled if the housing mode isn't on and there isn't a selected item.
 				var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
+				var indoors = this.memory.IsIndoors();
 
 				// Set the opacity based on if housing is on.
 				if (disabled)
@@ -74,24 +75,33 @@ namespace BDTHPlugin
 				ImGui.PushItemWidth(73f);
 
 				if (ImGui.DragFloat("##xdrag", ref this.memory.position.X, this.drag))
-					memory.WritePosition(this.memory.position);
+					this.memory.WritePosition(this.memory.position);
 				ImGui.SameLine(0, 4);
 				var xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
+				// Push disabled style for outdoors Y axis.
+				if (!indoors)
+					ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
+
 				if (ImGui.DragFloat("##ydrag", ref this.memory.position.Y, this.drag))
-					memory.WritePosition(this.memory.position);
+					this.memory.WritePosition(this.memory.position);
+
+				// Pop disabled style for outdoors Y axis.
+				if (!indoors)
+					ImGui.PopStyleVar();
+
 				ImGui.SameLine(0, 4);
 				var yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
 				if (ImGui.DragFloat("##zdrag", ref this.memory.position.Z, this.drag))
-					memory.WritePosition(this.memory.position);
+					this.memory.WritePosition(this.memory.position);
 				ImGui.SameLine(0, 4);
 				var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
 				ImGui.Text("position");
 
 				if (ImGui.DragFloat("##rydrag", ref this.memory.rotation.Y, this.drag))
-					memory.WriteRotation(this.memory.rotation);
+					this.memory.WriteRotation(this.memory.rotation);
 				ImGui.SameLine(0, 4);
 				var ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
@@ -110,28 +120,37 @@ namespace BDTHPlugin
 				if (zHover)
 					this.memory.position.Z += delta;
 				if (xHover || yHover || zHover)
-					memory.WritePosition(this.memory.position);
+					this.memory.WritePosition(this.memory.position);
 
 				// Move rotation based on which control is being hovered.
 				if (ryHover)
 					this.memory.rotation.Y += delta;
 				if (ryHover && delta > 0)
-					memory.WriteRotation(this.memory.rotation);
+					this.memory.WriteRotation(this.memory.rotation);
 
 				if (ImGui.InputFloat("x coord", ref this.memory.position.X, this.drag))
-					memory.WritePosition(this.memory.position);
+					this.memory.WritePosition(this.memory.position);
 				xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
+				// Push disabled style for outdoors Y axis.
+				if (!indoors)
+					ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
+
 				if (ImGui.InputFloat("y coord", ref this.memory.position.Y, this.drag))
-					memory.WritePosition(this.memory.position);
+					this.memory.WritePosition(this.memory.position);
+
+				// Pop disabled style for outdoors Y axis.
+				if (!indoors)
+					ImGui.PopStyleVar();
+
 				yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
 				if (ImGui.InputFloat("z coord", ref this.memory.position.Z, this.drag))
-					memory.WritePosition(this.memory.position);
+					this.memory.WritePosition(this.memory.position);
 				zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
 				if (ImGui.InputFloat("ry degree", ref this.memory.rotation.Y, this.drag))
-					memory.WriteRotation(this.memory.rotation);
+					this.memory.WriteRotation(this.memory.rotation);
 				ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
 				// Mouse wheel direction.
@@ -145,13 +164,13 @@ namespace BDTHPlugin
 				if (zHover)
 					this.memory.position.Z += delta;
 				if (xHover || yHover || zHover)
-					memory.WritePosition(this.memory.position);
+					this.memory.WritePosition(this.memory.position);
 
 				// Move rotation based on which control is being hovered.
 				if (ryHover)
 					this.memory.rotation.Y += delta;
 				if (ryHover && delta > 0)
-					memory.WriteRotation(this.memory.rotation);
+					this.memory.WriteRotation(this.memory.rotation);
 
 				ImGui.NewLine();
 
