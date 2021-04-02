@@ -66,7 +66,6 @@ namespace BDTHPlugin
 
 				// Disabled if the housing mode isn't on and there isn't a selected item.
 				var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
-				var indoors = this.memory.IsIndoors();
 
 				// Set the opacity based on if housing is on.
 				if (disabled)
@@ -79,17 +78,8 @@ namespace BDTHPlugin
 				ImGui.SameLine(0, 4);
 				var xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-				// Push disabled style for outdoors Y axis.
-				if (!indoors)
-					ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
-
 				if (ImGui.DragFloat("##ydrag", ref this.memory.position.Y, this.drag))
 					this.memory.WritePosition(this.memory.position);
-
-				// Pop disabled style for outdoors Y axis.
-				if (!indoors)
-					ImGui.PopStyleVar();
-
 				ImGui.SameLine(0, 4);
 				var yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
@@ -132,17 +122,8 @@ namespace BDTHPlugin
 					this.memory.WritePosition(this.memory.position);
 				xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-				// Push disabled style for outdoors Y axis.
-				if (!indoors)
-					ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
-
 				if (ImGui.InputFloat("y coord", ref this.memory.position.Y, this.drag))
 					this.memory.WritePosition(this.memory.position);
-
-				// Pop disabled style for outdoors Y axis.
-				if (!indoors)
-					ImGui.PopStyleVar();
-
 				yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
 				if (ImGui.InputFloat("z coord", ref this.memory.position.Z, this.drag))

@@ -113,24 +113,6 @@ namespace BDTHPlugin
 		}
 
 		/// <summary>
-		/// Is the territory inside.
-		/// </summary>
-		/// <returns>Boolean state whether you are in a inside or outside housing area.</returns>
-		public bool IsIndoors()
-		{
-			// Valid territory array.
-			var indoorTerritories = new ushort[]
-			{
-				345, 346, 347, 386, 610, // The Goblet
-				342, 343, 344, 385, 609, // The Lavender Beds
-				282, 283, 284, 384, 608, // Mist
-				649, 650, 651, 652, 655  // Shirogane
-			};
-
-			return indoorTerritories.Contains(this.pi.ClientState.TerritoryType);
-		}
-
-		/// <summary>
 		/// Read the position of the active item.
 		/// </summary>
 		/// <returns>Vector3 of the position.</returns>
@@ -229,10 +211,6 @@ namespace BDTHPlugin
 
 				unsafe
 				{
-					// If not indoors, just use the existing Y value.
-					if (!this.IsIndoors())
-						newPosition.Y = (*(Vector3*)position).Y;
-
 					// Write the position to memory.
 					*(Vector3*)position = newPosition;
 				}
