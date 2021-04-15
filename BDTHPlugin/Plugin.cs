@@ -32,6 +32,8 @@ namespace BDTHPlugin
                 HelpMessage = "Opens the controls for Burning Down the House plugin."
             });
 
+            ImGuizmoNET.ImGuizmo.SetImGuiContext(ImGuiNET.ImGui.GetCurrentContext());
+
             this.pi.UiBuilder.OnBuildUi += DrawUI;
         }
 

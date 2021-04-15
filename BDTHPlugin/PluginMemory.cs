@@ -32,6 +32,11 @@ namespace BDTHPlugin
 		private delegate void HousingLoopDelegate(IntPtr housing);
 		private readonly Hook<HousingLoopDelegate> housingHook;
 
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate IntPtr GetMatrixSingletonDelegate();
+		private readonly IntPtr matrixSingletonAddress;
+		public GetMatrixSingletonDelegate GetMatrixSingleton;
+
 		public PluginMemory(DalamudPluginInterface pluginInterface)
 		{
 			this.pi = pluginInterface;
@@ -49,6 +54,9 @@ namespace BDTHPlugin
 			);
 
 			this.housingHook.Enable();
+
+			this.matrixSingletonAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
+			this.GetMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(this.matrixSingletonAddress);
 
 			this.thread = new Thread(new ThreadStart(this.Loop));
 			this.thread.Start();

@@ -1,4 +1,6 @@
+using Dalamud.Plugin;
 using ImGuiNET;
+using ImGuizmoNET;
 using System;
 using System.Numerics;
 
@@ -11,6 +13,38 @@ namespace BDTHPlugin
 		private readonly Configuration configuration;
 		private readonly PluginMemory memory;
 
+		private static float[] identityMatrix =
+		{
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+
+		private readonly float[] itemMatrix =
+		{
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+
+		private static float[] testMatrix =
+		{
+			1.0f, 0.0f, 0.0f, 0.0f,
+			0.0f, 1.0f, 0.0f, 0.0f,
+			0.0f, 0.0f, 1.0f, 0.0f,
+			0.0f, 0.0f, 0.0f, 1.0f
+		};
+
+		private readonly OPERATION gizmoOperation = OPERATION.TRANSLATE;
+		private readonly MODE gizmoMode = MODE.LOCAL;
+
+		// Components for the active item.
+		private Vector3 translate = new Vector3();
+		private Vector3 rotation = new Vector3();
+		private Vector3 scale = new Vector3();
+
 		// this extra bool exists for ImGui, since you can't ref a property
 		private bool visible = false;
 		public bool Visible
@@ -18,6 +52,9 @@ namespace BDTHPlugin
 			get { return this.visible; }
 			set { this.visible = value; }
 		}
+
+		private bool useGizmo = true;
+		private bool doSnap = false;
 
 		private float drag = 0.05f;
 		private bool placeAnywhere = false;
@@ -35,6 +72,7 @@ namespace BDTHPlugin
 
 		public void Draw()
 		{
+			DrawGizmo();
 			DrawMainWindow();
 		}
 
@@ -48,8 +86,8 @@ namespace BDTHPlugin
 			ImGui.PushStyleColor(ImGuiCol.TitleBgActive, orangeColor);
 			ImGui.PushStyleColor(ImGuiCol.CheckMark, orangeColor);
 
-			var scale = ImGui.GetIO().FontGlobalScale;
-			var size = new Vector2(320 * scale, 280 * scale);
+			var fontScale = ImGui.GetIO().FontGlobalScale;
+			var size = new Vector2(320 * fontScale, 280 * fontScale);
 
 			ImGui.SetNextWindowSize(size, ImGuiCond.Always);
 			ImGui.SetNextWindowSizeConstraints(size, size);
@@ -64,8 +102,16 @@ namespace BDTHPlugin
 					this.memory.SetPlaceAnywhere(this.placeAnywhere);
 				}
 
+				ImGui.SameLine();
+				ImGui.Checkbox("Gizmo", ref this.useGizmo);
+				ImGui.SameLine();
+				ImGui.Checkbox("Snap", ref this.doSnap);
+
 				// Disabled if the housing mode isn't on and there isn't a selected item.
 				var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
+
+				var io = ImGui.GetIO();
+				ImGuizmo.SetRect(0, 0, io.DisplaySize.X, io.DisplaySize.Y);
 
 				// Set the opacity based on if housing is on.
 				if (disabled)
@@ -160,10 +206,103 @@ namespace BDTHPlugin
 
 				// Drag ammount for the inputs.
 				ImGui.InputFloat("drag", ref this.drag, 0.05f);
+
+				// If you somehow specify 0, reset it to something else.
+				if (this.drag == 0f)
+					this.drag = 0.05f;
 			}
 			ImGui.End();
 
 			ImGui.PopStyleColor(2);
+		}
+
+		private void DrawGizmo()
+		{
+			if (!useGizmo)
+				return;
+
+			// Disabled if the housing mode isn't on and there isn't a selected item.
+			var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
+			if (disabled)
+				return;
+
+			try
+			{
+				translate = this.memory.ReadPosition();
+				rotation = this.memory.ReadRotation();
+				ImGuizmo.RecomposeMatrixFromComponents(ref translate.X, ref rotation.X, ref scale.X, ref itemMatrix[0]);
+			}
+			catch
+			{
+			}
+
+			var matrixSingleton = this.memory.GetMatrixSingleton();
+			if (matrixSingleton == IntPtr.Zero)
+				return;
+
+			var viewProjectionMatrix = new float[16];
+
+			unsafe
+			{
+				var rawMatrix = (float*)(matrixSingleton + 0x1B4).ToPointer();
+				for (var i = 0; i < 16; i++, rawMatrix++)
+					viewProjectionMatrix[i] = *rawMatrix;
+			}
+
+			ImGuizmo.Enable(true);
+			ImGuizmo.BeginFrame();
+
+			ImGuizmo.SetOrthographic(false);
+
+			var vp = ImGui.GetMainViewport();
+			ImGui.SetNextWindowSize(vp.Size);
+			ImGui.SetNextWindowPos(new Vector2(0, 0), ImGuiCond.Always);
+			ImGui.SetNextWindowViewport(vp.ID);
+
+			ImGui.Begin("Gizmo", ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoNavInputs | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoInputs);
+			ImGui.BeginChild("##gizmoChild", new Vector2(-1, -1), false, ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoNavInputs | ImGuiWindowFlags.NoInputs);
+
+			ImGuizmo.SetDrawlist();
+
+			var windowWidth = ImGui.GetWindowWidth();
+			var windowHeight = ImGui.GetWindowHeight();
+
+			ImGuizmo.SetRect(ImGui.GetWindowPos().X, ImGui.GetWindowPos().Y, windowWidth, windowHeight);
+
+			var snap = this.doSnap ? new Vector3(this.drag, this.drag, this.drag) : Vector3.Zero;
+
+			// ImGuizmo.Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0]);
+			Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0], ref snap.X);
+
+			ImGuizmo.DecomposeMatrixToComponents(ref itemMatrix[0], ref translate.X, ref rotation.X, ref scale.X);
+
+			this.memory.WritePosition(translate);
+
+			ImGui.EndChild();
+			ImGui.End();
+		}
+
+		private bool Manipulate(ref float view, ref float projection, OPERATION operation, MODE mode, ref float matrix, ref float snap)
+		{
+			unsafe
+			{
+				float* localBounds = null;
+				float* boundsSnap = null;
+				fixed (float* native_view = &view)
+				{
+					fixed (float* native_projection = &projection)
+					{
+						fixed (float* native_matrix = &matrix)
+						{
+							fixed (float* native_snap = &snap)
+							{
+								byte ret = ImGuizmoNative.ImGuizmo_Manipulate(native_view, native_projection, operation, mode, native_matrix, null, native_snap, localBounds, boundsSnap);
+								return ret != 0;
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 }
