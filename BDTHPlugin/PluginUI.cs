@@ -53,10 +53,10 @@ namespace BDTHPlugin
 			set { this.visible = value; }
 		}
 
-		private bool useGizmo = true;
-		private bool doSnap = false;
+		private float drag;
+		private bool useGizmo;
+		private bool doSnap;
 
-		private float drag = 0.05f;
 		private bool placeAnywhere = false;
 		private readonly Vector4 orangeColor = new Vector4(0.871f, 0.518f, 0f, 1f);
 
@@ -64,6 +64,10 @@ namespace BDTHPlugin
 		{
 			this.configuration = configuration;
 			this.memory = memory;
+
+			this.drag = this.configuration.Drag;
+			this.useGizmo = this.configuration.UseGizmo;
+			this.doSnap = this.configuration.DoSnap;
 		}
 
 		public void Dispose()
@@ -103,9 +107,22 @@ namespace BDTHPlugin
 				}
 
 				ImGui.SameLine();
-				ImGui.Checkbox("Gizmo", ref this.useGizmo);
+
+				// Checkbox is clicked, set the configuration and save.
+				if (ImGui.Checkbox("Gizmo", ref this.useGizmo))
+				{
+					this.configuration.UseGizmo = this.useGizmo;
+					this.configuration.Save();
+				}
+						
 				ImGui.SameLine();
-				ImGui.Checkbox("Snap", ref this.doSnap);
+
+				// Checkbox is clicked, set the configuration and save.
+				if (ImGui.Checkbox("Snap", ref this.doSnap))
+				{
+					this.configuration.DoSnap = this.doSnap;
+					this.configuration.Save();
+				}
 
 				// Disabled if the housing mode isn't on and there isn't a selected item.
 				var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
@@ -205,11 +222,11 @@ namespace BDTHPlugin
 					ImGui.PopStyleVar();
 
 				// Drag ammount for the inputs.
-				ImGui.InputFloat("drag", ref this.drag, 0.05f);
-
-				// If you somehow specify 0, reset it to something else.
-				if (this.drag == 0f)
-					this.drag = 0.05f;
+				if (ImGui.InputFloat("drag", ref this.drag, 0.05f))
+				{
+					this.configuration.Drag = this.drag;
+					this.configuration.Save();
+				}
 			}
 			ImGui.End();
 
@@ -226,6 +243,7 @@ namespace BDTHPlugin
 			if (disabled)
 				return;
 
+			// Just catch errors since the disabled logic above didn't catch it one time.
 			try
 			{
 				translate = this.memory.ReadPosition();
@@ -249,6 +267,7 @@ namespace BDTHPlugin
 					viewProjectionMatrix[i] = *rawMatrix;
 			}
 
+			// Gizmo setup.
 			ImGuizmo.Enable(true);
 			ImGuizmo.BeginFrame();
 
@@ -282,6 +301,7 @@ namespace BDTHPlugin
 			ImGui.End();
 		}
 
+		// Bypass the delta matrix to just only use snap.
 		private bool Manipulate(ref float view, ref float projection, OPERATION operation, MODE mode, ref float matrix, ref float snap)
 		{
 			unsafe
