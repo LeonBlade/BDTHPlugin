@@ -268,7 +268,7 @@ namespace BDTHPlugin
 			}
 
 			// Gizmo setup.
-			ImGuizmo.Enable(true);
+			ImGuizmo.Enable(!this.memory.IsRotating);
 			ImGuizmo.BeginFrame();
 
 			ImGuizmo.SetOrthographic(false);
