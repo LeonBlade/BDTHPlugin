@@ -7,15 +7,15 @@
 
   <ItemGroup>
 	<Reference Include="Dalamud">
-	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\5.2.5.0\Dalamud.dll</HintPath>
+	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
 	  <Private>False</Private>
 	</Reference>
 	<Reference Include="ImGui.NET">
-	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\5.2.5.0\ImGui.NET.dll</HintPath>
+	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
 	  <Private>False</Private>
 	</Reference>
 	<Reference Include="ImGuiScene">
-	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\5.2.5.0\ImGuiScene.dll</HintPath>
+	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGuiScene.dll</HintPath>
 	  <Private>False</Private>
 	</Reference>
   </ItemGroup>
