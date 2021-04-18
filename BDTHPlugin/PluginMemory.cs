@@ -37,7 +37,6 @@ namespace BDTHPlugin
 		private readonly IntPtr matrixSingletonAddress;
 		public GetMatrixSingletonDelegate GetMatrixSingleton;
 
-		private IntPtr isRotatingAddress;
 		private bool isRotating;
 		public bool IsRotating { get => this.isRotating; }
 
@@ -50,8 +49,6 @@ namespace BDTHPlugin
 			this.wallmountAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
 			this.showcaseAnywhereRotate = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
 			this.showcaseAnywherePlace = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
-
-			this.isRotatingAddress = this.GetRotateBoolAddress();
 
 			this.selectedItemFunc = this.pi.TargetModuleScanner.ScanText("40 53 48 83 EC 20 48 8B D9 8B 49 08 83 E9 02");
 			this.housingHook = new Hook<HousingLoopDelegate>(
@@ -94,17 +91,6 @@ namespace BDTHPlugin
 			{
 				PluginLog.LogError(ex, "Error while calling PluginMemory.Dispose()");
 			}
-		}
-
-		private IntPtr GetRotateBoolAddress()
-		{
-			var layoutWorld = this.pi.TargetModuleScanner.GetStaticAddressFromSig("48 89 05 ?? ?? ?? ?? 48 8B 00 48 83 C4 28 48 FF 60 08", 4);
-
-			var ptr = Marshal.ReadIntPtr(layoutWorld) + 0x40;
-			if (ptr == IntPtr.Zero)
-				return IntPtr.Zero;
-
-			return Marshal.ReadIntPtr(ptr) + 0xB8;
 		}
 
 		/// <summary>
@@ -298,7 +284,7 @@ namespace BDTHPlugin
 					{
 						this.position = this.ReadPosition();
 						this.rotation = this.ReadRotation();
-						this.isRotating = Convert.ToBoolean(Marshal.ReadByte(this.isRotatingAddress));
+						this.isRotating = Convert.ToBoolean(Marshal.ReadByte(this.housingStructure + 0xB8));
 					}
 
 					Thread.Sleep(50);
