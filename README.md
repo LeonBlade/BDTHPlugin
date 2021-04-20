@@ -11,6 +11,8 @@ First, you must use the [FFXIVQuickLauncher](https://github.com/goatcorp/FFXIVQu
 ## How do I install it?
 ### **[Please visit this page on how to install my plugin via third party repository support.](https://github.com/LeonBlade/DalamudPlugins)**
 
+### **ONLY ASK FOR HELP FOR THIS PLUGIN FROM ME OR ON MY DISCORD SERVER**
+
 ## How do I use it?
 To actually use the plugin, you need to start the game via the Quick Launcher. Once you've started the game, you should be able to type in `/bdth` into the game's chat and press enter. This will then bring up the UI for the plugin.
 
