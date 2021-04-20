@@ -5,10 +5,11 @@
 ## What is it?
 BDTHPlugin is the plugin version of [Burning Down the House](https://github.com/LeonBlade/BurningDownTheHouse) which is a tool for FFXIV which gives you more control over placing housing items.
 
-## How do I install it?
+## What do I need to run it?
 First, you must use the [FFXIVQuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher) to run your game. The Quick Launcher allows for custom plugins to be installed to add new functionality to the game. To install, you first need to have the Quick Launcher setup for your game, instructions can be found on the [FFXIVQuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher) page.
 
-Please visit [this](https://github.com/LeonBlade/DalamudPlugins) page on how to install my plugin via third party repository support.
+## How do I install it?
+### **[Please visit this page on how to install my plugin via third party repository support.](https://github.com/LeonBlade/DalamudPlugins)**
 
 ## How do I use it?
 To actually use the plugin, you need to start the game via the Quick Launcher. Once you've started the game, you should be able to type in `/bdth` into the game's chat and press enter. This will then bring up the UI for the plugin.
