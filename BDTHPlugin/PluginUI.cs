@@ -105,7 +105,7 @@ namespace BDTHPlugin
 			ImGui.PushStyleColor(ImGuiCol.CheckMark, ORANGE_COLOR);
 
 			var fontScale = ImGui.GetIO().FontGlobalScale;
-			var size = new Vector2(320 * fontScale, 280 * fontScale);
+			var size = new Vector2(320 * fontScale, 300 * fontScale);
 
 			ImGui.SetNextWindowSize(size, ImGuiCond.Always);
 			ImGui.SetNextWindowSizeConstraints(size, size);
@@ -292,6 +292,25 @@ namespace BDTHPlugin
 					ImGui.BeginTooltip();
 					ImGui.Text("Sets the amount to change when dragging the controls, also influences the gizmo snap feature.");
 					ImGui.EndTooltip();
+				}
+
+				if (ImGui.Button("Open Furnishing List"))
+				{
+					unsafe
+					{
+						if (!this.memory.IsHousingOpen())
+						{
+							this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
+							this.listVisible = false;
+						}
+						else if (this.memory.HousingModule->IsOutdoors())
+						{
+							this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing outdoors currently.");
+							this.listVisible = false;
+						}
+						else
+							this.listVisible = true;
+					}
 				}
 			}
 			ImGui.End();
