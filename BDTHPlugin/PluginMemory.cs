@@ -1,6 +1,9 @@
 using Dalamud.Hooking;
 using Dalamud.Plugin;
+using ImGuiScene;
+using Lumina.Excel.GeneratedSheets;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -15,55 +18,85 @@ namespace BDTHPlugin
 		private readonly Thread thread;
 		private bool threadRunning = false;
 
+		// Pointers to modify assembly to enable place anywhere.
 		public IntPtr placeAnywhere;
 		public IntPtr wallAnywhere;
 		public IntPtr wallmountAnywhere;
 		public IntPtr showcaseAnywhereRotate;
 		public IntPtr showcaseAnywherePlace;
 
-		public IntPtr housingStructure;
-		public IntPtr selectedItem;
+		// Layout and housing module pointers.
+		private readonly IntPtr layoutWorldPtr;
+		private readonly IntPtr housingModulePtr;
 
+		public unsafe LayoutWorld* Layout => (LayoutWorld*)this.layoutWorldPtr;
+		public unsafe HousingStructure* HousingStructure => this.Layout->HousingStruct;
+		public unsafe HousingModule* HousingModule => (HousingModule*)this.housingModulePtr;
+		public unsafe HousingObjectManger* CurrentManager => this.HousingModule->GetCurrentManager();
+
+		// Local references to position and rotation to use to free them when an item isn't selected but to keep the UI bound to a reference.
 		public Vector3 position;
 		public Vector3 rotation;
 
-		public IntPtr selectedItemFunc;
-		[UnmanagedFunctionPointer(CallingConvention.StdCall)]
-		private delegate void HousingLoopDelegate(IntPtr housing);
-		private readonly Hook<HousingLoopDelegate> housingHook;
-
+		// Matrix function used for gizmo view projection stuff.
 		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
 		public delegate IntPtr GetMatrixSingletonDelegate();
 		private readonly IntPtr matrixSingletonAddress;
 		public GetMatrixSingletonDelegate GetMatrixSingleton;
 
-		private bool isRotating;
-		public bool IsRotating { get => this.isRotating; }
+		// Function for selecting an item, usually used when clicking on one in game.
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void SelectItemDelegate(IntPtr housingStruct, IntPtr item);
+		private readonly IntPtr selectItemAddress;
+		public SelectItemDelegate SelectItem;
+
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void SoftSelectDelegate(IntPtr housingStruct, IntPtr item);
+		private readonly IntPtr softSelectAddress;
+		private readonly Hook<SoftSelectDelegate> SoftSelectHook;
 
 		public PluginMemory(DalamudPluginInterface pluginInterface)
 		{
-			this.pi = pluginInterface;
+			try
+			{
+				this.pi = pluginInterface;
 
-			this.placeAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
-			this.wallAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
-			this.wallmountAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
-			this.showcaseAnywhereRotate = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
-			this.showcaseAnywherePlace = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
+				// Assembly address for asm rewrites.
+				this.placeAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
+				this.wallAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
+				this.wallmountAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
+				this.showcaseAnywhereRotate = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
+				this.showcaseAnywherePlace = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
 
-			this.selectedItemFunc = this.pi.TargetModuleScanner.ScanText("40 53 48 83 EC 20 48 8B D9 8B 49 08 83 E9 02");
-			this.housingHook = new Hook<HousingLoopDelegate>(
-				selectedItemFunc, 
-				new HousingLoopDelegate(HousingLoopDetour)
-			);
+				// Pointers for housing structures.
+				this.layoutWorldPtr = this.pi.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??", 2);
+				this.housingModulePtr = this.pi.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07", 0xA);
+				// Read the pointers.
+				this.layoutWorldPtr = Marshal.ReadIntPtr(this.layoutWorldPtr);
+				this.housingModulePtr = Marshal.ReadIntPtr(this.housingModulePtr);
 
-			this.housingHook.Enable();
+				// Matrix address for gizmo usage.
+				this.matrixSingletonAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
+				this.GetMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(this.matrixSingletonAddress);
 
-			this.matrixSingletonAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
-			this.GetMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(this.matrixSingletonAddress);
+				// Select housing item.
+				this.selectItemAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
+				this.SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(this.selectItemAddress);
 
-			this.thread = new Thread(new ThreadStart(this.Loop));
-			this.thread.Start();
-			this.threadRunning = true;
+				// Soft select hook.
+				this.softSelectAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
+				this.SoftSelectHook = new Hook<SoftSelectDelegate>(this.softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
+				this.SoftSelectHook.Enable();
+
+				// Thread loop to read active item.
+				this.thread = new Thread(new ThreadStart(this.Loop));
+				this.thread.Start();
+				this.threadRunning = true;
+			}
+			catch (Exception ex)
+			{
+				PluginLog.LogError(ex, "Error while calling PluginMemory.ctor()");
+			}
 		}
 
 		/// <summary>
@@ -74,14 +107,11 @@ namespace BDTHPlugin
 			try
 			{
 				// Disable the place anywhere in case it's on.
-				SetPlaceAnywhere(false);
+				this.SetPlaceAnywhere(false);
 
-				// Kill the hook assuming it's not already dead.
-				if (this.housingHook != null)
-				{
-					this.housingHook.Disable();
-					this.housingHook.Dispose();
-				}
+				// Get rid of the hook.
+				this.SoftSelectHook.Disable();
+				this.SoftSelectHook.Dispose();
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
 				this.threadRunning = false;
@@ -93,138 +123,106 @@ namespace BDTHPlugin
 			}
 		}
 
-		/// <summary>
-		/// Housing loop detour.
-		/// </summary>
-		/// <param name="housing">Housing data structure</param>
-		private void HousingLoopDetour(IntPtr housing)
+		public unsafe int GetHousingObjectSelectedIndex()
 		{
-			// Call the original function.
-			this.housingHook.Original(housing);
-
-			// Set the housing struct address.
-			this.housingStructure = housing;
+			for (var i = 0; i < 400; i++)
+			{
+				if (this.HousingModule->GetCurrentManager()->Objects[i] == 0)
+					continue;
+				if ((ulong)this.HousingModule->GetCurrentManager()->IndoorActiveObject == this.HousingModule->GetCurrentManager()->Objects[i])
+					return i;
+			}
+			return -1;
 		}
 
+		private void SoftSelectDetour(IntPtr housing, IntPtr item)
+		{
+			this.SoftSelectHook.Original(housing, item);
+			this.SelectItem(housing, item);
+		}
 
 		/// <summary>
-		/// Is the housing menu on.
+		/// Is the housing menu open.
 		/// </summary>
-		/// <returns>Boolean state if housing menu is on or off.</returns>
-		public bool IsHousingModeOn()
+		/// <returns>Boolean state.</returns>
+		public unsafe bool IsHousingOpen()
 		{
-			if (this.housingStructure == IntPtr.Zero)
+			if (this.HousingStructure == null)
 				return false;
 
-			// Read the tool ID
-			var toolID = Marshal.ReadByte(this.housingStructure);
+			// Anything other than none means the housing menu is open.
+			return this.HousingStructure->Mode != HousingLayoutMode.None;
+		}
 
-			// Tool ID is set to rotation.
-			return toolID == 2;
+		/// <summary>
+		/// Checks if you can edit a housing item, specifically checks that rotate mode is active.
+		/// </summary>
+		/// <returns>Boolean state if housing menu is on or off.</returns>
+		public unsafe bool CanEditItem()
+		{
+			if (this.HousingStructure == null)
+				return false;
+
+			// Rotate mode only.
+			return this.HousingStructure->Mode == HousingLayoutMode.Rotate;
 		}
 
 		/// <summary>
 		/// Read the position of the active item.
 		/// </summary>
 		/// <returns>Vector3 of the position.</returns>
-		public Vector3 ReadPosition()
+		public unsafe Vector3 ReadPosition()
 		{
 			// Ensure that we're hooked and have the housing structure address.
-			if (this.housingStructure == IntPtr.Zero)
+			if (this.HousingStructure == null)
 				throw new Exception("Housing structure is invalid!");
 
-			// Get the item from the structure to see when it's also invalid.
-			var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
-
-			// Set the selected item.
-			this.selectedItem = item;
-
-			// Ensure we have a valid pointer for the item.
-			if (item == IntPtr.Zero)
+			// Ensure active item pointer isn't null.
+			var item = this.HousingStructure->ActiveItem;
+			if (item == null)
 				throw new Exception("No valid item selected!");
 
-			// Position offset from the selected item.
-			var position = item + 0x50;
-
-			// Set up bytes to marshal over the data.
-			var bytes = new byte[12];
-			// Copy position into managed bytes array.
-			Marshal.Copy(position, bytes, 0, 12);
-
-			// Convert coords for the vector.
-			var x = BitConverter.ToSingle(bytes, 0);
-			var y = BitConverter.ToSingle(bytes, 4);
-			var z = BitConverter.ToSingle(bytes, 8);
-
 			// Return the position vector.
-			return new Vector3(x, y, z);
+			return item->Position;
 		}
 
 		/// <summary>
 		/// Reads the rotation of the item.
 		/// </summary>
 		/// <returns></returns>
-		public Vector3 ReadRotation()
+		public unsafe Vector3 ReadRotation()
 		{
 			// Ensure that we're hooked and have the housing structure address.
-			if (this.housingStructure == IntPtr.Zero)
+			if (this.HousingStructure == null)
 				throw new Exception("Housing structure is invalid!");
 
-			// Get the item from the structure to see when it's also invalid.
-			var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
-
-			// Sets the item.
-			this.selectedItem = item;
-
-			// Ensure we have a valid pointer for the item.
-			if (item == IntPtr.Zero)
+			// Ensure active item pointer isn't null.
+			var item = this.HousingStructure->ActiveItem;
+			if (item == null)
 				throw new Exception("No valid item selected!");
 
-			// Rotation offset from the selected item.
-			var rotation = item + 0x60;
-
-			// Set up bytes to marshal over the data.
-			var bytes = new byte[16];
-			// Copy rotation into managed bytes array.
-			Marshal.Copy(rotation, bytes, 0, 16);
-
-			// Convert bytes for the quaternion.
-			var x = BitConverter.ToSingle(bytes, 0);
-			var y = BitConverter.ToSingle(bytes, 4);
-			var z = BitConverter.ToSingle(bytes, 8);
-			var w = BitConverter.ToSingle(bytes, 12);
-
 			// Return the rotation radian.
-			return RotationMath.FromQ(new Quaternion(x, y, z, w));
+			return Util.FromQ(item->Rotation);
 		}
 
 		/// <summary>
 		/// Writes the position vector to memory.
 		/// </summary>
 		/// <param name="newPosition">Position vector to write.</param>
-		public void WritePosition(Vector3 newPosition)
+		public unsafe void WritePosition(Vector3 newPosition)
 		{
 			// Don't write if housing mode isn't on.
-			if (!this.IsHousingModeOn())
+			if (!this.CanEditItem())
 				return;
 
 			try
 			{
-				// Get the item from the structure to see when it's also invalid.
-				var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
-
-				// Ensure we have a valid pointer for the item.
-				if (item == IntPtr.Zero)
+				var item = this.HousingStructure->ActiveItem;
+				if (item == null)
 					return;
 
-				// Position offset from the selected item.
-				var position = item + 0x50;
-
-				unsafe
-				{
-					// Write the position to memory.
-					*(Vector3*)position = newPosition;
-				}
+				// Set the position.
+				item->Position = newPosition;
 			}
 			catch (Exception ex)
 			{
@@ -232,38 +230,20 @@ namespace BDTHPlugin
 			}
 		}
 
-		public void WriteRotation(Vector3 newRotation)
+		public unsafe void WriteRotation(Vector3 newRotation)
 		{
 			// Don't write if housing mode isn't on.
-			if (!this.IsHousingModeOn())
+			if (!this.CanEditItem())
 				return;
 
 			try
 			{
-				// Get the item from the structure to see when it's also invalid.
-				var item = Marshal.ReadIntPtr(this.housingStructure + 0x18);
-
-				// Ensure we have a valid pointer for the item.
-				if (item == IntPtr.Zero)
+				var item = this.HousingStructure->ActiveItem;
+				if (item == null)
 					return;
 
-				// Rotation offset from the selected item.
-				var x = item + 0x60;
-				var y = item + 0x64;
-				var z = item + 0x68;
-				var w = item + 0x6C;
-
 				// Convert into a quaternion.
-				var q = RotationMath.ToQ(newRotation);
-
-				unsafe
-				{
-					// Write the rotation to memory.
-					*(float*)w = q.W;
-					*(float*)x = q.X;
-					*(float*)y = q.Y;
-					*(float*)z = q.Z;
-				}
+				item->Rotation = Util.ToQ(newRotation);
 			}
 			catch (Exception ex)
 			{
@@ -274,17 +254,16 @@ namespace BDTHPlugin
 		/// <summary>
 		/// Thread loop for reading memory.
 		/// </summary>
-		public void Loop()
+		public unsafe void Loop()
 		{
 			while (this.threadRunning)
 			{
 				try
 				{
-					if (this.IsHousingModeOn())
+					if (this.CanEditItem())
 					{
 						this.position = this.ReadPosition();
 						this.rotation = this.ReadRotation();
-						this.isRotating = Convert.ToBoolean(Marshal.ReadByte(this.housingStructure + 0xB8));
 					}
 
 					Thread.Sleep(50);
@@ -295,6 +274,62 @@ namespace BDTHPlugin
 					this.rotation = Vector3.Zero;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Get furnishings as they appear in the array in memory.
+		/// </summary>
+		/// <param name="objects"></param>
+		/// <returns></returns>
+		public unsafe bool GetFurnishings(out List<HousingGameObject> objects, Vector3 point, bool sortByDistance = false)
+		{
+			if (sortByDistance == true)
+				return this.GetFurnishingByDistance(out objects, point);
+
+			objects = new List<HousingGameObject>();
+
+			if (this.HousingModule == null || this.HousingModule->GetCurrentManager() == null || this.HousingModule->GetCurrentManager()->Objects == null)
+				return false;
+
+			for (var i = 0; i < 400; i++)
+			{
+				var oPtr = this.HousingModule->GetCurrentManager()->Objects[i];
+				if (oPtr == 0)
+					continue;
+
+				objects.Add(*(HousingGameObject*)oPtr);
+			}
+			return true;
+		}
+
+		/// <summary>
+		/// Get furnishings and sort by distance to a given point.
+		/// </summary>
+		/// <param name="objects"></param>
+		/// <param name="point"></param>
+		/// <returns></returns>
+		public unsafe bool GetFurnishingByDistance(out List<HousingGameObject> objects, Vector3 point)
+		{
+			objects = null;
+
+			if (this.HousingModule == null || this.HousingModule->GetCurrentManager() == null || this.HousingModule->GetCurrentManager()->Objects == null)
+				return false;
+
+			var tmpObjects = new List<(HousingGameObject gObj, float distance)>();
+			objects = new List<HousingGameObject>();
+			for (var i = 0; i < 400; i++)
+			{
+				var oPtr = HousingModule->GetCurrentManager()->Objects[i];
+				if (oPtr == 0)
+					continue;
+				var o = *(HousingGameObject*)oPtr;
+				tmpObjects.Add((o, Util.DistanceFromPlayer(o, point)));
+			}
+
+			tmpObjects.Sort((obj1, obj2) => obj1.distance.CompareTo(obj2.distance));
+			objects = tmpObjects.Select(obj => obj.gObj).ToList();
+
+			return true;
 		}
 
 		/// <summary>

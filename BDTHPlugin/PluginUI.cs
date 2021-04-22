@@ -1,8 +1,10 @@
+using Dalamud.Interface.Components;
 using Dalamud.Plugin;
 using ImGuiNET;
 using ImGuizmoNET;
 using System;
 using System.Numerics;
+using System.Runtime.InteropServices;
 
 namespace BDTHPlugin
 {
@@ -10,6 +12,8 @@ namespace BDTHPlugin
 	// to do any cleanup
 	class PluginUI : IDisposable
 	{
+		private readonly Plugin plugin;
+		private readonly DalamudPluginInterface pi;
 		private readonly Configuration configuration;
 		private readonly PluginMemory memory;
 
@@ -38,7 +42,7 @@ namespace BDTHPlugin
 		};
 
 		private readonly OPERATION gizmoOperation = OPERATION.TRANSLATE;
-		private readonly MODE gizmoMode = MODE.LOCAL;
+		private MODE gizmoMode = MODE.LOCAL;
 
 		// Components for the active item.
 		private Vector3 translate = new Vector3();
@@ -49,8 +53,15 @@ namespace BDTHPlugin
 		private bool visible = false;
 		public bool Visible
 		{
-			get { return this.visible; }
-			set { this.visible = value; }
+			get => this.visible;
+			set => this.visible = value;
+		}
+
+		private bool listVisible = false;
+		public bool ListVisible
+		{
+			get => this.listVisible;
+			set => this.listVisible = value;
 		}
 
 		private float drag;
@@ -58,10 +69,12 @@ namespace BDTHPlugin
 		private bool doSnap;
 
 		private bool placeAnywhere = false;
-		private readonly Vector4 orangeColor = new Vector4(0.871f, 0.518f, 0f, 1f);
+		private readonly Vector4 ORANGE_COLOR = new Vector4(0.871f, 0.518f, 0f, 1f);
 
-		public PluginUI(Configuration configuration, PluginMemory memory)
+		public PluginUI(Plugin p, DalamudPluginInterface pi, Configuration configuration, PluginMemory memory)
 		{
+			this.plugin = p;
+			this.pi = pi;
 			this.configuration = configuration;
 			this.memory = memory;
 
@@ -76,19 +89,20 @@ namespace BDTHPlugin
 
 		public void Draw()
 		{
-			DrawGizmo();
-			DrawMainWindow();
+			this.DrawGizmo();
+			this.DrawMainWindow();
+			this.DrawHousingList();
 		}
 
 		public void DrawMainWindow()
 		{
-			if (!Visible)
+			if (!this.Visible)
 			{
 				return;
 			}
 
-			ImGui.PushStyleColor(ImGuiCol.TitleBgActive, orangeColor);
-			ImGui.PushStyleColor(ImGuiCol.CheckMark, orangeColor);
+			ImGui.PushStyleColor(ImGuiCol.TitleBgActive, ORANGE_COLOR);
+			ImGui.PushStyleColor(ImGuiCol.CheckMark, ORANGE_COLOR);
 
 			var fontScale = ImGui.GetIO().FontGlobalScale;
 			var size = new Vector2(320 * fontScale, 280 * fontScale);
@@ -105,6 +119,12 @@ namespace BDTHPlugin
 					// Set the place anywhere based on the checkbox state.
 					this.memory.SetPlaceAnywhere(this.placeAnywhere);
 				}
+				if (ImGui.IsItemHovered())
+				{
+					ImGui.BeginTooltip();
+					ImGui.Text("Allows the placement of objects without limitation from the game engine.");
+					ImGui.EndTooltip();
+				}
 
 				ImGui.SameLine();
 
@@ -113,6 +133,12 @@ namespace BDTHPlugin
 				{
 					this.configuration.UseGizmo = this.useGizmo;
 					this.configuration.Save();
+				}
+				if (ImGui.IsItemHovered())
+				{
+					ImGui.BeginTooltip();
+					ImGui.Text("Displays a movement gizmo on the selected item to allow for in-game movement on all axis.");
+					ImGui.EndTooltip();
 				}
 						
 				ImGui.SameLine();
@@ -123,9 +149,30 @@ namespace BDTHPlugin
 					this.configuration.DoSnap = this.doSnap;
 					this.configuration.Save();
 				}
+				if (ImGui.IsItemHovered())
+				{
+					ImGui.BeginTooltip();
+					ImGui.Text("Enables snapping of gizmo movement based on the drag value set below.");
+					ImGui.EndTooltip();
+				}
+
+				ImGui.SameLine();
+				if (ImGuiComponents.IconButton(1, this.gizmoMode == MODE.LOCAL ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
+					this.gizmoMode = this.gizmoMode == MODE.LOCAL ? MODE.WORLD : MODE.LOCAL;
+				if (ImGui.IsItemHovered())
+				{
+					ImGui.BeginTooltip();
+					ImGui.Text($"Mode: {(this.gizmoMode == MODE.LOCAL ? "Local" : "World")}");
+					ImGui.Text("Changes gizmo mode between local and world movement.");
+					ImGui.EndTooltip();
+				}
 
 				// Disabled if the housing mode isn't on and there isn't a selected item.
-				var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
+				bool disabled = false;
+				unsafe
+				{
+					disabled = !(this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null);
+				}
 
 				var io = ImGui.GetIO();
 				ImGuizmo.SetRect(0, 0, io.DisplaySize.X, io.DisplaySize.Y);
@@ -133,6 +180,8 @@ namespace BDTHPlugin
 				// Set the opacity based on if housing is on.
 				if (disabled)
 					ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
+
+				ImGui.BeginGroup();
 
 				ImGui.PushItemWidth(73f);
 
@@ -181,6 +230,16 @@ namespace BDTHPlugin
 				if (ryHover && delta > 0)
 					this.memory.WriteRotation(this.memory.rotation);
 
+				ImGui.EndGroup(); // End group for the drag section.
+
+				if (ImGui.IsItemHovered())
+				{
+					ImGui.BeginTooltip();
+					ImGui.Text("Click and drag each to move the selected item.");
+					ImGui.Text("Change the drag option below to influence how much it moves as you drag.");
+					ImGui.EndTooltip();
+				}
+
 				if (ImGui.InputFloat("x coord", ref this.memory.position.X, this.drag))
 					this.memory.WritePosition(this.memory.position);
 				xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
@@ -224,8 +283,15 @@ namespace BDTHPlugin
 				// Drag ammount for the inputs.
 				if (ImGui.InputFloat("drag", ref this.drag, 0.05f))
 				{
+					this.drag = Math.Min(Math.Max(0.01f, this.drag), 10f);
 					this.configuration.Drag = this.drag;
 					this.configuration.Save();
+				}
+				if (ImGui.IsItemHovered())
+				{
+					ImGui.BeginTooltip();
+					ImGui.Text("Sets the amount to change when dragging the controls, also influences the gizmo snap feature.");
+					ImGui.EndTooltip();
 				}
 			}
 			ImGui.End();
@@ -233,15 +299,18 @@ namespace BDTHPlugin
 			ImGui.PopStyleColor(2);
 		}
 
-		private void DrawGizmo()
+		public void DrawGizmo()
 		{
 			if (!useGizmo)
 				return;
 
 			// Disabled if the housing mode isn't on and there isn't a selected item.
-			var disabled = !(this.memory.IsHousingModeOn() && this.memory.selectedItem != IntPtr.Zero);
-			if (disabled)
-				return;
+			unsafe
+			{
+				var disabled = !(this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null);
+				if (disabled)
+					return;
+			}
 
 			// Just catch errors since the disabled logic above didn't catch it one time.
 			try
@@ -268,7 +337,10 @@ namespace BDTHPlugin
 			}
 
 			// Gizmo setup.
-			ImGuizmo.Enable(!this.memory.IsRotating);
+			unsafe
+			{
+				ImGuizmo.Enable(!this.memory.HousingStructure->Rotating);
+			}
 			ImGuizmo.BeginFrame();
 
 			ImGuizmo.SetOrthographic(false);
@@ -291,7 +363,7 @@ namespace BDTHPlugin
 			var snap = this.doSnap ? new Vector3(this.drag, this.drag, this.drag) : Vector3.Zero;
 
 			// ImGuizmo.Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0]);
-			Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0], ref snap.X);
+			this.Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0], ref snap.X);
 
 			ImGuizmo.DecomposeMatrixToComponents(ref itemMatrix[0], ref translate.X, ref rotation.X, ref scale.X);
 
@@ -299,6 +371,125 @@ namespace BDTHPlugin
 
 			ImGui.EndChild();
 			ImGui.End();
+		}
+
+		private int FurnishingIndex => this.memory.GetHousingObjectSelectedIndex();
+		private bool sortByDistance = false;
+		private ulong? lastActiveItem = null;
+		private byte renderCount = 0;
+
+		public unsafe void DrawHousingList()
+		{
+			if (!this.listVisible)
+				return;
+
+			// Only allow furnishing list when the housing window is open.
+			if (!this.memory.IsHousingOpen())
+			{
+				this.listVisible = false;
+				return;
+			}
+
+			// Disallow the ability to open furnishing list outdoors.
+			if (this.memory.HousingModule->IsOutdoors())
+			{
+				this.listVisible = false;
+				return;
+			}
+
+			ImGui.PushStyleColor(ImGuiCol.TitleBgActive, ORANGE_COLOR);
+			ImGui.PushStyleColor(ImGuiCol.CheckMark, ORANGE_COLOR);
+
+			var fontScale = ImGui.GetIO().FontGlobalScale;
+			var size = new Vector2(240 * fontScale, 350 * fontScale);
+
+			ImGui.SetNextWindowSize(size, ImGuiCond.FirstUseEver);
+			ImGui.SetNextWindowSizeConstraints(new Vector2(120 * fontScale, 100 * fontScale), new Vector2(400 * fontScale, 400 * fontScale));
+
+			if (ImGui.Begin($"Furnishing List", ref this.listVisible))
+			{
+				if (ImGui.Checkbox("Sort by distance", ref this.sortByDistance))
+				{
+					this.configuration.SortByDistance = this.sortByDistance;
+					this.configuration.Save();
+				}
+
+				ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 8));
+				ImGui.Separator();
+				ImGui.PopStyleVar();
+
+				ImGui.BeginChild("FurnishingList");
+
+				var playerPos = this.pi?.ClientState?.LocalPlayer?.Position;
+
+				if (playerPos.HasValue)
+				{
+					try
+					{
+						if (this.memory.GetFurnishings(out var items, playerPos.Value, this.sortByDistance))
+						{
+							for (var i = 0; i < items.Count; i++)
+							{
+								var name = "";
+								ushort icon = 0;
+								if (this.plugin.TryGetYardObject(items[i].HousingRowId, out var yardObject))
+								{
+									name = yardObject.Item.Value.Name.ToString();
+									icon = yardObject.Item.Value.Icon;
+								}
+								if (this.plugin.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
+								{
+									name = furnitureObject.Item.Value.Name.ToString();
+									icon = furnitureObject.Item.Value.Icon;
+								}
+
+								// An active item is being selected.
+								var hasActiveItem = this.memory.HousingStructure->ActiveItem != null;
+								// The currently selected item.
+								var thisActive = hasActiveItem && items[i].Item == this.memory.HousingStructure->ActiveItem;
+
+								ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0f, 4f));
+								if (ImGui.Selectable($"##Item{i}", hasActiveItem && thisActive))
+									this.memory.SelectItem((IntPtr)this.memory.HousingStructure, (IntPtr)items[i].Item);
+
+								if (thisActive)
+									ImGui.SetItemDefaultFocus();
+
+								// Scroll if the active item has changed from last time.
+								if (thisActive && this.lastActiveItem != (ulong)this.memory.HousingStructure->ActiveItem)
+								{
+									ImGui.SetScrollHereY();
+									PluginLog.Log($"{ImGui.GetScrollY()} {ImGui.GetScrollMaxY()}");
+								}
+
+								ImGui.SameLine(); this.plugin.DrawIcon(icon, new Vector2(20, 20));
+								ImGui.PopStyleVar();
+								// var distance = Util.DistanceFromPlayer(items[i], playerPos);
+
+								ImGui.SameLine(); ImGui.Text(name);
+								// ImGui.SameLine(); ImGui.Text($"{distance:F2}");
+							}
+
+							if (this.renderCount >= 10)
+								this.lastActiveItem = (ulong)this.memory.HousingStructure->ActiveItem;
+						}
+					}
+					catch (Exception ex)
+					{
+						PluginLog.LogError(ex, ex.Source);
+					}
+					finally
+					{
+						ImGui.EndChild();
+					}
+				}
+			}
+
+			if (this.renderCount != 10)
+				this.renderCount++;
+
+			ImGui.End();
+			ImGui.PopStyleColor(2);
 		}
 
 		// Bypass the delta matrix to just only use snap.
