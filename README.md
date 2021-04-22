@@ -14,11 +14,13 @@ First, you must use the [FFXIVQuickLauncher](https://github.com/goatcorp/FFXIVQu
 ### **ONLY ASK FOR HELP FOR THIS PLUGIN FROM ME OR ON MY DISCORD SERVER**
 
 ## How do I use it?
-To actually use the plugin, you need to start the game via the Quick Launcher. Once you've started the game, you should be able to type in `/bdth` into the game's chat and press enter. This will then bring up the UI for the plugin.
-
-The "Place Anywhere" checkbox can be enabled to allow you to place housing items more freely. Selecting a housing item will then allow you to move its coordinates around to give you full control over its position. You **MUST be in ROTATE mode** in order to use this tool. Once you finished changing the position you may need to rotate the item slightly in order to lock in the changes or just click to confirm the position.
-
-The UI controls let you use the mouse wheel to increment and decrement the values. You can also drag the top three coordinates left and right to adjust them as well. The "drag" input at the bottom controls the increment amount.
+`/bdth` brings up the window to move items around. You **MUST** be in rotate mode for it to work.
+Enabling the "Place Anywhere" checkbox will remove restrictions on placing items down for most cases
+Enabling the "Gizmo" checkbox will give you access to a movement tool in game to manipulate the selected object on all three axis.
+Enabling the "Snap" checkbox will lock your gizmo movements to the interval defined in the "drag" box at the bottom.
+Clicking on the image button will change the movement mode to world and local movement.
+Click and drag on the boxes to change their values based on the drag input, alternatively, use the + and - buttons on the other inputs to adjust by the drag value as well. You can also enter numbers in here if you like by typing them.
+`/bdth list` opens a furnishing list used for indoors. Allows you to sort objects by distance to refine the list of items in item dense house.
 
 ## FAQ
 Please check out the [FAQ](https://github.com/LeonBlade/BDTHPlugin/wiki/FAQ) page to see if your issue might be listed here.
