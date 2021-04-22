@@ -86,7 +86,7 @@ namespace BDTHPlugin
 				// Soft select hook.
 				this.softSelectAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
 				this.SoftSelectHook = new Hook<SoftSelectDelegate>(this.softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
-				this.SoftSelectHook.Enable();
+				// this.SoftSelectHook.Enable();
 
 				// Thread loop to read active item.
 				this.thread = new Thread(new ThreadStart(this.Loop));
@@ -137,6 +137,8 @@ namespace BDTHPlugin
 
 		private void SoftSelectDetour(IntPtr housing, IntPtr item)
 		{
+			if (item == IntPtr.Zero)
+				return;
 			this.SoftSelectHook.Original(housing, item);
 			this.SelectItem(housing, item);
 		}
