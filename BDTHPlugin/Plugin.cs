@@ -181,7 +181,7 @@ namespace BDTHPlugin
                         if(argArray.Length == 4)
                         {
                             // Parse and write the rotation.
-                            this.memory.rotation.Y = (float)(double.Parse(argArray[3]) * 180 / Math.PI);
+                            this.memory.rotation.Y = (float)(float.Parse(argArray[3], NumberStyles.Any, CultureInfo.InvariantCulture) * 180 / Math.PI);
                             this.memory.WriteRotation(this.memory.rotation);
                         }
                     }
