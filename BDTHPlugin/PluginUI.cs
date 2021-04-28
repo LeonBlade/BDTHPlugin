@@ -283,7 +283,7 @@ namespace BDTHPlugin
 				// Drag ammount for the inputs.
 				if (ImGui.InputFloat("drag", ref this.drag, 0.05f))
 				{
-					this.drag = Math.Min(Math.Max(0.01f, this.drag), 10f);
+					this.drag = Math.Min(Math.Max(0.001f, this.drag), 10f);
 					this.configuration.Drag = this.drag;
 					this.configuration.Save();
 				}
