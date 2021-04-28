@@ -108,7 +108,9 @@ namespace BDTHPlugin
 			ImGui.PushStyleColor(ImGuiCol.TitleBgActive, ORANGE_COLOR);
 			ImGui.PushStyleColor(ImGuiCol.CheckMark, ORANGE_COLOR);
 
-			var invalid = this.memory.HousingStructure->ActiveItem == null || this.memory.InputState == InputMode.GamepadMode;
+			var invalid = this.memory.HousingStructure->ActiveItem == null 
+				|| this.memory.InputState == InputMode.GamepadMode 
+				|| this.memory.HousingStructure->Mode != HousingLayoutMode.Rotate;
 			var fontScale = ImGui.GetIO().FontGlobalScale;
 			var size = new Vector2(320 * fontScale, (!invalid ? 288 : 146) * fontScale);
 
@@ -180,7 +182,7 @@ namespace BDTHPlugin
 					ImGui.Text("Does not support Gamepad");
 					ImGui.PopStyleColor();
 				}
-				else if (this.memory.HousingStructure->ActiveItem == null)
+				else if (this.memory.HousingStructure->ActiveItem == null || this.memory.HousingStructure->Mode != HousingLayoutMode.Rotate)
 				{
 					ImGui.Text("Select a housing item in Rotate mode");
 					ImGuiComponents.HelpMarker("Are you doing everything right? Try using the /bdth debug command and report this issue in Discord!");
@@ -430,7 +432,6 @@ namespace BDTHPlugin
 
 		private int FurnishingIndex => this.memory.GetHousingObjectSelectedIndex();
 		private bool sortByDistance = false;
-		private bool sortByName = false;
 		private ulong? lastActiveItem = null;
 		private byte renderCount = 0;
 
