@@ -1,5 +1,6 @@
 using Dalamud.Hooking;
 using Dalamud.Plugin;
+using FFXIVClientStructs.FFXIV.Component.GUI;
 using ImGuiScene;
 using Lumina.Excel.GeneratedSheets;
 using System;
@@ -29,10 +30,30 @@ namespace BDTHPlugin
 		private readonly IntPtr layoutWorldPtr;
 		private readonly IntPtr housingModulePtr;
 
+		public readonly IntPtr inputStateAddress;
+		public unsafe InputMode InputState => *(InputMode*)this.inputStateAddress;
+
 		public unsafe LayoutWorld* Layout => (LayoutWorld*)this.layoutWorldPtr;
 		public unsafe HousingStructure* HousingStructure => this.Layout->HousingStruct;
 		public unsafe HousingModule* HousingModule => (HousingModule*)this.housingModulePtr;
 		public unsafe HousingObjectManger* CurrentManager => this.HousingModule->GetCurrentManager();
+
+		public unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingGoods", 1);
+		public unsafe bool HousingGoodsVisible
+		{
+			get => this.HousingGoods != null && (this.HousingGoods->Flags & 32) != 0;
+
+			set
+			{
+				if (this.HousingGoods == null)
+					return;
+
+				if (value)
+					this.HousingGoods->Flags |= 32;
+				else
+					this.HousingGoods->Flags = (byte)(this.HousingGoods->Flags & ~32);
+			}
+		}
 
 		// Local references to position and rotation to use to free them when an item isn't selected but to keep the UI bound to a reference.
 		public Vector3 position;
@@ -88,6 +109,8 @@ namespace BDTHPlugin
 				this.SoftSelectHook = new Hook<SoftSelectDelegate>(this.softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
 				// this.SoftSelectHook.Enable();
 
+				this.inputStateAddress = this.pi.TargetModuleScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 18 48 85 DB", 2) + 0x41;
+
 				// Thread loop to read active item.
 				this.thread = new Thread(new ThreadStart(this.Loop));
 				this.thread.Start();
@@ -112,6 +135,9 @@ namespace BDTHPlugin
 				// Get rid of the hook.
 				this.SoftSelectHook.Disable();
 				this.SoftSelectHook.Dispose();
+
+				// Enable the housing goods menu again.
+				this.HousingGoodsVisible = true;
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
 				this.threadRunning = false;

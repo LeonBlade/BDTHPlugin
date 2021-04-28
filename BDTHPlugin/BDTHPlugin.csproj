@@ -10,6 +10,9 @@
 	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\Dalamud.dll</HintPath>
 	  <Private>False</Private>
 	</Reference>
+	<Reference Include="FFXIVClientStructs">
+	  <HintPath>..\..\FFXIVClientStructs\bin\Debug\net472\FFXIVClientStructs.dll</HintPath>
+	</Reference>
 	<Reference Include="ImGui.NET">
 	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
 	  <Private>False</Private>
@@ -32,6 +35,10 @@
 	<None Include="../Data/BDTHPlugin.json">
 	  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	</None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ILRepack.Lib.MSBuild.Task" Version="2.0.18.2" />
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">

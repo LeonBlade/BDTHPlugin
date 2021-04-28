@@ -4,7 +4,6 @@ using ImGuiNET;
 using ImGuizmoNET;
 using System;
 using System.Numerics;
-using System.Runtime.InteropServices;
 
 namespace BDTHPlugin
 {
@@ -64,9 +63,13 @@ namespace BDTHPlugin
 			set => this.listVisible = value;
 		}
 
+		public bool debugVisible = false;
+
 		private float drag;
 		private bool useGizmo;
 		private bool doSnap;
+
+		private bool dummyHousingGoods;
 
 		private bool placeAnywhere = false;
 		private readonly Vector4 ORANGE_COLOR = new Vector4(0.871f, 0.518f, 0f, 1f);
@@ -92,9 +95,10 @@ namespace BDTHPlugin
 			this.DrawGizmo();
 			this.DrawMainWindow();
 			this.DrawHousingList();
+			this.DrawDebug();
 		}
 
-		public void DrawMainWindow()
+		public unsafe void DrawMainWindow()
 		{
 			if (!this.Visible)
 			{
@@ -104,8 +108,9 @@ namespace BDTHPlugin
 			ImGui.PushStyleColor(ImGuiCol.TitleBgActive, ORANGE_COLOR);
 			ImGui.PushStyleColor(ImGuiCol.CheckMark, ORANGE_COLOR);
 
+			var invalid = this.memory.HousingStructure->ActiveItem == null || this.memory.InputState == InputMode.GamepadMode;
 			var fontScale = ImGui.GetIO().FontGlobalScale;
-			var size = new Vector2(320 * fontScale, 300 * fontScale);
+			var size = new Vector2(320 * fontScale, (!invalid ? 288 : 146) * fontScale);
 
 			ImGui.SetNextWindowSize(size, ImGuiCond.Always);
 			ImGui.SetNextWindowSizeConstraints(size, size);
@@ -167,118 +172,23 @@ namespace BDTHPlugin
 					ImGui.EndTooltip();
 				}
 
-				// Disabled if the housing mode isn't on and there isn't a selected item.
-				bool disabled = false;
-				unsafe
+				ImGui.Separator();
+
+				if (this.memory.InputState == InputMode.GamepadMode)
 				{
-					disabled = !(this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null);
+					ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
+					ImGui.Text("Does not support Gamepad");
+					ImGui.PopStyleColor();
 				}
-
-				var io = ImGui.GetIO();
-				ImGuizmo.SetRect(0, 0, io.DisplaySize.X, io.DisplaySize.Y);
-
-				// Set the opacity based on if housing is on.
-				if (disabled)
-					ImGui.PushStyleVar(ImGuiStyleVar.Alpha, .3f);
-
-				ImGui.BeginGroup();
-
-				ImGui.PushItemWidth(73f);
-
-				if (ImGui.DragFloat("##xdrag", ref this.memory.position.X, this.drag))
-					this.memory.WritePosition(this.memory.position);
-				ImGui.SameLine(0, 4);
-				var xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-				if (ImGui.DragFloat("##ydrag", ref this.memory.position.Y, this.drag))
-					this.memory.WritePosition(this.memory.position);
-				ImGui.SameLine(0, 4);
-				var yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-				if (ImGui.DragFloat("##zdrag", ref this.memory.position.Z, this.drag))
-					this.memory.WritePosition(this.memory.position);
-				ImGui.SameLine(0, 4);
-				var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-				ImGui.Text("position");
-
-				if (ImGui.DragFloat("##rydrag", ref this.memory.rotation.Y, this.drag))
-					this.memory.WriteRotation(this.memory.rotation);
-				ImGui.SameLine(0, 4);
-				var ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-				ImGui.Text("rotation");
-
-				ImGui.PopItemWidth();
-
-				// Mouse wheel direction.
-				var delta = ImGui.GetIO().MouseWheel * this.drag;
-
-				// Move position based on which control is being hovered.
-				if (xHover)
-					this.memory.position.X += delta;
-				if (yHover)
-					this.memory.position.Y += delta;
-				if (zHover)
-					this.memory.position.Z += delta;
-				if (xHover || yHover || zHover)
-					this.memory.WritePosition(this.memory.position);
-
-				// Move rotation based on which control is being hovered.
-				if (ryHover)
-					this.memory.rotation.Y += delta;
-				if (ryHover && delta > 0)
-					this.memory.WriteRotation(this.memory.rotation);
-
-				ImGui.EndGroup(); // End group for the drag section.
-
-				if (ImGui.IsItemHovered())
+				else if (this.memory.HousingStructure->ActiveItem == null)
 				{
-					ImGui.BeginTooltip();
-					ImGui.Text("Click and drag each to move the selected item.");
-					ImGui.Text("Change the drag option below to influence how much it moves as you drag.");
-					ImGui.EndTooltip();
+					ImGui.Text("Select a housing item in Rotate mode");
+					ImGuiComponents.HelpMarker("Are you doing everything right? Try using the /bdth debug command and report this issue in Discord!");
 				}
+				else
+					this.DrawItemControls();
 
-				if (ImGui.InputFloat("x coord", ref this.memory.position.X, this.drag))
-					this.memory.WritePosition(this.memory.position);
-				xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-				if (ImGui.InputFloat("y coord", ref this.memory.position.Y, this.drag))
-					this.memory.WritePosition(this.memory.position);
-				yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-				if (ImGui.InputFloat("z coord", ref this.memory.position.Z, this.drag))
-					this.memory.WritePosition(this.memory.position);
-				zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-				if (ImGui.InputFloat("ry degree", ref this.memory.rotation.Y, this.drag))
-					this.memory.WriteRotation(this.memory.rotation);
-				ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-				// Mouse wheel direction.
-				delta = ImGui.GetIO().MouseWheel * this.drag;
-
-				// Move position based on which control is being hovered.
-				if (xHover)
-					this.memory.position.X += delta;
-				if (yHover)
-					this.memory.position.Y += delta;
-				if (zHover)
-					this.memory.position.Z += delta;
-				if (xHover || yHover || zHover)
-					this.memory.WritePosition(this.memory.position);
-
-				// Move rotation based on which control is being hovered.
-				if (ryHover)
-					this.memory.rotation.Y += delta;
-				if (ryHover && delta > 0)
-					this.memory.WriteRotation(this.memory.rotation);
-
-				ImGui.NewLine();
-
-				if (disabled)
-					ImGui.PopStyleVar();
+				ImGui.Separator();
 
 				// Drag ammount for the inputs.
 				if (ImGui.InputFloat("drag", ref this.drag, 0.05f))
@@ -295,41 +205,135 @@ namespace BDTHPlugin
 				}
 
 				if (ImGui.Button("Open Furnishing List"))
+					this.pi.CommandManager.ProcessCommand("/bdth list");
+				if (ImGui.IsItemHovered())
 				{
-					unsafe
-					{
-						if (!this.memory.IsHousingOpen())
-						{
-							this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
-							this.listVisible = false;
-						}
-						else if (this.memory.HousingModule->IsOutdoors())
-						{
-							this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing outdoors currently.");
-							this.listVisible = false;
-						}
-						else
-							this.listVisible = true;
-					}
+					ImGui.BeginTooltip();
+					ImGui.Text("Opens a furnishing list that you can use to sort by distance and click to select objects.");
+					ImGui.Text("NOTE: Does not currently work outdoors!");
+					ImGui.EndTooltip();
 				}
+
+				this.dummyHousingGoods = this.memory.HousingGoodsVisible;
+
+				ImGui.SameLine(); 
+				if (ImGui.Checkbox("Display in-game list", ref this.dummyHousingGoods))
+					this.memory.HousingGoodsVisible = this.dummyHousingGoods;
 			}
 			ImGui.End();
 
 			ImGui.PopStyleColor(2);
 		}
 
-		public void DrawGizmo()
+		private unsafe void DrawItemControls()
+		{
+			var io = ImGui.GetIO();
+			ImGuizmo.SetRect(0, 0, io.DisplaySize.X, io.DisplaySize.Y);
+
+			ImGui.BeginGroup();
+
+			ImGui.PushItemWidth(73f);
+
+			if (ImGui.DragFloat("##xdrag", ref this.memory.position.X, this.drag))
+				this.memory.WritePosition(this.memory.position);
+			ImGui.SameLine(0, 4);
+			var xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+			if (ImGui.DragFloat("##ydrag", ref this.memory.position.Y, this.drag))
+				this.memory.WritePosition(this.memory.position);
+			ImGui.SameLine(0, 4);
+			var yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+			if (ImGui.DragFloat("##zdrag", ref this.memory.position.Z, this.drag))
+				this.memory.WritePosition(this.memory.position);
+			ImGui.SameLine(0, 4);
+			var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+			ImGui.Text("position");
+
+			if (ImGui.DragFloat("##rydrag", ref this.memory.rotation.Y, this.drag))
+				this.memory.WriteRotation(this.memory.rotation);
+			ImGui.SameLine(0, 4);
+			var ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+			ImGui.Text("rotation");
+
+			ImGui.PopItemWidth();
+
+			// Mouse wheel direction.
+			var delta = ImGui.GetIO().MouseWheel * this.drag;
+
+			// Move position based on which control is being hovered.
+			if (xHover)
+				this.memory.position.X += delta;
+			if (yHover)
+				this.memory.position.Y += delta;
+			if (zHover)
+				this.memory.position.Z += delta;
+			if (xHover || yHover || zHover)
+				this.memory.WritePosition(this.memory.position);
+
+			// Move rotation based on which control is being hovered.
+			if (ryHover)
+				this.memory.rotation.Y += delta;
+			if (ryHover && delta > 0)
+				this.memory.WriteRotation(this.memory.rotation);
+
+			ImGui.EndGroup(); // End group for the drag section.
+
+			if (ImGui.IsItemHovered())
+			{
+				ImGui.BeginTooltip();
+				ImGui.Text("Click and drag each to move the selected item.");
+				ImGui.Text("Change the drag option below to influence how much it moves as you drag.");
+				ImGui.EndTooltip();
+			}
+
+			if (ImGui.InputFloat("x coord", ref this.memory.position.X, this.drag))
+				this.memory.WritePosition(this.memory.position);
+			xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+			if (ImGui.InputFloat("y coord", ref this.memory.position.Y, this.drag))
+				this.memory.WritePosition(this.memory.position);
+			yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+			if (ImGui.InputFloat("z coord", ref this.memory.position.Z, this.drag))
+				this.memory.WritePosition(this.memory.position);
+			zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+			if (ImGui.InputFloat("ry degree", ref this.memory.rotation.Y, this.drag))
+				this.memory.WriteRotation(this.memory.rotation);
+			ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+			// Mouse wheel direction.
+			delta = ImGui.GetIO().MouseWheel * this.drag;
+
+			// Move position based on which control is being hovered.
+			if (xHover)
+				this.memory.position.X += delta;
+			if (yHover)
+				this.memory.position.Y += delta;
+			if (zHover)
+				this.memory.position.Z += delta;
+			if (xHover || yHover || zHover)
+				this.memory.WritePosition(this.memory.position);
+
+			// Move rotation based on which control is being hovered.
+			if (ryHover)
+				this.memory.rotation.Y += delta;
+			if (ryHover && delta > 0)
+				this.memory.WriteRotation(this.memory.rotation);
+		}
+
+		public unsafe void DrawGizmo()
 		{
 			if (!useGizmo)
 				return;
 
 			// Disabled if the housing mode isn't on and there isn't a selected item.
-			unsafe
-			{
-				var disabled = !(this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null);
-				if (disabled)
-					return;
-			}
+			var disabled = !(this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null);
+			if (disabled)
+				return;
 
 			// Just catch errors since the disabled logic above didn't catch it one time.
 			try
@@ -348,18 +352,12 @@ namespace BDTHPlugin
 
 			var viewProjectionMatrix = new float[16];
 
-			unsafe
-			{
-				var rawMatrix = (float*)(matrixSingleton + 0x1B4).ToPointer();
-				for (var i = 0; i < 16; i++, rawMatrix++)
-					viewProjectionMatrix[i] = *rawMatrix;
-			}
+			var rawMatrix = (float*)(matrixSingleton + 0x1B4).ToPointer();
+			for (var i = 0; i < 16; i++, rawMatrix++)
+				viewProjectionMatrix[i] = *rawMatrix;
 
 			// Gizmo setup.
-			unsafe
-			{
-				ImGuizmo.Enable(!this.memory.HousingStructure->Rotating);
-			}
+			ImGuizmo.Enable(!this.memory.HousingStructure->Rotating);
 			ImGuizmo.BeginFrame();
 
 			ImGuizmo.SetOrthographic(false);
@@ -392,8 +390,47 @@ namespace BDTHPlugin
 			ImGui.End();
 		}
 
+		private unsafe void DrawDebug()
+		{
+			if (!this.debugVisible)
+				return;
+
+			if (ImGui.Begin("BDTH Debug", ref this.debugVisible))
+			{
+				ImGui.Text($"Input State Address: {this.memory.inputStateAddress.ToInt64():X}");
+				ImGui.Text($"Input State: {this.memory.InputState}");
+				ImGui.Text($"CanEditItem: {this.memory.CanEditItem()}");
+				ImGui.Text($"IsHousingOpen: {this.memory.IsHousingOpen()}");
+				ImGui.Separator();
+				ImGui.Text($"LayoutWorld: {(ulong)this.memory.Layout:X}");
+				ImGui.Text($"Housing Structure: {(ulong)this.memory.HousingStructure:X}");
+				ImGui.Text($"Mode: {this.memory.HousingStructure->Mode}");
+				ImGui.Text($"State: {this.memory.HousingStructure->State}");
+				ImGui.Text($"State2: {this.memory.HousingStructure->State2}");
+				ImGui.Text($"Active: {(ulong)this.memory.HousingStructure->ActiveItem:X}");
+				ImGui.Text($"Hover: {(ulong)this.memory.HousingStructure->HoverItem:X}");
+				ImGui.Text($"Rotating: {this.memory.HousingStructure->Rotating}");
+				ImGui.Separator();
+				ImGui.Text($"Housing Module: {(ulong)this.memory.HousingModule:X}");
+				ImGui.Text($"Housing Module: {(ulong)this.memory.HousingModule->CurrentTerritory:X}");
+				ImGui.Text($"Outdoor Territory: {(ulong)this.memory.HousingModule->OutdoorTerritory:X}");
+				ImGui.Text($"Indoor Territory: {(ulong)this.memory.HousingModule->IndoorTerritory:X}");
+				var active = this.memory.HousingStructure->ActiveItem;
+				if (active != null)
+				{
+					ImGui.Separator();
+					var pos = this.memory.HousingStructure->ActiveItem->Position;
+					ImGui.Text($"Position: {pos.X}, {pos.Y}, {pos.Z}");
+				}
+
+				
+			}
+			ImGui.End();
+		}
+
 		private int FurnishingIndex => this.memory.GetHousingObjectSelectedIndex();
 		private bool sortByDistance = false;
+		private bool sortByName = false;
 		private ulong? lastActiveItem = null;
 		private byte renderCount = 0;
 
@@ -410,7 +447,7 @@ namespace BDTHPlugin
 			}
 
 			// Disallow the ability to open furnishing list outdoors.
-			if (this.memory.HousingModule->IsOutdoors())
+			if (this.plugin.IsOutdoors())
 			{
 				this.listVisible = false;
 				return;
@@ -423,7 +460,7 @@ namespace BDTHPlugin
 			var size = new Vector2(240 * fontScale, 350 * fontScale);
 
 			ImGui.SetNextWindowSize(size, ImGuiCond.FirstUseEver);
-			ImGui.SetNextWindowSizeConstraints(new Vector2(120 * fontScale, 100 * fontScale), new Vector2(400 * fontScale, 400 * fontScale));
+			ImGui.SetNextWindowSizeConstraints(new Vector2(120 * fontScale, 100 * fontScale), new Vector2(400 * fontScale, 1000 * fontScale));
 
 			if (ImGui.Begin($"Furnishing List", ref this.listVisible))
 			{

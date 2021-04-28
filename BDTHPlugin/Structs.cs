@@ -3,6 +3,12 @@ using System.Runtime.InteropServices;
 
 namespace BDTHPlugin
 {
+	public enum InputMode : byte
+	{
+		MouseMode,
+		GamepadMode
+	}
+
 	public enum HousingLayoutMode
 	{
 		None,
@@ -15,7 +21,7 @@ namespace BDTHPlugin
 
 	public enum ItemState
 	{
-		None,
+		None = 0,
 		Hover,
 		SoftSelect,
 		Active
@@ -23,7 +29,7 @@ namespace BDTHPlugin
 
 	public enum ItemState2
 	{
-		None,
+		None = 0,
 		SoftSelect = 3,
 		Active = 5
 	}
@@ -43,15 +49,12 @@ namespace BDTHPlugin
 	[StructLayout(LayoutKind.Explicit)]
 	public unsafe struct HousingModule
 	{
-		[FieldOffset(0x0)] public HousingObjectManger* CurrentTerritory2;
+		[FieldOffset(0x0)] public HousingObjectManger* CurrentTerritory;
 		[FieldOffset(0x8)] public HousingObjectManger* OutdoorTerritory;
 		[FieldOffset(0x10)] public HousingObjectManger* IndoorTerritory;
 
 		public HousingObjectManger* GetCurrentManager()
 			=> OutdoorTerritory != null ? OutdoorTerritory : IndoorTerritory;
-
-		public bool IsOutdoors() => this.OutdoorTerritory != null;
-		public bool IsIndoors() => this.IndoorTerritory != null;
 	}
 
 	[StructLayout(LayoutKind.Explicit)]

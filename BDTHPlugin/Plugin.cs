@@ -1,4 +1,4 @@
-﻿using Dalamud.Data.LuminaExtensions;
+using Dalamud.Data.LuminaExtensions;
 using Dalamud.Game.Command;
 using Dalamud.Plugin;
 using ImGuiNET;
@@ -121,6 +121,16 @@ namespace BDTHPlugin
 			}
 		}
 
+        private readonly ushort[] outdoors = new ushort[]
+        {
+            339, // Mist
+            340, // The Lavender Beds
+            341, // The Goblet
+            641  // Shirogane
+        };
+
+        public bool IsOutdoors() => outdoors.Contains(this.pi.ClientState.TerritoryType);
+
         public bool TryGetFurnishing(uint id, out HousingFurniture furniture) => this.furnitureDict.TryGetValue(id, out furniture);
         public bool TryGetYardObject(uint id, out HousingYardObject furniture) => this.yardObjectDict.TryGetValue(id, out furniture);
 
@@ -138,25 +148,32 @@ namespace BDTHPlugin
                 var disabled = !(this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null);
 
                 // Show/Hide the furnishing list.
-                if (argArray.Length == 1 && argArray[0].ToLower().Equals("list"))
+                if (argArray.Length == 1)
                 {
-                    // Only allow furnishing list when the housing window is open.
-                    if (!this.memory.IsHousingOpen())
-                    {
-                        this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
-                        this.ui.ListVisible = false;
-                        return;
+                    var opt = argArray[0].ToLower();
+                    if (opt.Equals("list"))
+                    { 
+                        // Only allow furnishing list when the housing window is open.
+                        if (!this.memory.IsHousingOpen())
+                        {
+                            this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
+                            this.ui.ListVisible = false;
+                            return;
+                        }
+
+                        // Disallow the ability to open furnishing list outdoors.
+                        if (this.IsOutdoors())
+                        {
+                            this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing outdoors currently.");
+                            this.ui.ListVisible = false;
+                            return;
+                        }
+
+                        this.ui.ListVisible = !this.ui.ListVisible;
                     }
 
-                    // Disallow the ability to open furnishing list outdoors.
-                    if (this.memory.HousingModule->IsOutdoors())
-                    {
-                        this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing outdoors currently.");
-                        this.ui.ListVisible = false;
-                        return;
-                    }
-
-                    this.ui.ListVisible = !this.ui.ListVisible;
+                    if (opt.Equals("debug"))
+                        this.ui.debugVisible = !this.ui.debugVisible;
                 }
 
                 // Position or rotation values are being passed in, and we're not disabled.
