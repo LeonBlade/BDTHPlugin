@@ -109,7 +109,7 @@ namespace BDTHPlugin
 			ImGui.PushStyleColor(ImGuiCol.CheckMark, ORANGE_COLOR);
 
 			var invalid = this.memory.HousingStructure->ActiveItem == null 
-				|| this.memory.InputState == InputMode.GamepadMode 
+				|| this.memory.GamepadMode
 				|| this.memory.HousingStructure->Mode != HousingLayoutMode.Rotate;
 			var fontScale = ImGui.GetIO().FontGlobalScale;
 			var size = new Vector2(320 * fontScale, (!invalid ? 288 : 146) * fontScale);
@@ -176,7 +176,9 @@ namespace BDTHPlugin
 
 				ImGui.Separator();
 
-				if (this.memory.InputState == InputMode.GamepadMode)
+				if (this.memory.HousingStructure->Mode == HousingLayoutMode.None)
+					ImGui.Text("Enter housing mode to get started");
+				else if (this.memory.GamepadMode)
 				{
 					ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
 					ImGui.Text("Does not support Gamepad");
@@ -399,8 +401,7 @@ namespace BDTHPlugin
 
 			if (ImGui.Begin("BDTH Debug", ref this.debugVisible))
 			{
-				ImGui.Text($"Input State Address: {this.memory.inputStateAddress.ToInt64():X}");
-				ImGui.Text($"Input State: {this.memory.InputState}");
+				ImGui.Text($"Gamepad Mode: {this.memory.GamepadMode}");
 				ImGui.Text($"CanEditItem: {this.memory.CanEditItem()}");
 				ImGui.Text($"IsHousingOpen: {this.memory.IsHousingOpen()}");
 				ImGui.Separator();

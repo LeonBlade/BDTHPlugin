@@ -30,13 +30,16 @@ namespace BDTHPlugin
 		private readonly IntPtr layoutWorldPtr;
 		private readonly IntPtr housingModulePtr;
 
-		public readonly IntPtr inputStateAddress;
-		public unsafe InputMode InputState => *(InputMode*)this.inputStateAddress;
-
 		public unsafe LayoutWorld* Layout => (LayoutWorld*)this.layoutWorldPtr;
 		public unsafe HousingStructure* HousingStructure => this.Layout->HousingStruct;
 		public unsafe HousingModule* HousingModule => (HousingModule*)this.housingModulePtr;
 		public unsafe HousingObjectManger* CurrentManager => this.HousingModule->GetCurrentManager();
+
+		public unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingLayout", 1);
+		public unsafe bool GamepadMode
+		{
+			get => !(this.HousingLayout != null && (this.HousingLayout->Flags & 32) != 0);
+		}
 
 		public unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingGoods", 1);
 		public unsafe bool HousingGoodsVisible
@@ -108,8 +111,6 @@ namespace BDTHPlugin
 				this.softSelectAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
 				this.SoftSelectHook = new Hook<SoftSelectDelegate>(this.softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
 				// this.SoftSelectHook.Enable();
-
-				this.inputStateAddress = this.pi.TargetModuleScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 18 48 85 DB", 2) + 0x41;
 
 				// Thread loop to read active item.
 				this.thread = new Thread(new ThreadStart(this.Loop));

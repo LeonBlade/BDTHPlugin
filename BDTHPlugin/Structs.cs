@@ -3,12 +3,6 @@ using System.Runtime.InteropServices;
 
 namespace BDTHPlugin
 {
-	public enum InputMode : byte
-	{
-		MouseMode,
-		GamepadMode
-	}
-
 	public enum HousingLayoutMode
 	{
 		None,
