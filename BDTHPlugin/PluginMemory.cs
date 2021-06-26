@@ -30,6 +30,8 @@ namespace BDTHPlugin
 		private readonly IntPtr layoutWorldPtr;
 		private readonly IntPtr housingModulePtr;
 
+		private int tinv = 0;
+		
 		public unsafe LayoutWorld* Layout => (LayoutWorld*)this.layoutWorldPtr;
 		public unsafe HousingStructure* HousingStructure => this.Layout->HousingStruct;
 		public unsafe HousingModule* HousingModule => (HousingModule*)this.housingModulePtr;
@@ -42,6 +44,17 @@ namespace BDTHPlugin
 		}
 
 		public unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingGoods", 1);
+		public unsafe AtkUnitBase* InventoryExpansion => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryExpansion", 1);
+		public unsafe AtkUnitBase* InventoryGrid0E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid0E", 1);
+		public unsafe AtkUnitBase* InventoryGrid1E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid1E", 1);
+		public unsafe AtkUnitBase* InventoryGrid2E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid2E", 1);
+		public unsafe AtkUnitBase* InventoryGrid3E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid3E", 1);
+		public unsafe AtkUnitBase* InventoryLarge => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryLarge", 1);
+		public unsafe AtkUnitBase* Inventory => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("Inventory", 1);
+		public unsafe AtkUnitBase* InventoryGrid0 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid0", 1);
+		public unsafe AtkUnitBase* InventoryGrid1 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid1", 1);
+		public unsafe AtkUnitBase* InventoryGrid => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid", 1);
+		
 		public unsafe bool HousingGoodsVisible
 		{
 			get => this.HousingGoods != null && (this.HousingGoods->Flags & 32) != 0;
@@ -58,6 +71,71 @@ namespace BDTHPlugin
 			}
 		}
 
+		public unsafe bool InventoryVisible
+        {
+			get => this.InventoryExpansion != null && (this.InventoryExpansion->Flags & 32) != 0 ||
+					this.InventoryLarge != null && (this.InventoryLarge->Flags & 32) != 0 ||
+					this.Inventory != null && (this.Inventory->Flags & 32) != 0;
+
+			set
+			{
+				if (this.InventoryExpansion == null || this.InventoryLarge == null || this.Inventory == null)
+					return;
+
+				if (value)
+				{
+					switch (tinv)
+					{
+						case 1:
+							this.InventoryExpansion->Flags |= 32;
+							this.InventoryGrid0E->Flags |= 32;
+							this.InventoryGrid1E->Flags |= 32;
+							this.InventoryGrid2E->Flags |= 32;
+							this.InventoryGrid3E->Flags |= 32;
+							break;
+						case 2:
+							this.InventoryLarge->Flags |= 32;
+							this.InventoryGrid0->Flags |= 32;
+							this.InventoryGrid1->Flags |= 32;
+							break;
+						case 3:
+							this.Inventory->Flags |= 32;
+							this.InventoryGrid->Flags |= 32;
+							break;
+						default:
+							break;
+					}
+				}
+				else
+				{
+					if (InventoryExpansion->Flags == 52)
+					{
+						tinv = 1;
+						this.InventoryExpansion->Flags = (byte)(this.InventoryExpansion->Flags & ~32);
+						this.InventoryGrid0E->Flags = (byte)(this.InventoryGrid0E->Flags & ~32);
+						this.InventoryGrid1E->Flags = (byte)(this.InventoryGrid1E->Flags & ~32);
+						this.InventoryGrid2E->Flags = (byte)(this.InventoryGrid2E->Flags & ~32);
+						this.InventoryGrid3E->Flags = (byte)(this.InventoryGrid3E->Flags & ~32);
+					}
+
+					if (InventoryLarge->Flags == 52)
+					{
+						tinv = 2;
+						this.InventoryLarge->Flags = (byte)(this.InventoryLarge->Flags & ~32);
+						this.InventoryGrid0->Flags = (byte)(this.InventoryGrid0->Flags & ~32);
+						this.InventoryGrid1->Flags = (byte)(this.InventoryGrid1->Flags & ~32);
+					}
+
+					if (Inventory->Flags == 52)
+					{
+						tinv = 3;
+						this.Inventory->Flags = (byte)(this.Inventory->Flags & ~32);
+						this.InventoryGrid->Flags = (byte)(this.InventoryGrid->Flags & ~32);
+					}
+				}
+			}
+		}
+		
 		// Local references to position and rotation to use to free them when an item isn't selected but to keep the UI bound to a reference.
 		public Vector3 position;
 		public Vector3 rotation;
@@ -139,6 +217,7 @@ namespace BDTHPlugin
 
 				// Enable the housing goods menu again.
 				this.HousingGoodsVisible = true;
+				this.InventoryVisible = true;
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
 				this.threadRunning = false;
