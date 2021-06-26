@@ -72,7 +72,7 @@ namespace BDTHPlugin
 		}
 
 		public unsafe bool InventoryVisible
-        {
+        	{
 			get => this.InventoryExpansion != null && (this.InventoryExpansion->Flags & 32) != 0 ||
 					this.InventoryLarge != null && (this.InventoryLarge->Flags & 32) != 0 ||
 					this.Inventory != null && (this.Inventory->Flags & 32) != 0;
