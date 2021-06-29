@@ -79,7 +79,7 @@ namespace BDTHPlugin
 
 			set
 			{
-				if (this.InventoryExpansion == null || this.InventoryLarge == null || this.Inventory == null)
+				if (this.HousingGoods == null || this.InventoryExpansion == null || this.InventoryLarge == null || this.Inventory == null)
 					return;
 
 				if (value)
