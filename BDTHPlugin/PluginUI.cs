@@ -218,11 +218,12 @@ namespace BDTHPlugin
 					ImGui.EndTooltip();
 				}
 
-				this.dummyHousingGoods = this.memory.HousingGoodsVisible;
+				this.dummyHousingGoods = this.memory.HousingGoods != null && this.memory.HousingGoods->IsVisible;
 
 				ImGui.SameLine(); 
 				if (ImGui.Checkbox("Display in-game list", ref this.dummyHousingGoods))
-					this.memory.HousingGoodsVisible = this.dummyHousingGoods;
+					if (this.memory.HousingGoods != null)
+						this.memory.HousingGoods->IsVisible = this.dummyHousingGoods;
 			}
 			ImGui.End();
 
@@ -362,6 +363,7 @@ namespace BDTHPlugin
 
 			// Gizmo setup.
 			ImGuizmo.Enable(!this.memory.HousingStructure->Rotating);
+			ImGuizmo.SetID("BDTHPlugin".GetHashCode());
 			ImGuizmo.BeginFrame();
 
 			ImGuizmo.SetOrthographic(false);
@@ -392,6 +394,7 @@ namespace BDTHPlugin
 
 			ImGui.EndChild();
 			ImGui.End();
+			ImGuizmo.SetID(-1);
 		}
 
 		private unsafe void DrawDebug()

@@ -36,27 +36,9 @@ namespace BDTHPlugin
 		public unsafe HousingObjectManger* CurrentManager => this.HousingModule->GetCurrentManager();
 
 		public unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingLayout", 1);
-		public unsafe bool GamepadMode
-		{
-			get => !(this.HousingLayout != null && (this.HousingLayout->Flags & 32) != 0);
-		}
+		public unsafe bool GamepadMode => !(this.HousingLayout != null && this.HousingLayout->IsVisible);
 
 		public unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingGoods", 1);
-		public unsafe bool HousingGoodsVisible
-		{
-			get => this.HousingGoods != null && (this.HousingGoods->Flags & 32) != 0;
-
-			set
-			{
-				if (this.HousingGoods == null)
-					return;
-
-				if (value)
-					this.HousingGoods->Flags |= 32;
-				else
-					this.HousingGoods->Flags = (byte)(this.HousingGoods->Flags & ~32);
-			}
-		}
 
 		// Local references to position and rotation to use to free them when an item isn't selected but to keep the UI bound to a reference.
 		public Vector3 position;
@@ -126,7 +108,7 @@ namespace BDTHPlugin
 		/// <summary>
 		/// Dispose for the memory functions.
 		/// </summary>
-		public void Dispose()
+		public unsafe void Dispose()
 		{
 			try
 			{
@@ -138,7 +120,7 @@ namespace BDTHPlugin
 				this.SoftSelectHook.Dispose();
 
 				// Enable the housing goods menu again.
-				this.HousingGoodsVisible = true;
+				this.HousingGoods->IsVisible = true;
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
 				this.threadRunning = false;
