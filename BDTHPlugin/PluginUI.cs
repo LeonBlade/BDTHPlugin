@@ -70,6 +70,7 @@ namespace BDTHPlugin
 		private bool doSnap;
 
 		private bool dummyHousingGoods;
+		private bool dummyInventory;
 
 		private bool placeAnywhere = false;
 		private readonly Vector4 ORANGE_COLOR = new Vector4(0.871f, 0.518f, 0f, 1f);
@@ -112,7 +113,7 @@ namespace BDTHPlugin
 				|| this.memory.GamepadMode
 				|| this.memory.HousingStructure->Mode != HousingLayoutMode.Rotate;
 			var fontScale = ImGui.GetIO().FontGlobalScale;
-			var size = new Vector2(320 * fontScale, (!invalid ? 288 : 146) * fontScale);
+			var size = new Vector2(320 * fontScale, (!invalid ? 312 : 170) * fontScale);
 
 			ImGui.SetNextWindowSize(size, ImGuiCond.Always);
 			ImGui.SetNextWindowSizeConstraints(size, size);
@@ -208,6 +209,15 @@ namespace BDTHPlugin
 					ImGui.EndTooltip();
 				}
 
+				this.dummyHousingGoods = this.memory.HousingGoodsVisible;
+				this.dummyInventory = this.memory.InventoryVisible;
+ 
+				if (ImGui.Checkbox("Display in-game list", ref this.dummyHousingGoods))
+					this.memory.HousingGoodsVisible = this.dummyHousingGoods;
+				ImGui.SameLine();
+				if (ImGui.Checkbox("Display inventory", ref this.dummyInventory))
+					this.memory.InventoryVisible = this.dummyInventory;
+
 				if (ImGui.Button("Open Furnishing List"))
 					this.pi.CommandManager.ProcessCommand("/bdth list");
 				if (ImGui.IsItemHovered())
@@ -217,13 +227,6 @@ namespace BDTHPlugin
 					ImGui.Text("NOTE: Does not currently work outdoors!");
 					ImGui.EndTooltip();
 				}
-
-				this.dummyHousingGoods = this.memory.HousingGoods != null && this.memory.HousingGoods->IsVisible;
-
-				ImGui.SameLine(); 
-				if (ImGui.Checkbox("Display in-game list", ref this.dummyHousingGoods))
-					if (this.memory.HousingGoods != null)
-						this.memory.HousingGoods->IsVisible = this.dummyHousingGoods;
 			}
 			ImGui.End();
 
