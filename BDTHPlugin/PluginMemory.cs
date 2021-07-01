@@ -1,8 +1,6 @@
 using Dalamud.Hooking;
 using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiScene;
-using Lumina.Excel.GeneratedSheets;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +29,7 @@ namespace BDTHPlugin
 		private readonly IntPtr housingModulePtr;
 
 		private int tinv = 0;
-		
+
 		public unsafe LayoutWorld* Layout => (LayoutWorld*)this.layoutWorldPtr;
 		public unsafe HousingStructure* HousingStructure => this.Layout->HousingStruct;
 		public unsafe HousingModule* HousingModule => (HousingModule*)this.housingModulePtr;
@@ -50,29 +48,35 @@ namespace BDTHPlugin
 		public unsafe AtkUnitBase* Inventory => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("Inventory", 1);
 		public unsafe AtkUnitBase* InventoryGrid0 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid0", 1);
 		public unsafe AtkUnitBase* InventoryGrid1 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid1", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid0 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid0", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid1 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid1", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid2 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid2", 1);
 		public unsafe AtkUnitBase* InventoryGrid => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid", 1);
-		
-		public unsafe bool HousingGoodsVisible
-		{
-			get => this.HousingGoods != null && (this.HousingGoods->Flags & 32) != 0;
+		public unsafe AtkUnitBase* InventoryEventGrid0E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid0E", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid1E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid1E", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid2E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid2E", 1);
+		public unsafe AtkUnitBase* InventoryGridCrystal => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGridCrystal", 1);
+		public unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 1);
+		public unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 2);
 
+		public unsafe bool InventoryCrystalGridVisible
+		{
 			set
 			{
-				if (this.HousingGoods == null)
-					return;
-
-				if (value)
-					this.HousingGoods->Flags |= 32;
-				else
-					this.HousingGoods->Flags = (byte)(this.HousingGoods->Flags & ~32);
+				if (this.InventoryGridCrystal != null)
+					this.InventoryGridCrystal->IsVisible = value;
+				if (this.InventoryCrystalGrid != null)
+					this.InventoryCrystalGrid->IsVisible = value;
+				if (this.InventoryCrystalGrid2 != null)
+					this.InventoryCrystalGrid2->IsVisible = value;
 			}
 		}
 
 		public unsafe bool InventoryVisible
-        	{
-			get => this.InventoryExpansion != null && (this.InventoryExpansion->Flags & 32) != 0 ||
-					this.InventoryLarge != null && (this.InventoryLarge->Flags & 32) != 0 ||
-					this.Inventory != null && (this.Inventory->Flags & 32) != 0;
+		{
+			get => this.InventoryExpansion != null && this.InventoryExpansion->IsVisible ||
+					this.InventoryLarge != null && this.InventoryLarge->IsVisible ||
+					this.Inventory != null && this.Inventory->IsVisible;
 
 			set
 			{
@@ -84,55 +88,71 @@ namespace BDTHPlugin
 					switch (tinv)
 					{
 						case 1:
-							this.InventoryExpansion->Flags |= 32;
-							this.InventoryGrid0E->Flags |= 32;
-							this.InventoryGrid1E->Flags |= 32;
-							this.InventoryGrid2E->Flags |= 32;
-							this.InventoryGrid3E->Flags |= 32;
+							this.InventoryExpansion->IsVisible = true;
+							this.InventoryGrid0E->IsVisible = true;
+							this.InventoryGrid1E->IsVisible = true;
+							this.InventoryGrid2E->IsVisible = true;
+							this.InventoryGrid3E->IsVisible = true;
+							this.InventoryEventGrid0E->IsVisible = true;
+							this.InventoryEventGrid1E->IsVisible = true;
+							this.InventoryEventGrid2E->IsVisible = true;
 							break;
 						case 2:
-							this.InventoryLarge->Flags |= 32;
-							this.InventoryGrid0->Flags |= 32;
-							this.InventoryGrid1->Flags |= 32;
+							this.InventoryLarge->IsVisible = true;
+							this.InventoryGrid0->IsVisible = true;
+							this.InventoryGrid1->IsVisible = true;
+							this.InventoryEventGrid0->IsVisible = true;
+							this.InventoryEventGrid1->IsVisible = true;
+							this.InventoryEventGrid2->IsVisible = true;
 							break;
 						case 3:
-							this.Inventory->Flags |= 32;
-							this.InventoryGrid->Flags |= 32;
+							this.Inventory->IsVisible = true;
+							this.InventoryGrid->IsVisible = true;
 							break;
 						default:
 							break;
 					}
+
+					this.InventoryCrystalGridVisible = true;
 				}
 				else
 				{
 					if (InventoryExpansion->Flags == 52)
 					{
 						tinv = 1;
-						this.InventoryExpansion->Flags = (byte)(this.InventoryExpansion->Flags & ~32);
-						this.InventoryGrid0E->Flags = (byte)(this.InventoryGrid0E->Flags & ~32);
-						this.InventoryGrid1E->Flags = (byte)(this.InventoryGrid1E->Flags & ~32);
-						this.InventoryGrid2E->Flags = (byte)(this.InventoryGrid2E->Flags & ~32);
-						this.InventoryGrid3E->Flags = (byte)(this.InventoryGrid3E->Flags & ~32);
+						this.InventoryExpansion->IsVisible = false;
+						this.InventoryGrid0E->IsVisible = false;
+						this.InventoryGrid1E->IsVisible = false;
+						this.InventoryGrid2E->IsVisible = false;
+						this.InventoryGrid3E->IsVisible = false;
+						this.InventoryEventGrid0E->IsVisible = false;
+						this.InventoryEventGrid1E->IsVisible = false;
+						this.InventoryEventGrid2E->IsVisible = false;
 					}
 
 					if (InventoryLarge->Flags == 52)
 					{
 						tinv = 2;
-						this.InventoryLarge->Flags = (byte)(this.InventoryLarge->Flags & ~32);
-						this.InventoryGrid0->Flags = (byte)(this.InventoryGrid0->Flags & ~32);
-						this.InventoryGrid1->Flags = (byte)(this.InventoryGrid1->Flags & ~32);
+						this.InventoryLarge->IsVisible = false;
+						this.InventoryGrid0->IsVisible = false;
+						this.InventoryGrid1->IsVisible = false;
+						this.InventoryEventGrid0->IsVisible = false;
+						this.InventoryEventGrid1->IsVisible = false;
+						this.InventoryEventGrid2->IsVisible = false;
 					}
 
 					if (Inventory->Flags == 52)
 					{
 						tinv = 3;
-						this.Inventory->Flags = (byte)(this.Inventory->Flags & ~32);
-						this.InventoryGrid->Flags = (byte)(this.InventoryGrid->Flags & ~32);
+						this.Inventory->IsVisible = false;
+						this.InventoryGrid->IsVisible = false;
 					}
+
+					this.InventoryCrystalGridVisible = false;
 				}
 			}
 		}
-		
+
 		// Local references to position and rotation to use to free them when an item isn't selected but to keep the UI bound to a reference.
 		public Vector3 position;
 		public Vector3 rotation;
@@ -213,7 +233,6 @@ namespace BDTHPlugin
 				this.SoftSelectHook.Dispose();
 
 				// Enable the housing goods menu again.
-				this.HousingGoodsVisible = true;
 				this.HousingGoods->IsVisible = true;
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
