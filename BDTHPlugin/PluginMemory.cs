@@ -59,19 +59,6 @@ namespace BDTHPlugin
 		public unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 1);
 		public unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 2);
 
-		public unsafe bool InventoryCrystalGridVisible
-		{
-			set
-			{
-				if (this.InventoryGridCrystal != null)
-					this.InventoryGridCrystal->IsVisible = value;
-				if (this.InventoryCrystalGrid != null)
-					this.InventoryCrystalGrid->IsVisible = value;
-				if (this.InventoryCrystalGrid2 != null)
-					this.InventoryCrystalGrid2->IsVisible = value;
-			}
-		}
-
 		public unsafe bool InventoryVisible
 		{
 			get => this.InventoryExpansion != null && this.InventoryExpansion->IsVisible ||
@@ -96,6 +83,7 @@ namespace BDTHPlugin
 							this.InventoryEventGrid0E->IsVisible = true;
 							this.InventoryEventGrid1E->IsVisible = true;
 							this.InventoryEventGrid2E->IsVisible = true;
+							this.InventoryCrystalGrid2->IsVisible = true;
 							break;
 						case 2:
 							this.InventoryLarge->IsVisible = true;
@@ -104,16 +92,16 @@ namespace BDTHPlugin
 							this.InventoryEventGrid0->IsVisible = true;
 							this.InventoryEventGrid1->IsVisible = true;
 							this.InventoryEventGrid2->IsVisible = true;
+							this.InventoryCrystalGrid->IsVisible = true;
 							break;
 						case 3:
 							this.Inventory->IsVisible = true;
 							this.InventoryGrid->IsVisible = true;
+							this.InventoryGridCrystal->IsVisible = true;
 							break;
 						default:
 							break;
 					}
-
-					this.InventoryCrystalGridVisible = true;
 				}
 				else
 				{
@@ -128,6 +116,7 @@ namespace BDTHPlugin
 						this.InventoryEventGrid0E->IsVisible = false;
 						this.InventoryEventGrid1E->IsVisible = false;
 						this.InventoryEventGrid2E->IsVisible = false;
+						this.InventoryCrystalGrid2->IsVisible = false;
 					}
 
 					if (InventoryLarge->Flags == 52)
@@ -139,6 +128,7 @@ namespace BDTHPlugin
 						this.InventoryEventGrid0->IsVisible = false;
 						this.InventoryEventGrid1->IsVisible = false;
 						this.InventoryEventGrid2->IsVisible = false;
+						this.InventoryCrystalGrid->IsVisible = false;
 					}
 
 					if (Inventory->Flags == 52)
@@ -146,9 +136,8 @@ namespace BDTHPlugin
 						tinv = 3;
 						this.Inventory->IsVisible = false;
 						this.InventoryGrid->IsVisible = false;
+						this.InventoryGridCrystal->IsVisible = false;
 					}
-
-					this.InventoryCrystalGridVisible = false;
 				}
 			}
 		}
