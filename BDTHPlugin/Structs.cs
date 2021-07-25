@@ -81,9 +81,34 @@ namespace BDTHPlugin
 	}
 
 	[StructLayout(LayoutKind.Explicit)]
-	public struct HousingItem
+	public unsafe struct HousingItem
 	{
 		[FieldOffset(0x50)] public Vector3 Position;
 		[FieldOffset(0x60)] public Quaternion Rotation;
+		[FieldOffset(0x90)] public HousingItemUnknown1* unknown;
+	}
+
+	[StructLayout(LayoutKind.Explicit)]
+	public unsafe struct HousingItemUnknown1
+	{
+		[FieldOffset(0x0)] public HousingItemUnknown2* unknown;
+	}
+
+	[StructLayout(LayoutKind.Explicit)]
+	public unsafe struct HousingItemUnknown2
+	{
+		[FieldOffset(0x10)] public HousingItemUnknown3* unknown;
+	}
+
+	[StructLayout(LayoutKind.Explicit)]
+	public unsafe struct HousingItemUnknown3
+	{
+		[FieldOffset(0x30)] public HousingItemModel* unknown;
+	}
+
+	[StructLayout(LayoutKind.Explicit)]
+	public struct HousingItemModel
+	{
+		[FieldOffset(0x50)] public Vector3 position;
 	}
 }

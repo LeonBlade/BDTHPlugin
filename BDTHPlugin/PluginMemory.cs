@@ -167,6 +167,11 @@ namespace BDTHPlugin
 		private readonly IntPtr placeHousingItemAddress;
 		public PlaceHousingItemDelegate PlaceHousingItem;
 
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void HousingLayoutModelUpdateDelegate(IntPtr item, Vector3 position);
+		private readonly IntPtr housingLayoutModelUpdateAddress;
+		public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate;
+
 		public PluginMemory(DalamudPluginInterface pluginInterface)
 		{
 			try
@@ -203,6 +208,10 @@ namespace BDTHPlugin
 				// Address for the place item function.
 				this.placeHousingItemAddress = this.pi.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
 				this.PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(this.placeHousingItemAddress);
+
+				// Housing item model update.
+				this.housingLayoutModelUpdateAddress = this.pi.TargetModuleScanner.GetStaticAddressFromSig("48 8D 15 ?? ?? ?? ?? 0F 1F 40 00 48 8D 48 F0", 2) + 0x238;
+				this.HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(this.housingLayoutModelUpdateAddress);
 
 				// Thread loop to read active item.
 				this.thread = new Thread(new ThreadStart(this.Loop));
@@ -344,6 +353,8 @@ namespace BDTHPlugin
 
 				// Set the position.
 				item->Position = newPosition;
+				// Set the model position.
+				item->unknown->unknown->unknown->unknown->position = newPosition;
 			}
 			catch (Exception ex)
 			{
