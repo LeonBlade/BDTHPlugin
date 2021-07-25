@@ -353,8 +353,15 @@ namespace BDTHPlugin
 
 				// Set the position.
 				item->Position = newPosition;
-				// Set the model position.
-				item->unknown->unknown->unknown->unknown->position = newPosition;
+
+				try
+				{
+					// Set the model position.
+					item->unknown->unknown->unknown->unknown->position = newPosition;
+				}
+				catch
+				{
+				}
 			}
 			catch (Exception ex)
 			{
