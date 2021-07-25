@@ -162,6 +162,11 @@ namespace BDTHPlugin
 		private readonly IntPtr softSelectAddress;
 		private readonly Hook<SoftSelectDelegate> SoftSelectHook;
 
+		[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+		public delegate void PlaceHousingItemDelegate(IntPtr item, Vector3 position);
+		private readonly IntPtr placeHousingItemAddress;
+		public PlaceHousingItemDelegate PlaceHousingItem;
+
 		public PluginMemory(DalamudPluginInterface pluginInterface)
 		{
 			try
@@ -194,6 +199,10 @@ namespace BDTHPlugin
 				this.softSelectAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
 				this.SoftSelectHook = new Hook<SoftSelectDelegate>(this.softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
 				// this.SoftSelectHook.Enable();
+
+				// Address for the place item function.
+				this.placeHousingItemAddress = this.pi.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
+				this.PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(this.placeHousingItemAddress);
 
 				// Thread loop to read active item.
 				this.thread = new Thread(new ThreadStart(this.Loop));

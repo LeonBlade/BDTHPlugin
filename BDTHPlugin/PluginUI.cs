@@ -227,6 +227,10 @@ namespace BDTHPlugin
 					ImGui.Text("NOTE: Does not currently work outdoors!");
 					ImGui.EndTooltip();
 				}
+
+				ImGui.SameLine();
+				if (ImGui.Button("Place Item"))
+					this.memory.PlaceHousingItem((IntPtr)this.memory.HousingStructure->ActiveItem, this.memory.position);
 			}
 			ImGui.End();
 
