@@ -85,7 +85,7 @@ namespace BDTHPlugin
 	{
 		[FieldOffset(0x50)] public Vector3 Position;
 		[FieldOffset(0x60)] public Quaternion Rotation;
-		[FieldOffset(0x90)] public HousingItemUnknown1* unknown;
+		// [FieldOffset(0x90)] public HousingItemUnknown1* unknown;
 	}
 
 	[StructLayout(LayoutKind.Explicit)]
