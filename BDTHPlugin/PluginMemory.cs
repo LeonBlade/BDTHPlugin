@@ -16,6 +16,7 @@ namespace BDTHPlugin
 
 		private readonly Thread thread;
 		private bool threadRunning = false;
+		private int inventoryType = 0;
 
 		// Pointers to modify assembly to enable place anywhere.
 		public IntPtr placeAnywhere;
@@ -27,8 +28,6 @@ namespace BDTHPlugin
 		// Layout and housing module pointers.
 		private readonly IntPtr layoutWorldPtr;
 		private readonly IntPtr housingModulePtr;
-
-		private int tinv = 0;
 
 		public unsafe LayoutWorld* Layout => (LayoutWorld*)this.layoutWorldPtr;
 		public unsafe HousingStructure* HousingStructure => this.Layout->HousingStruct;
@@ -72,7 +71,7 @@ namespace BDTHPlugin
 
 				if (value)
 				{
-					switch (tinv)
+					switch (inventoryType)
 					{
 						case 1:
 							this.InventoryExpansion->IsVisible = true;
@@ -107,7 +106,7 @@ namespace BDTHPlugin
 				{
 					if (InventoryExpansion->Flags == 52)
 					{
-						tinv = 1;
+						inventoryType = 1;
 						this.InventoryExpansion->IsVisible = false;
 						this.InventoryGrid0E->IsVisible = false;
 						this.InventoryGrid1E->IsVisible = false;
@@ -121,7 +120,7 @@ namespace BDTHPlugin
 
 					if (InventoryLarge->Flags == 52)
 					{
-						tinv = 2;
+						inventoryType = 2;
 						this.InventoryLarge->IsVisible = false;
 						this.InventoryGrid0->IsVisible = false;
 						this.InventoryGrid1->IsVisible = false;
@@ -133,7 +132,7 @@ namespace BDTHPlugin
 
 					if (Inventory->Flags == 52)
 					{
-						tinv = 3;
+						inventoryType = 3;
 						this.Inventory->IsVisible = false;
 						this.InventoryGrid->IsVisible = false;
 						this.InventoryGridCrystal->IsVisible = false;
