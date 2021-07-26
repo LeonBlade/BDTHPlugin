@@ -239,7 +239,7 @@ namespace BDTHPlugin
 				this.SoftSelectHook.Dispose();
 
 				// Enable the housing goods menu again.
-				this.HousingGoods->IsVisible = true;
+				if (this.HousingGoods != null) this.HousingGoods->IsVisible = true;
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
 				this.threadRunning = false;
