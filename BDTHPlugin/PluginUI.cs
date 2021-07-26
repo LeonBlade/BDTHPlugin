@@ -230,7 +230,7 @@ namespace BDTHPlugin
 
 				ImGui.SameLine();
 				if (ImGui.Button("Place Item"))
-					this.memory.PlaceHousingItem((IntPtr)this.memory.HousingStructure->ActiveItem, this.memory.position);
+					if (this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null) this.memory.PlaceHousingItem((IntPtr)this.memory.HousingStructure->ActiveItem, this.memory.position);
 			}
 			ImGui.End();
 
