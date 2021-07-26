@@ -213,7 +213,7 @@ namespace BDTHPlugin
 				this.dummyInventory = this.memory.InventoryVisible;
  
 				if (ImGui.Checkbox("Display in-game list", ref this.dummyHousingGoods))
-					this.memory.HousingGoods->IsVisible = this.dummyHousingGoods;
+					if (this.memory.HousingGoods != null) this.memory.HousingGoods->IsVisible = this.dummyHousingGoods;
 				ImGui.SameLine();
 				if (ImGui.Checkbox("Display inventory", ref this.dummyInventory))
 					this.memory.InventoryVisible = this.dummyInventory;
