@@ -1,5 +1,4 @@
 using Dalamud.Hooking;
-using Dalamud.Plugin;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using System;
 using System.Collections.Generic;
@@ -7,13 +6,12 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Dalamud.Logging;
 
 namespace BDTHPlugin
 {
 	public class PluginMemory
 	{
-		private readonly DalamudPluginInterface pi;
-
 		private readonly Thread thread;
 		private bool threadRunning = false;
 		private int inventoryType = 0;
@@ -34,29 +32,29 @@ namespace BDTHPlugin
 		public unsafe HousingModule* HousingModule => (HousingModule*)this.housingModulePtr;
 		public unsafe HousingObjectManger* CurrentManager => this.HousingModule->GetCurrentManager();
 
-		public unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingLayout", 1);
+		public unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingLayout", 1);
 		public unsafe bool GamepadMode => !(this.HousingLayout != null && this.HousingLayout->IsVisible);
 
-		public unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingGoods", 1);
-		public unsafe AtkUnitBase* InventoryExpansion => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryExpansion", 1);
-		public unsafe AtkUnitBase* InventoryGrid0E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid0E", 1);
-		public unsafe AtkUnitBase* InventoryGrid1E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid1E", 1);
-		public unsafe AtkUnitBase* InventoryGrid2E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid2E", 1);
-		public unsafe AtkUnitBase* InventoryGrid3E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid3E", 1);
-		public unsafe AtkUnitBase* InventoryLarge => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryLarge", 1);
-		public unsafe AtkUnitBase* Inventory => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("Inventory", 1);
-		public unsafe AtkUnitBase* InventoryGrid0 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid0", 1);
-		public unsafe AtkUnitBase* InventoryGrid1 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid1", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid0 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid0", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid1 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid1", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid2 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid2", 1);
-		public unsafe AtkUnitBase* InventoryGrid => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid0E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid0E", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid1E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid1E", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid2E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid2E", 1);
-		public unsafe AtkUnitBase* InventoryGridCrystal => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGridCrystal", 1);
-		public unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 1);
-		public unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 2);
+		public unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingGoods", 1);
+		public unsafe AtkUnitBase* InventoryExpansion => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryExpansion", 1);
+		public unsafe AtkUnitBase* InventoryGrid0E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid0E", 1);
+		public unsafe AtkUnitBase* InventoryGrid1E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid1E", 1);
+		public unsafe AtkUnitBase* InventoryGrid2E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid2E", 1);
+		public unsafe AtkUnitBase* InventoryGrid3E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid3E", 1);
+		public unsafe AtkUnitBase* InventoryLarge => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryLarge", 1);
+		public unsafe AtkUnitBase* Inventory => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("Inventory", 1);
+		public unsafe AtkUnitBase* InventoryGrid0 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid0", 1);
+		public unsafe AtkUnitBase* InventoryGrid1 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid1", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid0 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid0", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid1 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid1", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid2 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid2", 1);
+		public unsafe AtkUnitBase* InventoryGrid => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid0E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid0E", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid1E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid1E", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid2E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid2E", 1);
+		public unsafe AtkUnitBase* InventoryGridCrystal => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGridCrystal", 1);
+		public unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 1);
+		public unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 2);
 
 		public unsafe bool InventoryVisible
 		{
@@ -172,45 +170,43 @@ namespace BDTHPlugin
 		private readonly IntPtr housingLayoutModelUpdateAddress;
 		public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate;
 
-		public PluginMemory(DalamudPluginInterface pluginInterface)
+		public PluginMemory()
 		{
 			try
 			{
-				this.pi = pluginInterface;
-
 				// Assembly address for asm rewrites.
-				this.placeAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
-				this.wallAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
-				this.wallmountAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
-				this.showcaseAnywhereRotate = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
-				this.showcaseAnywherePlace = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
+				this.placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
+				this.wallAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
+				this.wallmountAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
+				this.showcaseAnywhereRotate = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
+				this.showcaseAnywherePlace = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
 
 				// Pointers for housing structures.
-				this.layoutWorldPtr = this.pi.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??", 2);
-				this.housingModulePtr = this.pi.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07", 0xA);
+				this.layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??", 2);
+				this.housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07", 0xA);
 				// Read the pointers.
 				this.layoutWorldPtr = Marshal.ReadIntPtr(this.layoutWorldPtr);
 				this.housingModulePtr = Marshal.ReadIntPtr(this.housingModulePtr);
 
 				// Matrix address for gizmo usage.
-				this.matrixSingletonAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
+				this.matrixSingletonAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
 				this.GetMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(this.matrixSingletonAddress);
 
 				// Select housing item.
-				this.selectItemAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
+				this.selectItemAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
 				this.SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(this.selectItemAddress);
 
 				// Soft select hook.
-				this.softSelectAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
+				this.softSelectAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
 				this.SoftSelectHook = new Hook<SoftSelectDelegate>(this.softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
 				// this.SoftSelectHook.Enable();
 
 				// Address for the place item function.
-				this.placeHousingItemAddress = this.pi.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
+				this.placeHousingItemAddress = Plugin.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
 				this.PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(this.placeHousingItemAddress);
 
 				// Housing item model update.
-				this.housingLayoutModelUpdateAddress = this.pi.TargetModuleScanner.GetStaticAddressFromSig("48 8D 15 ?? ?? ?? ?? 0F 1F 40 00 48 8D 48 F0", 2) + 0x238;
+				this.housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8D 15 ?? ?? ?? ?? 0F 1F 40 00 48 8D 48 F0", 2) + 0x238;
 				this.HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(this.housingLayoutModelUpdateAddress);
 
 				// Thread loop to read active item.
