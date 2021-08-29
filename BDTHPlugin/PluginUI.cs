@@ -4,6 +4,7 @@ using ImGuiNET;
 using ImGuizmoNET;
 using System;
 using System.Numerics;
+using Dalamud.Logging;
 
 namespace BDTHPlugin
 {
@@ -12,7 +13,6 @@ namespace BDTHPlugin
 	class PluginUI : IDisposable
 	{
 		private readonly Plugin plugin;
-		private readonly DalamudPluginInterface pi;
 		private readonly Configuration configuration;
 		private readonly PluginMemory memory;
 
@@ -69,8 +69,7 @@ namespace BDTHPlugin
 
 		public PluginUI(Plugin p, DalamudPluginInterface pi, Configuration configuration, PluginMemory memory)
 		{
-			plugin = p;
-			this.pi = pi;
+			this.plugin = p;
 			this.configuration = configuration;
 			this.memory = memory;
 
@@ -211,7 +210,7 @@ namespace BDTHPlugin
 					memory.InventoryVisible = dummyInventory;
 
 				if (ImGui.Button("Open Furnishing List"))
-					pi.CommandManager.ProcessCommand("/bdth list");
+					Plugin.CommandManager.ProcessCommand("/bdth list");
 				if (ImGui.IsItemHovered())
 				{
 					ImGui.BeginTooltip();
@@ -480,7 +479,7 @@ namespace BDTHPlugin
 
 				ImGui.BeginChild("FurnishingList");
 
-				var playerPos = pi?.ClientState?.LocalPlayer?.Position;
+				var playerPos = Plugin.ClientState.LocalPlayer?.Position;
 
 				if (playerPos.HasValue)
 				{

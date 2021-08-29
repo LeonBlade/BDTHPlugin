@@ -1,4 +1,3 @@
-using Dalamud.Data.LuminaExtensions;
 using Dalamud.Game.Command;
 using Dalamud.Plugin;
 using ImGuiNET;
@@ -11,6 +10,13 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Dalamud.Data;
+using Dalamud.Game;
+using Dalamud.Game.ClientState;
+using Dalamud.Game.Gui;
+using Dalamud.IoC;
+using Dalamud.Logging;
+using Dalamud.Utility;
 
 namespace BDTHPlugin
 {
@@ -20,7 +26,15 @@ namespace BDTHPlugin
 
         private const string commandName = "/bdth";
 
-        private DalamudPluginInterface pi;
+        [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
+        [PluginService] public static DataManager Data { get; private set; } = null!;
+        [PluginService] public static CommandManager CommandManager { get; private set; } = null!;
+        [PluginService] public static ClientState ClientState { get; private set; } = null!;
+        [PluginService] public static Framework Framework { get; private set; } = null!;
+        [PluginService] public static ChatGui Chat { get; private set; } = null!;
+        [PluginService] public static GameGui GameGui { get; private set; } = null!;
+        [PluginService] public static SigScanner TargetModuleScanner { get; private set; } = null!;
+
         private Configuration configuration;
         private PluginUI ui;
         private PluginMemory memory;
@@ -33,21 +47,19 @@ namespace BDTHPlugin
         public readonly Dictionary<ushort, TextureWrap> TextureDictionary = new Dictionary<ushort, TextureWrap>();
 
 
-        public void Initialize(DalamudPluginInterface pluginInterface)
+        public Plugin()
         {
-            pi = pluginInterface;
+            this.configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+            this.configuration.Initialize(PluginInterface);
 
-            configuration = pi.GetPluginConfig() as Configuration ?? new Configuration();
-            configuration.Initialize(pi);
-
-            memory = new PluginMemory(pi);
-            ui = new PluginUI(this, pi, configuration, memory);
+            this.memory = new PluginMemory();
+            this.ui = new PluginUI(this, PluginInterface, this.configuration, this.memory);
 
             // Get the excel sheets for furnishings.
-            furnitureDict = pi.Data.GetExcelSheet<HousingFurniture>().ToDictionary(row => row.RowId, row => row);
-            yardObjectDict = pi.Data.GetExcelSheet<HousingYardObject>().ToDictionary(row => row.RowId, row => row);
+            this.furnitureDict = Data.GetExcelSheet<HousingFurniture>().ToDictionary(row => row.RowId, row => row);
+            this.yardObjectDict = Data.GetExcelSheet<HousingYardObject>().ToDictionary(row => row.RowId, row => row);
 
-            pi.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
+            CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
             {
                 HelpMessage = "Opens the controls for Burning Down the House plugin."
             });
@@ -55,7 +67,7 @@ namespace BDTHPlugin
             // Set the ImGui context 
             ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
 
-            pi.UiBuilder.OnBuildUi += DrawUI;
+            PluginInterface.UiBuilder.Draw += DrawUI;
         }
 
         public void Dispose()
@@ -70,8 +82,8 @@ namespace BDTHPlugin
             // Dispose for stuff in Plugin Memory class.
             memory.Dispose();
 
-            pi.CommandManager.RemoveHandler(commandName);
-            pi.Dispose();
+            CommandManager.RemoveHandler(commandName);
+            PluginInterface.Dispose();
         }
 
         /// <summary>
@@ -108,8 +120,8 @@ namespace BDTHPlugin
                     {
                         try
                         {
-                            var iconTex = pi.Data.GetIcon(icon);
-                            var tex = pi.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
+                            var iconTex = Data.GetIcon(icon);
+                            var tex = PluginInterface.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
                             if (tex != null && tex.ImGuiHandle != IntPtr.Zero)
                                 TextureDictionary[icon] = tex;
                         }
@@ -129,7 +141,7 @@ namespace BDTHPlugin
             641  // Shirogane
         };
 
-        public bool IsOutdoors() => outdoors.Contains(pi.ClientState.TerritoryType);
+        public bool IsOutdoors() => outdoors.Contains(ClientState.TerritoryType);
 
         public bool TryGetFurnishing(uint id, out HousingFurniture furniture) => furnitureDict.TryGetValue(id, out furniture);
         public bool TryGetYardObject(uint id, out HousingYardObject furniture) => yardObjectDict.TryGetValue(id, out furniture);
@@ -156,16 +168,16 @@ namespace BDTHPlugin
                         // Only allow furnishing list when the housing window is open.
                         if (!memory.IsHousingOpen())
                         {
-                            pi.Framework.Gui.Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
-                            ui.ListVisible = false;
+                            Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
+                            this.ui.ListVisible = false;
                             return;
                         }
 
                         // Disallow the ability to open furnishing list outdoors.
                         if (IsOutdoors())
                         {
-                            pi.Framework.Gui.Chat.PrintError("Cannot open furnishing outdoors currently.");
-                            ui.ListVisible = false;
+                            Chat.PrintError("Cannot open furnishing outdoors currently.");
+                            this.ui.ListVisible = false;
                             return;
                         }
 
