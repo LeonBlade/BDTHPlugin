@@ -58,6 +58,13 @@ namespace BDTHPlugin
 		public unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 1);
 		public unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 2);
 
+		public unsafe void SetVisible(AtkUnitBase* ui, bool state)
+    {
+			if (state)
+				ui->Flags |= 32;
+			else
+				ui->Flags = (byte)(ui->Flags & ~32);
+		}
 
 		public unsafe bool InventoryVisible
 		{
@@ -76,29 +83,29 @@ namespace BDTHPlugin
 						switch (inventoryType)
 						{
 							case 1:
-								InventoryExpansion->IsVisible = true;
-								InventoryGrid0E->IsVisible = true;
-								InventoryGrid1E->IsVisible = true;
-								InventoryGrid2E->IsVisible = true;
-								InventoryGrid3E->IsVisible = true;
-								InventoryEventGrid0E->IsVisible = true;
-								InventoryEventGrid1E->IsVisible = true;
-								InventoryEventGrid2E->IsVisible = true;
-								InventoryCrystalGrid2->IsVisible = true;
+								SetVisible(InventoryExpansion, true);
+								SetVisible(InventoryGrid0E, true);
+								SetVisible(InventoryGrid1E, true);
+								SetVisible(InventoryGrid2E, true);
+								SetVisible(InventoryGrid3E, true);
+								SetVisible(InventoryEventGrid0E, true);
+								SetVisible(InventoryEventGrid1E, true);
+								SetVisible(InventoryEventGrid2E, true);
+								SetVisible(InventoryCrystalGrid2, true);
 								break;
 							case 2:
-								InventoryLarge->IsVisible = true;
-								InventoryGrid0->IsVisible = true;
-								InventoryGrid1->IsVisible = true;
-								InventoryEventGrid0->IsVisible = true;
-								InventoryEventGrid1->IsVisible = true;
-								InventoryEventGrid2->IsVisible = true;
-								InventoryCrystalGrid->IsVisible = true;
+								SetVisible(InventoryLarge, true);
+								SetVisible(InventoryGrid0, true);
+								SetVisible(InventoryGrid1, true);
+								SetVisible(InventoryEventGrid0, true);
+								SetVisible(InventoryEventGrid1, true);
+								SetVisible(InventoryEventGrid2, true);
+								SetVisible(InventoryCrystalGrid, true);
 								break;
 							case 3:
-								Inventory->IsVisible = true;
-								InventoryGrid->IsVisible = true;
-								InventoryGridCrystal->IsVisible = true;
+								SetVisible(Inventory, true);
+								SetVisible(InventoryGrid, true);
+								SetVisible(InventoryGridCrystal, true);
 								break;
 							default:
 								break;
@@ -109,35 +116,35 @@ namespace BDTHPlugin
 						if (InventoryExpansion->Flags == 52)
 						{
 							inventoryType = 1;
-							InventoryExpansion->IsVisible = false;
-							InventoryGrid0E->IsVisible = false;
-							InventoryGrid1E->IsVisible = false;
-							InventoryGrid2E->IsVisible = false;
-							InventoryGrid3E->IsVisible = false;
-							InventoryEventGrid0E->IsVisible = false;
-							InventoryEventGrid1E->IsVisible = false;
-							InventoryEventGrid2E->IsVisible = false;
-							InventoryCrystalGrid2->IsVisible = false;
+							SetVisible(InventoryExpansion, false);
+							SetVisible(InventoryGrid0E, false);
+							SetVisible(InventoryGrid1E, false);
+							SetVisible(InventoryGrid2E, false);
+							SetVisible(InventoryGrid3E, false);
+							SetVisible(InventoryEventGrid0E, false);
+							SetVisible(InventoryEventGrid1E, false);
+							SetVisible(InventoryEventGrid2E, false);
+							SetVisible(InventoryCrystalGrid2, false);
 						}
 
 						if (InventoryLarge->Flags == 52)
 						{
 							inventoryType = 2;
-							InventoryLarge->IsVisible = false;
-							InventoryGrid0->IsVisible = false;
-							InventoryGrid1->IsVisible = false;
-							InventoryEventGrid0->IsVisible = false;
-							InventoryEventGrid1->IsVisible = false;
-							InventoryEventGrid2->IsVisible = false;
-							InventoryCrystalGrid->IsVisible = false;
+							SetVisible(InventoryLarge, false);
+							SetVisible(InventoryGrid0, false);
+							SetVisible(InventoryGrid1, false);
+							SetVisible(InventoryEventGrid0, false);
+							SetVisible(InventoryEventGrid1, false);
+							SetVisible(InventoryEventGrid2, false);
+							SetVisible(InventoryCrystalGrid, false);
 						}
 
 						if (Inventory->Flags == 52)
 						{
 							inventoryType = 3;
-							Inventory->IsVisible = false;
-							InventoryGrid->IsVisible = false;
-							InventoryGridCrystal->IsVisible = false;
+							SetVisible(Inventory, false);
+							SetVisible(InventoryGrid, false);
+							SetVisible(InventoryGridCrystal, false);
 						}
 					}
 				}
@@ -246,7 +253,7 @@ namespace BDTHPlugin
 				SoftSelectHook.Dispose();
 
 				// Enable the housing goods menu again.
-				if (HousingGoods != null) HousingGoods->IsVisible = true;
+				if (HousingGoods != null) SetVisible(HousingGoods, true);
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
 				threadRunning = false;
