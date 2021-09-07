@@ -70,3 +70,10 @@ jobs:
           name: ${{ env.RELEASE_NAME }} ${{ env.GIT_TAG_NAME }}
           body: ${{ github.events.commits[0].message }}
           files: ${{ steps.download.outputs.download-path }}
+          
+      - name: Trigger plugin repo update
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.PAT }}
+          repository: LeonBlade/DalamudPlugins
+          event-type: new-release
