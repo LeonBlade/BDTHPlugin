@@ -1,5 +1,4 @@
 ﻿using Dalamud.Configuration;
-using Dalamud.Plugin;
 using System;
 
 namespace BDTHPlugin
@@ -13,17 +12,9 @@ namespace BDTHPlugin
         public float Drag { get; set; } = 0.05f;
         public bool SortByDistance { get; set; } = false;
 
-        [NonSerialized]
-        private DalamudPluginInterface pluginInterface;
-
-        public void Initialize(DalamudPluginInterface pluginInterface)
-        {
-            this.pluginInterface = pluginInterface;
-        }
-
         public void Save()
         {
-            this.pluginInterface.SavePluginConfig(this);
+            Plugin.PluginInterface.SavePluginConfig(this);
         }
     }
 }
