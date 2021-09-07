@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
 	<Version>1.3.10</Version>
 	<TargetFramework>net472</TargetFramework>
@@ -11,7 +11,8 @@
 	  <Private>False</Private>
 	</Reference>
 	<Reference Include="FFXIVClientStructs">
-	  <HintPath>..\..\FFXIVClientStructs\bin\Debug\net472\FFXIVClientStructs.dll</HintPath>
+	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\FFXIVClientStructs.dll</HintPath>
+	  <Private>False</Private>
 	</Reference>
 	<Reference Include="ImGui.NET">
 	  <HintPath>$(AppData)\XIVLauncher\addon\Hooks\dev\ImGui.NET.dll</HintPath>
