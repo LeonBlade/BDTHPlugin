@@ -49,7 +49,7 @@ jobs:
   release:
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/')
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch"
 
     steps:
       - name: Download artifact
@@ -57,6 +57,9 @@ jobs:
         id: download
         with:
           name: PluginZip
+      
+      - name: Display files
+        run: ls -R
 
       - name: Get tag name
         uses: olegtarasov/get-tag@v2.1.1
@@ -66,7 +69,7 @@ jobs:
         with:
           name: ${{ env.RELEASE_NAME }} ${{ env.GIT_TAG_NAME }}
           body: ${{ github.events.commits[0].message }}
-          files: ${{ steps.download.outputs.download-path }}
+          files: ${{ steps.download.outputs.download-path }}PluginZip.zip
           
       - name: Trigger plugin repo update
         uses: peter-evans/repository-dispatch@v1
