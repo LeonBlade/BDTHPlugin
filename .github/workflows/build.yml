@@ -71,6 +71,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ env.RELEASE_NAME }} ${{ steps.tag.outputs.tag }}
+          tag_name: ${{ steps.tag.outputs.tag }}
           body: ${{ github.events.commits[0].message }}
           files: ${{ steps.download.outputs.download-path }}/BDTHPlugin.zip
           
