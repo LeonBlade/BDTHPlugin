@@ -220,9 +220,9 @@ namespace BDTHPlugin
 					ImGui.EndTooltip();
 				}
 
-				ImGui.SameLine();
-				if (ImGui.Button("Place Item"))
-					if (memory.CanEditItem() && memory.HousingStructure->ActiveItem != null) memory.PlaceHousingItem((IntPtr)memory.HousingStructure->ActiveItem, memory.position);
+				// ImGui.SameLine();
+				// if (ImGui.Button("Place Item"))
+				//	 if (memory.CanEditItem() && memory.HousingStructure->ActiveItem != null) memory.PlaceHousingItem((IntPtr)memory.HousingStructure->ActiveItem, memory.position);
 			}
 			ImGui.End();
 
