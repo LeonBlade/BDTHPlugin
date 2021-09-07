@@ -58,6 +58,7 @@ namespace BDTHPlugin
 		public unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 1);
 		public unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 2);
 
+
 		public unsafe bool InventoryVisible
 		{
 			get => InventoryExpansion != null && InventoryExpansion->IsVisible ||
@@ -68,76 +69,82 @@ namespace BDTHPlugin
 			{
 				if (HousingGoods == null || InventoryExpansion == null || InventoryLarge == null || Inventory == null)
 					return;
-
-				if (value)
+				try
 				{
-					switch (inventoryType)
+					if (value)
 					{
-						case 1:
-							InventoryExpansion->IsVisible = true;
-							InventoryGrid0E->IsVisible = true;
-							InventoryGrid1E->IsVisible = true;
-							InventoryGrid2E->IsVisible = true;
-							InventoryGrid3E->IsVisible = true;
-							InventoryEventGrid0E->IsVisible = true;
-							InventoryEventGrid1E->IsVisible = true;
-							InventoryEventGrid2E->IsVisible = true;
-							InventoryCrystalGrid2->IsVisible = true;
-							break;
-						case 2:
-							InventoryLarge->IsVisible = true;
-							InventoryGrid0->IsVisible = true;
-							InventoryGrid1->IsVisible = true;
-							InventoryEventGrid0->IsVisible = true;
-							InventoryEventGrid1->IsVisible = true;
-							InventoryEventGrid2->IsVisible = true;
-							InventoryCrystalGrid->IsVisible = true;
-							break;
-						case 3:
-							Inventory->IsVisible = true;
-							InventoryGrid->IsVisible = true;
-							InventoryGridCrystal->IsVisible = true;
-							break;
-						default:
-							break;
+						switch (inventoryType)
+						{
+							case 1:
+								InventoryExpansion->IsVisible = true;
+								InventoryGrid0E->IsVisible = true;
+								InventoryGrid1E->IsVisible = true;
+								InventoryGrid2E->IsVisible = true;
+								InventoryGrid3E->IsVisible = true;
+								InventoryEventGrid0E->IsVisible = true;
+								InventoryEventGrid1E->IsVisible = true;
+								InventoryEventGrid2E->IsVisible = true;
+								InventoryCrystalGrid2->IsVisible = true;
+								break;
+							case 2:
+								InventoryLarge->IsVisible = true;
+								InventoryGrid0->IsVisible = true;
+								InventoryGrid1->IsVisible = true;
+								InventoryEventGrid0->IsVisible = true;
+								InventoryEventGrid1->IsVisible = true;
+								InventoryEventGrid2->IsVisible = true;
+								InventoryCrystalGrid->IsVisible = true;
+								break;
+							case 3:
+								Inventory->IsVisible = true;
+								InventoryGrid->IsVisible = true;
+								InventoryGridCrystal->IsVisible = true;
+								break;
+							default:
+								break;
+						}
+					}
+					else
+					{
+						if (InventoryExpansion->Flags == 52)
+						{
+							inventoryType = 1;
+							InventoryExpansion->IsVisible = false;
+							InventoryGrid0E->IsVisible = false;
+							InventoryGrid1E->IsVisible = false;
+							InventoryGrid2E->IsVisible = false;
+							InventoryGrid3E->IsVisible = false;
+							InventoryEventGrid0E->IsVisible = false;
+							InventoryEventGrid1E->IsVisible = false;
+							InventoryEventGrid2E->IsVisible = false;
+							InventoryCrystalGrid2->IsVisible = false;
+						}
+
+						if (InventoryLarge->Flags == 52)
+						{
+							inventoryType = 2;
+							InventoryLarge->IsVisible = false;
+							InventoryGrid0->IsVisible = false;
+							InventoryGrid1->IsVisible = false;
+							InventoryEventGrid0->IsVisible = false;
+							InventoryEventGrid1->IsVisible = false;
+							InventoryEventGrid2->IsVisible = false;
+							InventoryCrystalGrid->IsVisible = false;
+						}
+
+						if (Inventory->Flags == 52)
+						{
+							inventoryType = 3;
+							Inventory->IsVisible = false;
+							InventoryGrid->IsVisible = false;
+							InventoryGridCrystal->IsVisible = false;
+						}
 					}
 				}
-				else
-				{
-					if (InventoryExpansion->Flags == 52)
-					{
-						inventoryType = 1;
-						InventoryExpansion->IsVisible = false;
-						InventoryGrid0E->IsVisible = false;
-						InventoryGrid1E->IsVisible = false;
-						InventoryGrid2E->IsVisible = false;
-						InventoryGrid3E->IsVisible = false;
-						InventoryEventGrid0E->IsVisible = false;
-						InventoryEventGrid1E->IsVisible = false;
-						InventoryEventGrid2E->IsVisible = false;
-						InventoryCrystalGrid2->IsVisible = false;
-					}
-
-					if (InventoryLarge->Flags == 52)
-					{
-						inventoryType = 2;
-						InventoryLarge->IsVisible = false;
-						InventoryGrid0->IsVisible = false;
-						InventoryGrid1->IsVisible = false;
-						InventoryEventGrid0->IsVisible = false;
-						InventoryEventGrid1->IsVisible = false;
-						InventoryEventGrid2->IsVisible = false;
-						InventoryCrystalGrid->IsVisible = false;
-					}
-
-					if (Inventory->Flags == 52)
-					{
-						inventoryType = 3;
-						Inventory->IsVisible = false;
-						InventoryGrid->IsVisible = false;
-						InventoryGridCrystal->IsVisible = false;
-					}
-				}
+				catch
+        {
+					PluginLog.LogError("IsVisible setter not present");
+        }
 			}
 		}
 
