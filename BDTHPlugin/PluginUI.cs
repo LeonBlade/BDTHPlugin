@@ -201,11 +201,11 @@ namespace BDTHPlugin
 					ImGui.EndTooltip();
 				}
 
-				dummyHousingGoods = memory.HousingGoods != null && memory.HousingGoods->IsVisible;
+				dummyHousingGoods = memory.HousingGoods != null && memory.HousingVisible;
 				dummyInventory = memory.InventoryVisible;
  
 				if (ImGui.Checkbox("Display in-game list", ref dummyHousingGoods))
-					if (memory.HousingGoods != null) memory.HousingGoods->IsVisible = dummyHousingGoods;
+					if (memory.HousingGoods != null) memory.HousingVisible = dummyHousingGoods;
 				ImGui.SameLine();
 				if (ImGui.Checkbox("Display inventory", ref dummyInventory))
 					memory.InventoryVisible = dummyInventory;

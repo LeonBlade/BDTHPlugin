@@ -66,6 +66,12 @@ namespace BDTHPlugin
 				ui->Flags = (byte)(ui->Flags & ~32);
 		}
 
+		public unsafe bool HousingVisible
+    {
+			get => HousingGoods->IsVisible;
+			set => SetVisible(HousingGoods, value);
+		}
+
 		public unsafe bool InventoryVisible
 		{
 			get => InventoryExpansion != null && InventoryExpansion->IsVisible ||
