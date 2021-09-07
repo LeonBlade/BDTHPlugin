@@ -3,9 +3,9 @@ name: Build
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 env:
   SOLUTION_NAME: BDTHPlugin
@@ -13,48 +13,43 @@ env:
   RELEASE_DIR: BDTHPlugin\bin\Release
 
 jobs:
-
   build:
-
     runs-on: windows-latest
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: recursive
 
-    - name: Checkout
-      uses: actions/checkout@v2
-      with:
-        submodules: recursive
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.0.3
 
-    - name: Setup MSBuild
-      uses: microsoft/setup-msbuild@v1.0.3
+      - name: Download Dalamud
+        run: |
+          Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
+          Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev\"
 
-    - name: Download Dalamud
-      run: |
-        Invoke-WebRequest -Uri https://goatcorp.github.io/dalamud-distrib/latest.zip -OutFile latest.zip
-        Expand-Archive -Force latest.zip "$env:AppData\XIVLauncher\addon\Hooks\dev\"
+      - name: Build
+        run: |
+          dotnet restore -r win ${{ env.SOLUTION_NAME }}.sln
+          dotnet build --configuration Release
+        env:
+          DOTNET_CLI_TELEMETRY_OUTPUT: true
 
-    - name: Build
-      run: |
-        dotnet restore -r win ${{ env.SOLUTION_NAME }}.sln
-        dotnet build --configuration Release
-      env:
-        DOTNET_CLI_TELEMETRY_OUTPUT: true
+      - name: Create artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: PluginZip
+          path: ${{ env.RELEASE_DIR }}
+          if-no-files-found: error
 
-    - name: Create artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: PluginZip
-        path: ${{ env.RELEASE_DIR }}
-        if-no-files-found: error
-        
   release:
-
     needs: build
     runs-on: ubuntu-latest
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: startsWith(github.ref, 'refs/tags/')
 
     steps:
-
       - name: Download artifact
         uses: actions/download-artifact@v2
         id: download
