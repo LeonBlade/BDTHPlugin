@@ -27,34 +27,34 @@ namespace BDTHPlugin
 		private readonly IntPtr layoutWorldPtr;
 		private readonly IntPtr housingModulePtr;
 
-		public unsafe LayoutWorld* Layout => (LayoutWorld*)this.layoutWorldPtr;
-		public unsafe HousingStructure* HousingStructure => this.Layout->HousingStruct;
-		public unsafe HousingModule* HousingModule => (HousingModule*)this.housingModulePtr;
-		public unsafe HousingObjectManger* CurrentManager => this.HousingModule->GetCurrentManager();
+		public unsafe LayoutWorld* Layout => (LayoutWorld*)layoutWorldPtr;
+		public unsafe HousingStructure* HousingStructure => Layout->HousingStruct;
+		public unsafe HousingModule* HousingModule => (HousingModule*)housingModulePtr;
+		public unsafe HousingObjectManger* CurrentManager => HousingModule->GetCurrentManager();
 
-		public unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingLayout", 1);
-		public unsafe bool GamepadMode => !(this.HousingLayout != null && this.HousingLayout->IsVisible);
+		public static unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingLayout", 1);
+		public static unsafe bool GamepadMode => !(HousingLayout != null && HousingLayout->IsVisible);
 
-		public unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingGoods", 1);
-		public unsafe AtkUnitBase* InventoryExpansion => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryExpansion", 1);
-		public unsafe AtkUnitBase* InventoryGrid0E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid0E", 1);
-		public unsafe AtkUnitBase* InventoryGrid1E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid1E", 1);
-		public unsafe AtkUnitBase* InventoryGrid2E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid2E", 1);
-		public unsafe AtkUnitBase* InventoryGrid3E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid3E", 1);
-		public unsafe AtkUnitBase* InventoryLarge => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryLarge", 1);
-		public unsafe AtkUnitBase* Inventory => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("Inventory", 1);
-		public unsafe AtkUnitBase* InventoryGrid0 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid0", 1);
-		public unsafe AtkUnitBase* InventoryGrid1 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid1", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid0 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid0", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid1 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid1", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid2 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid2", 1);
-		public unsafe AtkUnitBase* InventoryGrid => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid0E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid0E", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid1E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid1E", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid2E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid2E", 1);
-		public unsafe AtkUnitBase* InventoryGridCrystal => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGridCrystal", 1);
-		public unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 1);
-		public unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 2);
+		public static unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingGoods", 1);
+		public static unsafe AtkUnitBase* InventoryExpansion => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryExpansion", 1);
+		public static unsafe AtkUnitBase* InventoryGrid0E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid0E", 1);
+		public static unsafe AtkUnitBase* InventoryGrid1E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid1E", 1);
+		public static unsafe AtkUnitBase* InventoryGrid2E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid2E", 1);
+		public static unsafe AtkUnitBase* InventoryGrid3E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid3E", 1);
+		public static unsafe AtkUnitBase* InventoryLarge => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryLarge", 1);
+		public static unsafe AtkUnitBase* Inventory => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("Inventory", 1);
+		public static unsafe AtkUnitBase* InventoryGrid0 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid0", 1);
+		public static unsafe AtkUnitBase* InventoryGrid1 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid1", 1);
+		public static unsafe AtkUnitBase* InventoryEventGrid0 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid0", 1);
+		public static unsafe AtkUnitBase* InventoryEventGrid1 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid1", 1);
+		public static unsafe AtkUnitBase* InventoryEventGrid2 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid2", 1);
+		public static unsafe AtkUnitBase* InventoryGrid => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid", 1);
+		public static unsafe AtkUnitBase* InventoryEventGrid0E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid0E", 1);
+		public static unsafe AtkUnitBase* InventoryEventGrid1E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid1E", 1);
+		public static unsafe AtkUnitBase* InventoryEventGrid2E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid2E", 1);
+		public static unsafe AtkUnitBase* InventoryGridCrystal => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGridCrystal", 1);
+		public static unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 1);
+		public static unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 2);
 
 		public unsafe bool InventoryVisible
 		{
@@ -70,72 +70,66 @@ namespace BDTHPlugin
 				{
 					if (value)
 					{
-						switch (inventoryType)
-						{
-							case 1:
-								SetVisible(InventoryExpansion, true);
-								SetVisible(InventoryGrid0E, true);
-								SetVisible(InventoryGrid1E, true);
-								SetVisible(InventoryGrid2E, true);
-								SetVisible(InventoryGrid3E, true);
-								SetVisible(InventoryEventGrid0E, true);
-								SetVisible(InventoryEventGrid1E, true);
-								SetVisible(InventoryEventGrid2E, true);
-								SetVisible(InventoryCrystalGrid2, true);
-								break;
-							case 2:
-								SetVisible(InventoryLarge, true);
-								SetVisible(InventoryGrid0, true);
-								SetVisible(InventoryGrid1, true);
-								SetVisible(InventoryEventGrid0, true);
-								SetVisible(InventoryEventGrid1, true);
-								SetVisible(InventoryEventGrid2, true);
-								SetVisible(InventoryCrystalGrid, true);
-								break;
-							case 3:
-								SetVisible(Inventory, true);
-								SetVisible(InventoryGrid, true);
-								SetVisible(InventoryGridCrystal, true);
-								break;
-							default:
-								break;
-						}
+						case 1:
+							InventoryExpansion->IsVisible = true;
+							InventoryGrid0E->IsVisible = true;
+							InventoryGrid1E->IsVisible = true;
+							InventoryGrid2E->IsVisible = true;
+							InventoryGrid3E->IsVisible = true;
+							InventoryEventGrid0E->IsVisible = true;
+							InventoryEventGrid1E->IsVisible = true;
+							InventoryEventGrid2E->IsVisible = true;
+							InventoryCrystalGrid2->IsVisible = true;
+							break;
+						case 2:
+							InventoryLarge->IsVisible = true;
+							InventoryGrid0->IsVisible = true;
+							InventoryGrid1->IsVisible = true;
+							InventoryEventGrid0->IsVisible = true;
+							InventoryEventGrid1->IsVisible = true;
+							InventoryEventGrid2->IsVisible = true;
+							InventoryCrystalGrid->IsVisible = true;
+							break;
+						case 3:
+							Inventory->IsVisible = true;
+							InventoryGrid->IsVisible = true;
+							InventoryGridCrystal->IsVisible = true;
+							break;
+						default:
+							break;
 					}
 					else
 					{
-						if (InventoryExpansion->Flags == 52)
-						{
-							inventoryType = 1;
-							SetVisible(InventoryExpansion, false);
-							SetVisible(InventoryGrid0E, false);
-							SetVisible(InventoryGrid1E, false);
-							SetVisible(InventoryGrid2E, false);
-							SetVisible(InventoryGrid3E, false);
-							SetVisible(InventoryEventGrid0E, false);
-							SetVisible(InventoryEventGrid1E, false);
-							SetVisible(InventoryEventGrid2E, false);
-							SetVisible(InventoryCrystalGrid2, false);
-						}
+						inventoryType = 1;
+						InventoryExpansion->IsVisible = false;
+						InventoryGrid0E->IsVisible = false;
+						InventoryGrid1E->IsVisible = false;
+						InventoryGrid2E->IsVisible = false;
+						InventoryGrid3E->IsVisible = false;
+						InventoryEventGrid0E->IsVisible = false;
+						InventoryEventGrid1E->IsVisible = false;
+						InventoryEventGrid2E->IsVisible = false;
+						InventoryCrystalGrid2->IsVisible = false;
+					}
 
-						if (InventoryLarge->Flags == 52)
-						{
-							inventoryType = 2;
-							SetVisible(InventoryLarge, false);
-							SetVisible(InventoryGrid0, false);
-							SetVisible(InventoryGrid1, false);
-							SetVisible(InventoryEventGrid0, false);
-							SetVisible(InventoryEventGrid1, false);
-							SetVisible(InventoryEventGrid2, false);
-							SetVisible(InventoryCrystalGrid, false);
-						}
+					if (InventoryLarge->Flags == 52)
+					{
+						inventoryType = 2;
+						InventoryLarge->IsVisible = false;
+						InventoryGrid0->IsVisible = false;
+						InventoryGrid1->IsVisible = false;
+						InventoryEventGrid0->IsVisible = false;
+						InventoryEventGrid1->IsVisible = false;
+						InventoryEventGrid2->IsVisible = false;
+						InventoryCrystalGrid->IsVisible = false;
+					}
 
-						if (Inventory->Flags == 52)
-						{
-							inventoryType = 3;
-							SetVisible(Inventory, false);
-							SetVisible(InventoryGrid, false);
-							SetVisible(InventoryGridCrystal, false);
-						}
+					if (Inventory->Flags == 52)
+					{
+						inventoryType = 3;
+						Inventory->IsVisible = false;
+						InventoryGrid->IsVisible = false;
+						InventoryGridCrystal->IsVisible = false;
 					}
 				}
 				catch
@@ -181,39 +175,39 @@ namespace BDTHPlugin
 			try
 			{
 				// Assembly address for asm rewrites.
-				this.placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
-				this.wallAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
-				this.wallmountAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
-				this.showcaseAnywhereRotate = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
-				this.showcaseAnywherePlace = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
+				placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
+				wallAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
+				wallmountAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
+				showcaseAnywhereRotate = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
+				showcaseAnywherePlace = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
 
 				// Pointers for housing structures.
-				this.layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??", 2);
-				this.housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07", 0xA);
+				layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??", 2);
+				housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07", 0xA);
 				// Read the pointers.
 				layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
 				housingModulePtr = Marshal.ReadIntPtr(housingModulePtr);
 
 				// Matrix address for gizmo usage.
-				this.matrixSingletonAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
-				this.GetMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(this.matrixSingletonAddress);
+				matrixSingletonAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
+				GetMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(matrixSingletonAddress);
 
 				// Select housing item.
-				this.selectItemAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
-				this.SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(this.selectItemAddress);
+				selectItemAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
+				SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(selectItemAddress);
 
 				// Soft select hook.
-				this.softSelectAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
-				this.SoftSelectHook = new Hook<SoftSelectDelegate>(this.softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
-				// this.SoftSelectHook.Enable();
+				softSelectAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
+				SoftSelectHook = new Hook<SoftSelectDelegate>(softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
+				// SoftSelectHook.Enable();
 
 				// Address for the place item function.
-				this.placeHousingItemAddress = Plugin.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
-				this.PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(this.placeHousingItemAddress);
+				placeHousingItemAddress = Plugin.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
+				PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(placeHousingItemAddress);
 
 				// Housing item model update.
-				this.housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8D 15 ?? ?? ?? ?? 0F 1F 40 00 48 8D 48 F0", 2) + 0x238;
-				this.HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(this.housingLayoutModelUpdateAddress);
+				housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8D 15 ?? ?? ?? ?? 0F 1F 40 00 48 8D 48 F0", 2) + 0x238;
+				HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(housingLayoutModelUpdateAddress);
 
 				// Thread loop to read active item.
 				thread = new Thread(new ThreadStart(Loop));
@@ -241,11 +235,11 @@ namespace BDTHPlugin
 				SoftSelectHook.Dispose();
 
 				// Enable the housing goods menu again.
-				if (HousingGoods != null) SetVisible(HousingGoods, true);
+				if (HousingGoods != null) HousingGoods->IsVisible = true;
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
 				threadRunning = false;
-				thread.Abort();
+				thread.Interrupt();
 			}
 			catch (Exception ex)
 			{
@@ -493,12 +487,12 @@ namespace BDTHPlugin
 
 			// Write bytes for showcase anywhere (nop or original bytes).
 			VirtualProtect(showcaseAnywhereRotate, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-			WriteBytes(showcaseAnywhereRotate, showcaseBytes);
+      WriteBytes(showcaseAnywhereRotate, showcaseBytes);
 			VirtualProtect(showcaseAnywhereRotate, 1, oldProtection, out _);
 
 			// Write bytes for showcase anywhere (nop or original bytes).
 			VirtualProtect(showcaseAnywherePlace, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-			WriteBytes(showcaseAnywherePlace, showcaseBytes);
+      WriteBytes(showcaseAnywherePlace, showcaseBytes);
 			VirtualProtect(showcaseAnywherePlace, 1, oldProtection, out _);
 		}
 
@@ -507,7 +501,7 @@ namespace BDTHPlugin
 		/// </summary>
 		/// <param name="ptr">Pointer to write to</param>
 		/// <param name="bytes">The bytes to write</param>
-		private void WriteBytes(IntPtr ptr, byte[] bytes)
+		private static void WriteBytes(IntPtr ptr, byte[] bytes)
 		{
 			for (var i = 0; i < bytes.Length; i++)
 				Marshal.WriteByte(ptr + i, bytes[i]);
@@ -516,9 +510,9 @@ namespace BDTHPlugin
 		#region Kernel32
 
 		[DllImport("kernel32.dll", SetLastError = true)]
-		public static extern bool VirtualProtect(IntPtr lpAddress, uint dwSize, Protection flNewProtect, out Protection lpflOldProtect);
+        private static extern bool VirtualProtect(IntPtr lpAddress, uint dwSize, Protection flNewProtect, out Protection lpflOldProtect);
 
-		public enum Protection
+        public enum Protection
 		{
 			PAGE_NOACCESS = 0x01,
 			PAGE_READONLY = 0x02,
