@@ -29,44 +29,44 @@ namespace BDTHPlugin
 		private readonly IntPtr layoutWorldPtr;
 		private readonly IntPtr housingModulePtr;
 
-		public unsafe LayoutWorld* Layout => (LayoutWorld*)this.layoutWorldPtr;
-		public unsafe HousingStructure* HousingStructure => this.Layout->HousingStruct;
-		public unsafe HousingModule* HousingModule => (HousingModule*)this.housingModulePtr;
-		public unsafe HousingObjectManger* CurrentManager => this.HousingModule->GetCurrentManager();
+		public unsafe LayoutWorld* Layout => (LayoutWorld*)layoutWorldPtr;
+		public unsafe HousingStructure* HousingStructure => Layout->HousingStruct;
+		public unsafe HousingModule* HousingModule => (HousingModule*)housingModulePtr;
+		public unsafe HousingObjectManger* CurrentManager => HousingModule->GetCurrentManager();
 
-		public unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingLayout", 1);
-		public unsafe bool GamepadMode => !(this.HousingLayout != null && this.HousingLayout->IsVisible);
+		public unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("HousingLayout", 1);
+		public unsafe bool GamepadMode => !(HousingLayout != null && HousingLayout->IsVisible);
 
-		public unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("HousingGoods", 1);
-		public unsafe AtkUnitBase* InventoryExpansion => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryExpansion", 1);
-		public unsafe AtkUnitBase* InventoryGrid0E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid0E", 1);
-		public unsafe AtkUnitBase* InventoryGrid1E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid1E", 1);
-		public unsafe AtkUnitBase* InventoryGrid2E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid2E", 1);
-		public unsafe AtkUnitBase* InventoryGrid3E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid3E", 1);
-		public unsafe AtkUnitBase* InventoryLarge => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryLarge", 1);
-		public unsafe AtkUnitBase* Inventory => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("Inventory", 1);
-		public unsafe AtkUnitBase* InventoryGrid0 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid0", 1);
-		public unsafe AtkUnitBase* InventoryGrid1 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid1", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid0 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid0", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid1 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid1", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid2 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid2", 1);
-		public unsafe AtkUnitBase* InventoryGrid => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGrid", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid0E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid0E", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid1E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid1E", 1);
-		public unsafe AtkUnitBase* InventoryEventGrid2E => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid2E", 1);
-		public unsafe AtkUnitBase* InventoryGridCrystal => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryGridCrystal", 1);
-		public unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 1);
-		public unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)this.pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 2);
+		public unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("HousingGoods", 1);
+		public unsafe AtkUnitBase* InventoryExpansion => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryExpansion", 1);
+		public unsafe AtkUnitBase* InventoryGrid0E => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryGrid0E", 1);
+		public unsafe AtkUnitBase* InventoryGrid1E => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryGrid1E", 1);
+		public unsafe AtkUnitBase* InventoryGrid2E => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryGrid2E", 1);
+		public unsafe AtkUnitBase* InventoryGrid3E => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryGrid3E", 1);
+		public unsafe AtkUnitBase* InventoryLarge => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryLarge", 1);
+		public unsafe AtkUnitBase* Inventory => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("Inventory", 1);
+		public unsafe AtkUnitBase* InventoryGrid0 => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryGrid0", 1);
+		public unsafe AtkUnitBase* InventoryGrid1 => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryGrid1", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid0 => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid0", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid1 => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid1", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid2 => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid2", 1);
+		public unsafe AtkUnitBase* InventoryGrid => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryGrid", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid0E => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid0E", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid1E => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid1E", 1);
+		public unsafe AtkUnitBase* InventoryEventGrid2E => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryEventGrid2E", 1);
+		public unsafe AtkUnitBase* InventoryGridCrystal => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryGridCrystal", 1);
+		public unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 1);
+		public unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)pi.Framework.Gui.GetUiObjectByName("InventoryCrystalGrid", 2);
 
 		public unsafe bool InventoryVisible
 		{
-			get => this.InventoryExpansion != null && this.InventoryExpansion->IsVisible ||
-					this.InventoryLarge != null && this.InventoryLarge->IsVisible ||
-					this.Inventory != null && this.Inventory->IsVisible;
+			get => InventoryExpansion != null && InventoryExpansion->IsVisible ||
+					InventoryLarge != null && InventoryLarge->IsVisible ||
+					Inventory != null && Inventory->IsVisible;
 
 			set
 			{
-				if (this.HousingGoods == null || this.InventoryExpansion == null || this.InventoryLarge == null || this.Inventory == null)
+				if (HousingGoods == null || InventoryExpansion == null || InventoryLarge == null || Inventory == null)
 					return;
 
 				if (value)
@@ -74,29 +74,29 @@ namespace BDTHPlugin
 					switch (inventoryType)
 					{
 						case 1:
-							this.InventoryExpansion->IsVisible = true;
-							this.InventoryGrid0E->IsVisible = true;
-							this.InventoryGrid1E->IsVisible = true;
-							this.InventoryGrid2E->IsVisible = true;
-							this.InventoryGrid3E->IsVisible = true;
-							this.InventoryEventGrid0E->IsVisible = true;
-							this.InventoryEventGrid1E->IsVisible = true;
-							this.InventoryEventGrid2E->IsVisible = true;
-							this.InventoryCrystalGrid2->IsVisible = true;
+							InventoryExpansion->IsVisible = true;
+							InventoryGrid0E->IsVisible = true;
+							InventoryGrid1E->IsVisible = true;
+							InventoryGrid2E->IsVisible = true;
+							InventoryGrid3E->IsVisible = true;
+							InventoryEventGrid0E->IsVisible = true;
+							InventoryEventGrid1E->IsVisible = true;
+							InventoryEventGrid2E->IsVisible = true;
+							InventoryCrystalGrid2->IsVisible = true;
 							break;
 						case 2:
-							this.InventoryLarge->IsVisible = true;
-							this.InventoryGrid0->IsVisible = true;
-							this.InventoryGrid1->IsVisible = true;
-							this.InventoryEventGrid0->IsVisible = true;
-							this.InventoryEventGrid1->IsVisible = true;
-							this.InventoryEventGrid2->IsVisible = true;
-							this.InventoryCrystalGrid->IsVisible = true;
+							InventoryLarge->IsVisible = true;
+							InventoryGrid0->IsVisible = true;
+							InventoryGrid1->IsVisible = true;
+							InventoryEventGrid0->IsVisible = true;
+							InventoryEventGrid1->IsVisible = true;
+							InventoryEventGrid2->IsVisible = true;
+							InventoryCrystalGrid->IsVisible = true;
 							break;
 						case 3:
-							this.Inventory->IsVisible = true;
-							this.InventoryGrid->IsVisible = true;
-							this.InventoryGridCrystal->IsVisible = true;
+							Inventory->IsVisible = true;
+							InventoryGrid->IsVisible = true;
+							InventoryGridCrystal->IsVisible = true;
 							break;
 						default:
 							break;
@@ -107,35 +107,35 @@ namespace BDTHPlugin
 					if (InventoryExpansion->Flags == 52)
 					{
 						inventoryType = 1;
-						this.InventoryExpansion->IsVisible = false;
-						this.InventoryGrid0E->IsVisible = false;
-						this.InventoryGrid1E->IsVisible = false;
-						this.InventoryGrid2E->IsVisible = false;
-						this.InventoryGrid3E->IsVisible = false;
-						this.InventoryEventGrid0E->IsVisible = false;
-						this.InventoryEventGrid1E->IsVisible = false;
-						this.InventoryEventGrid2E->IsVisible = false;
-						this.InventoryCrystalGrid2->IsVisible = false;
+						InventoryExpansion->IsVisible = false;
+						InventoryGrid0E->IsVisible = false;
+						InventoryGrid1E->IsVisible = false;
+						InventoryGrid2E->IsVisible = false;
+						InventoryGrid3E->IsVisible = false;
+						InventoryEventGrid0E->IsVisible = false;
+						InventoryEventGrid1E->IsVisible = false;
+						InventoryEventGrid2E->IsVisible = false;
+						InventoryCrystalGrid2->IsVisible = false;
 					}
 
 					if (InventoryLarge->Flags == 52)
 					{
 						inventoryType = 2;
-						this.InventoryLarge->IsVisible = false;
-						this.InventoryGrid0->IsVisible = false;
-						this.InventoryGrid1->IsVisible = false;
-						this.InventoryEventGrid0->IsVisible = false;
-						this.InventoryEventGrid1->IsVisible = false;
-						this.InventoryEventGrid2->IsVisible = false;
-						this.InventoryCrystalGrid->IsVisible = false;
+						InventoryLarge->IsVisible = false;
+						InventoryGrid0->IsVisible = false;
+						InventoryGrid1->IsVisible = false;
+						InventoryEventGrid0->IsVisible = false;
+						InventoryEventGrid1->IsVisible = false;
+						InventoryEventGrid2->IsVisible = false;
+						InventoryCrystalGrid->IsVisible = false;
 					}
 
 					if (Inventory->Flags == 52)
 					{
 						inventoryType = 3;
-						this.Inventory->IsVisible = false;
-						this.InventoryGrid->IsVisible = false;
-						this.InventoryGridCrystal->IsVisible = false;
+						Inventory->IsVisible = false;
+						InventoryGrid->IsVisible = false;
+						InventoryGridCrystal->IsVisible = false;
 					}
 				}
 			}
@@ -176,47 +176,47 @@ namespace BDTHPlugin
 		{
 			try
 			{
-				this.pi = pluginInterface;
+				pi = pluginInterface;
 
 				// Assembly address for asm rewrites.
-				this.placeAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
-				this.wallAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
-				this.wallmountAnywhere = this.pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
-				this.showcaseAnywhereRotate = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
-				this.showcaseAnywherePlace = this.pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
+				placeAnywhere = pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
+				wallAnywhere = pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
+				wallmountAnywhere = pi.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
+				showcaseAnywhereRotate = pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
+				showcaseAnywherePlace = pi.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
 
 				// Pointers for housing structures.
-				this.layoutWorldPtr = this.pi.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??", 2);
-				this.housingModulePtr = this.pi.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07", 0xA);
+				layoutWorldPtr = pi.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??", 2);
+				housingModulePtr = pi.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07", 0xA);
 				// Read the pointers.
-				this.layoutWorldPtr = Marshal.ReadIntPtr(this.layoutWorldPtr);
-				this.housingModulePtr = Marshal.ReadIntPtr(this.housingModulePtr);
+				layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
+				housingModulePtr = Marshal.ReadIntPtr(housingModulePtr);
 
 				// Matrix address for gizmo usage.
-				this.matrixSingletonAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
-				this.GetMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(this.matrixSingletonAddress);
+				matrixSingletonAddress = pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
+				GetMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(matrixSingletonAddress);
 
 				// Select housing item.
-				this.selectItemAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
-				this.SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(this.selectItemAddress);
+				selectItemAddress = pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
+				SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(selectItemAddress);
 
 				// Soft select hook.
-				this.softSelectAddress = this.pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
-				this.SoftSelectHook = new Hook<SoftSelectDelegate>(this.softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
-				// this.SoftSelectHook.Enable();
+				softSelectAddress = pi.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
+				SoftSelectHook = new Hook<SoftSelectDelegate>(softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
+				// SoftSelectHook.Enable();
 
 				// Address for the place item function.
-				this.placeHousingItemAddress = this.pi.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
-				this.PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(this.placeHousingItemAddress);
+				placeHousingItemAddress = pi.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
+				PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(placeHousingItemAddress);
 
 				// Housing item model update.
-				this.housingLayoutModelUpdateAddress = this.pi.TargetModuleScanner.GetStaticAddressFromSig("48 8D 15 ?? ?? ?? ?? 0F 1F 40 00 48 8D 48 F0", 2) + 0x238;
-				this.HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(this.housingLayoutModelUpdateAddress);
+				housingLayoutModelUpdateAddress = pi.TargetModuleScanner.GetStaticAddressFromSig("48 8D 15 ?? ?? ?? ?? 0F 1F 40 00 48 8D 48 F0", 2) + 0x238;
+				HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(housingLayoutModelUpdateAddress);
 
 				// Thread loop to read active item.
-				this.thread = new Thread(new ThreadStart(this.Loop));
-				this.thread.Start();
-				this.threadRunning = true;
+				thread = new Thread(new ThreadStart(Loop));
+				thread.Start();
+				threadRunning = true;
 			}
 			catch (Exception ex)
 			{
@@ -232,18 +232,18 @@ namespace BDTHPlugin
 			try
 			{
 				// Disable the place anywhere in case it's on.
-				this.SetPlaceAnywhere(false);
+				SetPlaceAnywhere(false);
 
 				// Get rid of the hook.
-				this.SoftSelectHook.Disable();
-				this.SoftSelectHook.Dispose();
+				SoftSelectHook.Disable();
+				SoftSelectHook.Dispose();
 
 				// Enable the housing goods menu again.
-				if (this.HousingGoods != null) this.HousingGoods->IsVisible = true;
+				if (HousingGoods != null) HousingGoods->IsVisible = true;
 
 				// Kind of pointless if I'm just gonna abort the thread but whatever.
-				this.threadRunning = false;
-				this.thread.Abort();
+				threadRunning = false;
+				thread.Abort();
 			}
 			catch (Exception ex)
 			{
@@ -255,9 +255,9 @@ namespace BDTHPlugin
 		{
 			for (var i = 0; i < 400; i++)
 			{
-				if (this.HousingModule->GetCurrentManager()->Objects[i] == 0)
+				if (HousingModule->GetCurrentManager()->Objects[i] == 0)
 					continue;
-				if ((ulong)this.HousingModule->GetCurrentManager()->IndoorActiveObject == this.HousingModule->GetCurrentManager()->Objects[i])
+				if ((ulong)HousingModule->GetCurrentManager()->IndoorActiveObject == HousingModule->GetCurrentManager()->Objects[i])
 					return i;
 			}
 			return -1;
@@ -267,8 +267,8 @@ namespace BDTHPlugin
 		{
 			if (item == IntPtr.Zero)
 				return;
-			this.SoftSelectHook.Original(housing, item);
-			this.SelectItem(housing, item);
+			SoftSelectHook.Original(housing, item);
+			SelectItem(housing, item);
 		}
 
 		/// <summary>
@@ -277,11 +277,11 @@ namespace BDTHPlugin
 		/// <returns>Boolean state.</returns>
 		public unsafe bool IsHousingOpen()
 		{
-			if (this.HousingStructure == null)
+			if (HousingStructure == null)
 				return false;
 
 			// Anything other than none means the housing menu is open.
-			return this.HousingStructure->Mode != HousingLayoutMode.None;
+			return HousingStructure->Mode != HousingLayoutMode.None;
 		}
 
 		/// <summary>
@@ -290,11 +290,11 @@ namespace BDTHPlugin
 		/// <returns>Boolean state if housing menu is on or off.</returns>
 		public unsafe bool CanEditItem()
 		{
-			if (this.HousingStructure == null)
+			if (HousingStructure == null)
 				return false;
 
 			// Rotate mode only.
-			return this.HousingStructure->Mode == HousingLayoutMode.Rotate;
+			return HousingStructure->Mode == HousingLayoutMode.Rotate;
 		}
 
 		/// <summary>
@@ -304,11 +304,11 @@ namespace BDTHPlugin
 		public unsafe Vector3 ReadPosition()
 		{
 			// Ensure that we're hooked and have the housing structure address.
-			if (this.HousingStructure == null)
+			if (HousingStructure == null)
 				throw new Exception("Housing structure is invalid!");
 
 			// Ensure active item pointer isn't null.
-			var item = this.HousingStructure->ActiveItem;
+			var item = HousingStructure->ActiveItem;
 			if (item == null)
 				throw new Exception("No valid item selected!");
 
@@ -323,11 +323,11 @@ namespace BDTHPlugin
 		public unsafe Vector3 ReadRotation()
 		{
 			// Ensure that we're hooked and have the housing structure address.
-			if (this.HousingStructure == null)
+			if (HousingStructure == null)
 				throw new Exception("Housing structure is invalid!");
 
 			// Ensure active item pointer isn't null.
-			var item = this.HousingStructure->ActiveItem;
+			var item = HousingStructure->ActiveItem;
 			if (item == null)
 				throw new Exception("No valid item selected!");
 
@@ -342,12 +342,12 @@ namespace BDTHPlugin
 		public unsafe void WritePosition(Vector3 newPosition)
 		{
 			// Don't write if housing mode isn't on.
-			if (!this.CanEditItem())
+			if (!CanEditItem())
 				return;
 
 			try
 			{
-				var item = this.HousingStructure->ActiveItem;
+				var item = HousingStructure->ActiveItem;
 				if (item == null)
 					return;
 
@@ -363,12 +363,12 @@ namespace BDTHPlugin
 		public unsafe void WriteRotation(Vector3 newRotation)
 		{
 			// Don't write if housing mode isn't on.
-			if (!this.CanEditItem())
+			if (!CanEditItem())
 				return;
 
 			try
 			{
-				var item = this.HousingStructure->ActiveItem;
+				var item = HousingStructure->ActiveItem;
 				if (item == null)
 					return;
 
@@ -386,22 +386,22 @@ namespace BDTHPlugin
 		/// </summary>
 		public unsafe void Loop()
 		{
-			while (this.threadRunning)
+			while (threadRunning)
 			{
 				try
 				{
-					if (this.CanEditItem())
+					if (CanEditItem())
 					{
-						this.position = this.ReadPosition();
-						this.rotation = this.ReadRotation();
+						position = ReadPosition();
+						rotation = ReadRotation();
 					}
 
 					Thread.Sleep(50);
 				}
 				catch (Exception)
 				{
-					this.position = Vector3.Zero;
-					this.rotation = Vector3.Zero;
+					position = Vector3.Zero;
+					rotation = Vector3.Zero;
 				}
 			}
 		}
@@ -414,16 +414,16 @@ namespace BDTHPlugin
 		public unsafe bool GetFurnishings(out List<HousingGameObject> objects, Vector3 point, bool sortByDistance = false)
 		{
 			if (sortByDistance == true)
-				return this.GetFurnishingByDistance(out objects, point);
+				return GetFurnishingByDistance(out objects, point);
 
 			objects = new List<HousingGameObject>();
 
-			if (this.HousingModule == null || this.HousingModule->GetCurrentManager() == null || this.HousingModule->GetCurrentManager()->Objects == null)
+			if (HousingModule == null || HousingModule->GetCurrentManager() == null || HousingModule->GetCurrentManager()->Objects == null)
 				return false;
 
 			for (var i = 0; i < 400; i++)
 			{
-				var oPtr = this.HousingModule->GetCurrentManager()->Objects[i];
+				var oPtr = HousingModule->GetCurrentManager()->Objects[i];
 				if (oPtr == 0)
 					continue;
 
@@ -442,7 +442,7 @@ namespace BDTHPlugin
 		{
 			objects = null;
 
-			if (this.HousingModule == null || this.HousingModule->GetCurrentManager() == null || this.HousingModule->GetCurrentManager()->Objects == null)
+			if (HousingModule == null || HousingModule->GetCurrentManager() == null || HousingModule->GetCurrentManager()->Objects == null)
 				return false;
 
 			var tmpObjects = new List<(HousingGameObject gObj, float distance)>();
@@ -472,32 +472,32 @@ namespace BDTHPlugin
 			var bstate = (byte)(state ? 1 : 0);
 
 			// Write the bytes for place anywhere.
-			VirtualProtect(this.placeAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out var oldProtection);
-			Marshal.WriteByte(this.placeAnywhere, bstate);
-			VirtualProtect(this.placeAnywhere, 1, oldProtection, out _);
+			VirtualProtect(placeAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out var oldProtection);
+			Marshal.WriteByte(placeAnywhere, bstate);
+			VirtualProtect(placeAnywhere, 1, oldProtection, out _);
 
 			// Write the bytes for wall anywhere.
-			VirtualProtect(this.wallAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-			Marshal.WriteByte(this.wallAnywhere, bstate);
-			VirtualProtect(this.wallAnywhere, 1, oldProtection, out _);
+			VirtualProtect(wallAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
+			Marshal.WriteByte(wallAnywhere, bstate);
+			VirtualProtect(wallAnywhere, 1, oldProtection, out _);
 
 			// Write the bytes for the wall mount anywhere.
-			VirtualProtect(this.wallmountAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-			Marshal.WriteByte(this.wallmountAnywhere, bstate);
-			VirtualProtect(this.wallmountAnywhere, 1, oldProtection, out _);
+			VirtualProtect(wallmountAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
+			Marshal.WriteByte(wallmountAnywhere, bstate);
+			VirtualProtect(wallmountAnywhere, 1, oldProtection, out _);
 
 			// Which bytes to write.
 			var showcaseBytes = state ? new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 } : new byte[] { 0x88, 0x87, 0x73, 0x01, 0x00, 0x00 };
 
 			// Write bytes for showcase anywhere (nop or original bytes).
-			VirtualProtect(this.showcaseAnywhereRotate, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-			WriteBytes(this.showcaseAnywhereRotate, showcaseBytes);
-			VirtualProtect(this.showcaseAnywhereRotate, 1, oldProtection, out _);
+			VirtualProtect(showcaseAnywhereRotate, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
+			WriteBytes(showcaseAnywhereRotate, showcaseBytes);
+			VirtualProtect(showcaseAnywhereRotate, 1, oldProtection, out _);
 
 			// Write bytes for showcase anywhere (nop or original bytes).
-			VirtualProtect(this.showcaseAnywherePlace, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-			WriteBytes(this.showcaseAnywherePlace, showcaseBytes);
-			VirtualProtect(this.showcaseAnywherePlace, 1, oldProtection, out _);
+			VirtualProtect(showcaseAnywherePlace, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
+			WriteBytes(showcaseAnywherePlace, showcaseBytes);
+			VirtualProtect(showcaseAnywherePlace, 1, oldProtection, out _);
 		}
 
 		/// <summary>

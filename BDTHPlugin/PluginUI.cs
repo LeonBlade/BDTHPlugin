@@ -32,14 +32,6 @@ namespace BDTHPlugin
 			0.0f, 0.0f, 0.0f, 1.0f
 		};
 
-		private static float[] testMatrix =
-		{
-			1.0f, 0.0f, 0.0f, 0.0f,
-			0.0f, 1.0f, 0.0f, 0.0f,
-			0.0f, 0.0f, 1.0f, 0.0f,
-			0.0f, 0.0f, 0.0f, 1.0f
-		};
-
 		private readonly OPERATION gizmoOperation = OPERATION.TRANSLATE;
 		private MODE gizmoMode = MODE.LOCAL;
 
@@ -52,15 +44,15 @@ namespace BDTHPlugin
 		private bool visible = false;
 		public bool Visible
 		{
-			get => this.visible;
-			set => this.visible = value;
+			get => visible;
+			set => visible = value;
 		}
 
 		private bool listVisible = false;
 		public bool ListVisible
 		{
-			get => this.listVisible;
-			set => this.listVisible = value;
+			get => listVisible;
+			set => listVisible = value;
 		}
 
 		public bool debugVisible = false;
@@ -77,14 +69,14 @@ namespace BDTHPlugin
 
 		public PluginUI(Plugin p, DalamudPluginInterface pi, Configuration configuration, PluginMemory memory)
 		{
-			this.plugin = p;
+			plugin = p;
 			this.pi = pi;
 			this.configuration = configuration;
 			this.memory = memory;
 
-			this.drag = this.configuration.Drag;
-			this.useGizmo = this.configuration.UseGizmo;
-			this.doSnap = this.configuration.DoSnap;
+			drag = configuration.Drag;
+			useGizmo = configuration.UseGizmo;
+			doSnap = configuration.DoSnap;
 		}
 
 		public void Dispose()
@@ -93,15 +85,15 @@ namespace BDTHPlugin
 
 		public void Draw()
 		{
-			this.DrawGizmo();
-			this.DrawMainWindow();
-			this.DrawHousingList();
-			this.DrawDebug();
+			DrawGizmo();
+			DrawMainWindow();
+			DrawHousingList();
+			DrawDebug();
 		}
 
 		public unsafe void DrawMainWindow()
 		{
-			if (!this.Visible)
+			if (!Visible)
 			{
 				return;
 			}
@@ -109,23 +101,23 @@ namespace BDTHPlugin
 			ImGui.PushStyleColor(ImGuiCol.TitleBgActive, ORANGE_COLOR);
 			ImGui.PushStyleColor(ImGuiCol.CheckMark, ORANGE_COLOR);
 
-			var invalid = this.memory.HousingStructure->ActiveItem == null 
-				|| this.memory.GamepadMode
-				|| this.memory.HousingStructure->Mode != HousingLayoutMode.Rotate;
+			var invalid = memory.HousingStructure->ActiveItem == null 
+				|| memory.GamepadMode
+				|| memory.HousingStructure->Mode != HousingLayoutMode.Rotate;
 			var fontScale = ImGui.GetIO().FontGlobalScale;
 			var size = new Vector2(320 * fontScale, (!invalid ? 312 : 170) * fontScale);
 
 			ImGui.SetNextWindowSize(size, ImGuiCond.Always);
 			ImGui.SetNextWindowSizeConstraints(size, size);
 
-			if (ImGui.Begin($"Burning Down the House", ref this.visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
+			if (ImGui.Begin($"Burning Down the House", ref visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
 			{
 				ImGui.BeginGroup();
 
-				if (ImGui.Checkbox("Place Anywhere", ref this.placeAnywhere))
+				if (ImGui.Checkbox("Place Anywhere", ref placeAnywhere))
 				{
 					// Set the place anywhere based on the checkbox state.
-					this.memory.SetPlaceAnywhere(this.placeAnywhere);
+					memory.SetPlaceAnywhere(placeAnywhere);
 				}
 				if (ImGui.IsItemHovered())
 				{
@@ -137,10 +129,10 @@ namespace BDTHPlugin
 				ImGui.SameLine();
 
 				// Checkbox is clicked, set the configuration and save.
-				if (ImGui.Checkbox("Gizmo", ref this.useGizmo))
+				if (ImGui.Checkbox("Gizmo", ref useGizmo))
 				{
-					this.configuration.UseGizmo = this.useGizmo;
-					this.configuration.Save();
+					configuration.UseGizmo = useGizmo;
+					configuration.Save();
 				}
 				if (ImGui.IsItemHovered())
 				{
@@ -152,10 +144,10 @@ namespace BDTHPlugin
 				ImGui.SameLine();
 
 				// Checkbox is clicked, set the configuration and save.
-				if (ImGui.Checkbox("Snap", ref this.doSnap))
+				if (ImGui.Checkbox("Snap", ref doSnap))
 				{
-					this.configuration.DoSnap = this.doSnap;
-					this.configuration.Save();
+					configuration.DoSnap = doSnap;
+					configuration.Save();
 				}
 				if (ImGui.IsItemHovered())
 				{
@@ -165,42 +157,42 @@ namespace BDTHPlugin
 				}
 
 				ImGui.SameLine();
-				if (ImGuiComponents.IconButton(1, this.gizmoMode == MODE.LOCAL ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
-					this.gizmoMode = this.gizmoMode == MODE.LOCAL ? MODE.WORLD : MODE.LOCAL;
+				if (ImGuiComponents.IconButton(1, gizmoMode == MODE.LOCAL ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
+					gizmoMode = gizmoMode == MODE.LOCAL ? MODE.WORLD : MODE.LOCAL;
 				if (ImGui.IsItemHovered())
 				{
 					ImGui.BeginTooltip();
-					ImGui.Text($"Mode: {(this.gizmoMode == MODE.LOCAL ? "Local" : "World")}");
+					ImGui.Text($"Mode: {(gizmoMode == MODE.LOCAL ? "Local" : "World")}");
 					ImGui.Text("Changes gizmo mode between local and world movement.");
 					ImGui.EndTooltip();
 				}
 
 				ImGui.Separator();
 
-				if (this.memory.HousingStructure->Mode == HousingLayoutMode.None)
+				if (memory.HousingStructure->Mode == HousingLayoutMode.None)
 					ImGui.Text("Enter housing mode to get started");
-				else if (this.memory.GamepadMode)
+				else if (memory.GamepadMode)
 				{
 					ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
 					ImGui.Text("Does not support Gamepad");
 					ImGui.PopStyleColor();
 				}
-				else if (this.memory.HousingStructure->ActiveItem == null || this.memory.HousingStructure->Mode != HousingLayoutMode.Rotate)
+				else if (memory.HousingStructure->ActiveItem == null || memory.HousingStructure->Mode != HousingLayoutMode.Rotate)
 				{
 					ImGui.Text("Select a housing item in Rotate mode");
 					ImGuiComponents.HelpMarker("Are you doing everything right? Try using the /bdth debug command and report this issue in Discord!");
 				}
 				else
-					this.DrawItemControls();
+					DrawItemControls();
 
 				ImGui.Separator();
 
 				// Drag ammount for the inputs.
-				if (ImGui.InputFloat("drag", ref this.drag, 0.05f))
+				if (ImGui.InputFloat("drag", ref drag, 0.05f))
 				{
-					this.drag = Math.Min(Math.Max(0.001f, this.drag), 10f);
-					this.configuration.Drag = this.drag;
-					this.configuration.Save();
+					drag = Math.Min(Math.Max(0.001f, drag), 10f);
+					configuration.Drag = drag;
+					configuration.Save();
 				}
 				if (ImGui.IsItemHovered())
 				{
@@ -209,17 +201,17 @@ namespace BDTHPlugin
 					ImGui.EndTooltip();
 				}
 
-				this.dummyHousingGoods = this.memory.HousingGoods != null && this.memory.HousingGoods->IsVisible;
-				this.dummyInventory = this.memory.InventoryVisible;
+				dummyHousingGoods = memory.HousingGoods != null && memory.HousingGoods->IsVisible;
+				dummyInventory = memory.InventoryVisible;
  
-				if (ImGui.Checkbox("Display in-game list", ref this.dummyHousingGoods))
-					if (this.memory.HousingGoods != null) this.memory.HousingGoods->IsVisible = this.dummyHousingGoods;
+				if (ImGui.Checkbox("Display in-game list", ref dummyHousingGoods))
+					if (memory.HousingGoods != null) memory.HousingGoods->IsVisible = dummyHousingGoods;
 				ImGui.SameLine();
-				if (ImGui.Checkbox("Display inventory", ref this.dummyInventory))
-					this.memory.InventoryVisible = this.dummyInventory;
+				if (ImGui.Checkbox("Display inventory", ref dummyInventory))
+					memory.InventoryVisible = dummyInventory;
 
 				if (ImGui.Button("Open Furnishing List"))
-					this.pi.CommandManager.ProcessCommand("/bdth list");
+					pi.CommandManager.ProcessCommand("/bdth list");
 				if (ImGui.IsItemHovered())
 				{
 					ImGui.BeginTooltip();
@@ -230,7 +222,7 @@ namespace BDTHPlugin
 
 				ImGui.SameLine();
 				if (ImGui.Button("Place Item"))
-					if (this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null) this.memory.PlaceHousingItem((IntPtr)this.memory.HousingStructure->ActiveItem, this.memory.position);
+					if (memory.CanEditItem() && memory.HousingStructure->ActiveItem != null) memory.PlaceHousingItem((IntPtr)memory.HousingStructure->ActiveItem, memory.position);
 			}
 			ImGui.End();
 
@@ -246,25 +238,25 @@ namespace BDTHPlugin
 
 			ImGui.PushItemWidth(73f);
 
-			if (ImGui.DragFloat("##xdrag", ref this.memory.position.X, this.drag))
-				this.memory.WritePosition(this.memory.position);
+			if (ImGui.DragFloat("##xdrag", ref memory.position.X, drag))
+				memory.WritePosition(memory.position);
 			ImGui.SameLine(0, 4);
 			var xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-			if (ImGui.DragFloat("##ydrag", ref this.memory.position.Y, this.drag))
-				this.memory.WritePosition(this.memory.position);
+			if (ImGui.DragFloat("##ydrag", ref memory.position.Y, drag))
+				memory.WritePosition(memory.position);
 			ImGui.SameLine(0, 4);
 			var yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-			if (ImGui.DragFloat("##zdrag", ref this.memory.position.Z, this.drag))
-				this.memory.WritePosition(this.memory.position);
+			if (ImGui.DragFloat("##zdrag", ref memory.position.Z, drag))
+				memory.WritePosition(memory.position);
 			ImGui.SameLine(0, 4);
 			var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
 			ImGui.Text("position");
 
-			if (ImGui.DragFloat("##rydrag", ref this.memory.rotation.Y, this.drag))
-				this.memory.WriteRotation(this.memory.rotation);
+			if (ImGui.DragFloat("##rydrag", ref memory.rotation.Y, drag))
+				memory.WriteRotation(memory.rotation);
 			ImGui.SameLine(0, 4);
 			var ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
@@ -273,23 +265,23 @@ namespace BDTHPlugin
 			ImGui.PopItemWidth();
 
 			// Mouse wheel direction.
-			var delta = ImGui.GetIO().MouseWheel * this.drag;
+			var delta = ImGui.GetIO().MouseWheel * drag;
 
 			// Move position based on which control is being hovered.
 			if (xHover)
-				this.memory.position.X += delta;
+				memory.position.X += delta;
 			if (yHover)
-				this.memory.position.Y += delta;
+				memory.position.Y += delta;
 			if (zHover)
-				this.memory.position.Z += delta;
+				memory.position.Z += delta;
 			if (xHover || yHover || zHover)
-				this.memory.WritePosition(this.memory.position);
+				memory.WritePosition(memory.position);
 
 			// Move rotation based on which control is being hovered.
 			if (ryHover)
-				this.memory.rotation.Y += delta;
+				memory.rotation.Y += delta;
 			if (ryHover && delta > 0)
-				this.memory.WriteRotation(this.memory.rotation);
+				memory.WriteRotation(memory.rotation);
 
 			ImGui.EndGroup(); // End group for the drag section.
 
@@ -301,40 +293,40 @@ namespace BDTHPlugin
 				ImGui.EndTooltip();
 			}
 
-			if (ImGui.InputFloat("x coord", ref this.memory.position.X, this.drag))
-				this.memory.WritePosition(this.memory.position);
+			if (ImGui.InputFloat("x coord", ref memory.position.X, drag))
+				memory.WritePosition(memory.position);
 			xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-			if (ImGui.InputFloat("y coord", ref this.memory.position.Y, this.drag))
-				this.memory.WritePosition(this.memory.position);
+			if (ImGui.InputFloat("y coord", ref memory.position.Y, drag))
+				memory.WritePosition(memory.position);
 			yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-			if (ImGui.InputFloat("z coord", ref this.memory.position.Z, this.drag))
-				this.memory.WritePosition(this.memory.position);
+			if (ImGui.InputFloat("z coord", ref memory.position.Z, drag))
+				memory.WritePosition(memory.position);
 			zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-			if (ImGui.InputFloat("ry degree", ref this.memory.rotation.Y, this.drag))
-				this.memory.WriteRotation(this.memory.rotation);
+			if (ImGui.InputFloat("ry degree", ref memory.rotation.Y, drag))
+				memory.WriteRotation(memory.rotation);
 			ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
 			// Mouse wheel direction.
-			delta = ImGui.GetIO().MouseWheel * this.drag;
+			delta = ImGui.GetIO().MouseWheel * drag;
 
 			// Move position based on which control is being hovered.
 			if (xHover)
-				this.memory.position.X += delta;
+				memory.position.X += delta;
 			if (yHover)
-				this.memory.position.Y += delta;
+				memory.position.Y += delta;
 			if (zHover)
-				this.memory.position.Z += delta;
+				memory.position.Z += delta;
 			if (xHover || yHover || zHover)
-				this.memory.WritePosition(this.memory.position);
+				memory.WritePosition(memory.position);
 
 			// Move rotation based on which control is being hovered.
 			if (ryHover)
-				this.memory.rotation.Y += delta;
+				memory.rotation.Y += delta;
 			if (ryHover && delta > 0)
-				this.memory.WriteRotation(this.memory.rotation);
+				memory.WriteRotation(memory.rotation);
 		}
 
 		public unsafe void DrawGizmo()
@@ -343,22 +335,22 @@ namespace BDTHPlugin
 				return;
 
 			// Disabled if the housing mode isn't on and there isn't a selected item.
-			var disabled = !(this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null);
+			var disabled = !(memory.CanEditItem() && memory.HousingStructure->ActiveItem != null);
 			if (disabled)
 				return;
 
 			// Just catch errors since the disabled logic above didn't catch it one time.
 			try
 			{
-				translate = this.memory.ReadPosition();
-				rotation = this.memory.ReadRotation();
+				translate = memory.ReadPosition();
+				rotation = memory.ReadRotation();
 				ImGuizmo.RecomposeMatrixFromComponents(ref translate.X, ref rotation.X, ref scale.X, ref itemMatrix[0]);
 			}
 			catch
 			{
 			}
 
-			var matrixSingleton = this.memory.GetMatrixSingleton();
+			var matrixSingleton = memory.GetMatrixSingleton();
 			if (matrixSingleton == IntPtr.Zero)
 				return;
 
@@ -369,7 +361,7 @@ namespace BDTHPlugin
 				viewProjectionMatrix[i] = *rawMatrix;
 
 			// Gizmo setup.
-			ImGuizmo.Enable(!this.memory.HousingStructure->Rotating);
+			ImGuizmo.Enable(!memory.HousingStructure->Rotating);
 			ImGuizmo.SetID("BDTHPlugin".GetHashCode());
 			ImGuizmo.BeginFrame();
 
@@ -390,14 +382,14 @@ namespace BDTHPlugin
 
 			ImGuizmo.SetRect(ImGui.GetWindowPos().X, ImGui.GetWindowPos().Y, windowWidth, windowHeight);
 
-			var snap = this.doSnap ? new Vector3(this.drag, this.drag, this.drag) : Vector3.Zero;
+			var snap = doSnap ? new Vector3(drag, drag, drag) : Vector3.Zero;
 
 			// ImGuizmo.Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0]);
-			this.Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0], ref snap.X);
+			Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0], ref snap.X);
 
 			ImGuizmo.DecomposeMatrixToComponents(ref itemMatrix[0], ref translate.X, ref rotation.X, ref scale.X);
 
-			this.memory.WritePosition(translate);
+			memory.WritePosition(translate);
 
 			ImGui.EndChild();
 			ImGui.End();
@@ -406,33 +398,33 @@ namespace BDTHPlugin
 
 		private unsafe void DrawDebug()
 		{
-			if (!this.debugVisible)
+			if (!debugVisible)
 				return;
 
-			if (ImGui.Begin("BDTH Debug", ref this.debugVisible))
+			if (ImGui.Begin("BDTH Debug", ref debugVisible))
 			{
-				ImGui.Text($"Gamepad Mode: {this.memory.GamepadMode}");
-				ImGui.Text($"CanEditItem: {this.memory.CanEditItem()}");
-				ImGui.Text($"IsHousingOpen: {this.memory.IsHousingOpen()}");
+				ImGui.Text($"Gamepad Mode: {memory.GamepadMode}");
+				ImGui.Text($"CanEditItem: {memory.CanEditItem()}");
+				ImGui.Text($"IsHousingOpen: {memory.IsHousingOpen()}");
 				ImGui.Separator();
-				ImGui.Text($"LayoutWorld: {(ulong)this.memory.Layout:X}");
-				ImGui.Text($"Housing Structure: {(ulong)this.memory.HousingStructure:X}");
-				ImGui.Text($"Mode: {this.memory.HousingStructure->Mode}");
-				ImGui.Text($"State: {this.memory.HousingStructure->State}");
-				ImGui.Text($"State2: {this.memory.HousingStructure->State2}");
-				ImGui.Text($"Active: {(ulong)this.memory.HousingStructure->ActiveItem:X}");
-				ImGui.Text($"Hover: {(ulong)this.memory.HousingStructure->HoverItem:X}");
-				ImGui.Text($"Rotating: {this.memory.HousingStructure->Rotating}");
+				ImGui.Text($"LayoutWorld: {(ulong)memory.Layout:X}");
+				ImGui.Text($"Housing Structure: {(ulong)memory.HousingStructure:X}");
+				ImGui.Text($"Mode: {memory.HousingStructure->Mode}");
+				ImGui.Text($"State: {memory.HousingStructure->State}");
+				ImGui.Text($"State2: {memory.HousingStructure->State2}");
+				ImGui.Text($"Active: {(ulong)memory.HousingStructure->ActiveItem:X}");
+				ImGui.Text($"Hover: {(ulong)memory.HousingStructure->HoverItem:X}");
+				ImGui.Text($"Rotating: {memory.HousingStructure->Rotating}");
 				ImGui.Separator();
-				ImGui.Text($"Housing Module: {(ulong)this.memory.HousingModule:X}");
-				ImGui.Text($"Housing Module: {(ulong)this.memory.HousingModule->CurrentTerritory:X}");
-				ImGui.Text($"Outdoor Territory: {(ulong)this.memory.HousingModule->OutdoorTerritory:X}");
-				ImGui.Text($"Indoor Territory: {(ulong)this.memory.HousingModule->IndoorTerritory:X}");
-				var active = this.memory.HousingStructure->ActiveItem;
+				ImGui.Text($"Housing Module: {(ulong)memory.HousingModule:X}");
+				ImGui.Text($"Housing Module: {(ulong)memory.HousingModule->CurrentTerritory:X}");
+				ImGui.Text($"Outdoor Territory: {(ulong)memory.HousingModule->OutdoorTerritory:X}");
+				ImGui.Text($"Indoor Territory: {(ulong)memory.HousingModule->IndoorTerritory:X}");
+				var active = memory.HousingStructure->ActiveItem;
 				if (active != null)
 				{
 					ImGui.Separator();
-					var pos = this.memory.HousingStructure->ActiveItem->Position;
+					var pos = memory.HousingStructure->ActiveItem->Position;
 					ImGui.Text($"Position: {pos.X}, {pos.Y}, {pos.Z}");
 				}
 
@@ -441,27 +433,27 @@ namespace BDTHPlugin
 			ImGui.End();
 		}
 
-		private int FurnishingIndex => this.memory.GetHousingObjectSelectedIndex();
+		private int FurnishingIndex => memory.GetHousingObjectSelectedIndex();
 		private bool sortByDistance = false;
 		private ulong? lastActiveItem = null;
 		private byte renderCount = 0;
 
 		public unsafe void DrawHousingList()
 		{
-			if (!this.listVisible)
+			if (!listVisible)
 				return;
 
 			// Only allow furnishing list when the housing window is open.
-			if (!this.memory.IsHousingOpen())
+			if (!memory.IsHousingOpen())
 			{
-				this.listVisible = false;
+				listVisible = false;
 				return;
 			}
 
 			// Disallow the ability to open furnishing list outdoors.
-			if (this.plugin.IsOutdoors())
+			if (plugin.IsOutdoors())
 			{
-				this.listVisible = false;
+				listVisible = false;
 				return;
 			}
 
@@ -474,12 +466,12 @@ namespace BDTHPlugin
 			ImGui.SetNextWindowSize(size, ImGuiCond.FirstUseEver);
 			ImGui.SetNextWindowSizeConstraints(new Vector2(120 * fontScale, 100 * fontScale), new Vector2(400 * fontScale, 1000 * fontScale));
 
-			if (ImGui.Begin($"Furnishing List", ref this.listVisible))
+			if (ImGui.Begin($"Furnishing List", ref listVisible))
 			{
-				if (ImGui.Checkbox("Sort by distance", ref this.sortByDistance))
+				if (ImGui.Checkbox("Sort by distance", ref sortByDistance))
 				{
-					this.configuration.SortByDistance = this.sortByDistance;
-					this.configuration.Save();
+					configuration.SortByDistance = sortByDistance;
+					configuration.Save();
 				}
 
 				ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0, 8));
@@ -488,49 +480,49 @@ namespace BDTHPlugin
 
 				ImGui.BeginChild("FurnishingList");
 
-				var playerPos = this.pi?.ClientState?.LocalPlayer?.Position;
+				var playerPos = pi?.ClientState?.LocalPlayer?.Position;
 
 				if (playerPos.HasValue)
 				{
 					try
 					{
-						if (this.memory.GetFurnishings(out var items, playerPos.Value, this.sortByDistance))
+						if (memory.GetFurnishings(out var items, playerPos.Value, sortByDistance))
 						{
 							for (var i = 0; i < items.Count; i++)
 							{
 								var name = "";
 								ushort icon = 0;
-								if (this.plugin.TryGetYardObject(items[i].HousingRowId, out var yardObject))
+								if (plugin.TryGetYardObject(items[i].HousingRowId, out var yardObject))
 								{
 									name = yardObject.Item.Value.Name.ToString();
 									icon = yardObject.Item.Value.Icon;
 								}
-								if (this.plugin.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
+								if (plugin.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
 								{
 									name = furnitureObject.Item.Value.Name.ToString();
 									icon = furnitureObject.Item.Value.Icon;
 								}
 
 								// An active item is being selected.
-								var hasActiveItem = this.memory.HousingStructure->ActiveItem != null;
+								var hasActiveItem = memory.HousingStructure->ActiveItem != null;
 								// The currently selected item.
-								var thisActive = hasActiveItem && items[i].Item == this.memory.HousingStructure->ActiveItem;
+								var thisActive = hasActiveItem && items[i].Item == memory.HousingStructure->ActiveItem;
 
 								ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0f, 4f));
 								if (ImGui.Selectable($"##Item{i}", hasActiveItem && thisActive))
-									this.memory.SelectItem((IntPtr)this.memory.HousingStructure, (IntPtr)items[i].Item);
+									memory.SelectItem((IntPtr)memory.HousingStructure, (IntPtr)items[i].Item);
 
 								if (thisActive)
 									ImGui.SetItemDefaultFocus();
 
 								// Scroll if the active item has changed from last time.
-								if (thisActive && this.lastActiveItem != (ulong)this.memory.HousingStructure->ActiveItem)
+								if (thisActive && lastActiveItem != (ulong)memory.HousingStructure->ActiveItem)
 								{
 									ImGui.SetScrollHereY();
 									PluginLog.Log($"{ImGui.GetScrollY()} {ImGui.GetScrollMaxY()}");
 								}
 
-								ImGui.SameLine(); this.plugin.DrawIcon(icon, new Vector2(20, 20));
+								ImGui.SameLine(); plugin.DrawIcon(icon, new Vector2(20, 20));
 								ImGui.PopStyleVar();
 								// var distance = Util.DistanceFromPlayer(items[i], playerPos);
 
@@ -538,8 +530,8 @@ namespace BDTHPlugin
 								// ImGui.SameLine(); ImGui.Text($"{distance:F2}");
 							}
 
-							if (this.renderCount >= 10)
-								this.lastActiveItem = (ulong)this.memory.HousingStructure->ActiveItem;
+							if (renderCount >= 10)
+								lastActiveItem = (ulong)memory.HousingStructure->ActiveItem;
 						}
 					}
 					catch (Exception ex)
@@ -553,8 +545,8 @@ namespace BDTHPlugin
 				}
 			}
 
-			if (this.renderCount != 10)
-				this.renderCount++;
+			if (renderCount != 10)
+				renderCount++;
 
 			ImGui.End();
 			ImGui.PopStyleColor(2);

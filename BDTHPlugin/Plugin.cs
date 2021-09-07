@@ -35,19 +35,19 @@ namespace BDTHPlugin
 
         public void Initialize(DalamudPluginInterface pluginInterface)
         {
-            this.pi = pluginInterface;
+            pi = pluginInterface;
 
-            this.configuration = this.pi.GetPluginConfig() as Configuration ?? new Configuration();
-            this.configuration.Initialize(this.pi);
+            configuration = pi.GetPluginConfig() as Configuration ?? new Configuration();
+            configuration.Initialize(pi);
 
-            this.memory = new PluginMemory(this.pi);
-            this.ui = new PluginUI(this, this.pi, this.configuration, this.memory);
+            memory = new PluginMemory(pi);
+            ui = new PluginUI(this, pi, configuration, memory);
 
             // Get the excel sheets for furnishings.
-            this.furnitureDict = this.pi.Data.GetExcelSheet<HousingFurniture>().ToDictionary(row => row.RowId, row => row);
-            this.yardObjectDict = this.pi.Data.GetExcelSheet<HousingYardObject>().ToDictionary(row => row.RowId, row => row);
+            furnitureDict = pi.Data.GetExcelSheet<HousingFurniture>().ToDictionary(row => row.RowId, row => row);
+            yardObjectDict = pi.Data.GetExcelSheet<HousingYardObject>().ToDictionary(row => row.RowId, row => row);
 
-            this.pi.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
+            pi.CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
             {
                 HelpMessage = "Opens the controls for Burning Down the House plugin."
             });
@@ -55,23 +55,23 @@ namespace BDTHPlugin
             // Set the ImGui context 
             ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
 
-            this.pi.UiBuilder.OnBuildUi += DrawUI;
+            pi.UiBuilder.OnBuildUi += DrawUI;
         }
 
         public void Dispose()
         {
-            this.ui.Dispose();
+            ui.Dispose();
 
             // Dispose everything in the texture dictionary.
-            foreach (var t in this.TextureDictionary)
+            foreach (var t in TextureDictionary)
                 t.Value?.Dispose();
-            this.TextureDictionary.Clear();
+            TextureDictionary.Clear();
 
             // Dispose for stuff in Plugin Memory class.
-            this.memory.Dispose();
+            memory.Dispose();
 
-            this.pi.CommandManager.RemoveHandler(commandName);
-            this.pi.Dispose();
+            pi.CommandManager.RemoveHandler(commandName);
+            pi.Dispose();
         }
 
         /// <summary>
@@ -83,9 +83,9 @@ namespace BDTHPlugin
 		{
             if (icon < 65000)
 			{
-                if (this.TextureDictionary.ContainsKey(icon))
+                if (TextureDictionary.ContainsKey(icon))
 				{
-                    var tex = this.TextureDictionary[icon];
+                    var tex = TextureDictionary[icon];
                     if (tex == null || tex.ImGuiHandle == IntPtr.Zero)
                     {
                         ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1, 0, 0, 1));
@@ -95,23 +95,23 @@ namespace BDTHPlugin
                         ImGui.PopStyleColor();
                     }
                     else
-                        ImGui.Image(this.TextureDictionary[icon].ImGuiHandle, size);
+                        ImGui.Image(TextureDictionary[icon].ImGuiHandle, size);
 				}
                 else
 				{
                     ImGui.BeginChild("WaitingTexture", size, true);
                     ImGui.EndChild();
 
-                    this.TextureDictionary[icon] = null;
+                    TextureDictionary[icon] = null;
 
                     Task.Run(() =>
                     {
                         try
                         {
-                            var iconTex = this.pi.Data.GetIcon(icon);
-                            var tex = this.pi.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
+                            var iconTex = pi.Data.GetIcon(icon);
+                            var tex = pi.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
                             if (tex != null && tex.ImGuiHandle != IntPtr.Zero)
-                                this.TextureDictionary[icon] = tex;
+                                TextureDictionary[icon] = tex;
                         }
                         catch 
                         {
@@ -129,10 +129,10 @@ namespace BDTHPlugin
             641  // Shirogane
         };
 
-        public bool IsOutdoors() => outdoors.Contains(this.pi.ClientState.TerritoryType);
+        public bool IsOutdoors() => outdoors.Contains(pi.ClientState.TerritoryType);
 
-        public bool TryGetFurnishing(uint id, out HousingFurniture furniture) => this.furnitureDict.TryGetValue(id, out furniture);
-        public bool TryGetYardObject(uint id, out HousingYardObject furniture) => this.yardObjectDict.TryGetValue(id, out furniture);
+        public bool TryGetFurnishing(uint id, out HousingFurniture furniture) => furnitureDict.TryGetValue(id, out furniture);
+        public bool TryGetYardObject(uint id, out HousingYardObject furniture) => yardObjectDict.TryGetValue(id, out furniture);
 
         private unsafe void OnCommand(string command, string args)
         {
@@ -145,7 +145,7 @@ namespace BDTHPlugin
                 var argArray = args.Split(' ');
 
                 // Check valid state for modifying memory.
-                var disabled = !(this.memory.CanEditItem() && this.memory.HousingStructure->ActiveItem != null);
+                var disabled = !(memory.CanEditItem() && memory.HousingStructure->ActiveItem != null);
 
                 // Show/Hide the furnishing list.
                 if (argArray.Length == 1)
@@ -154,26 +154,26 @@ namespace BDTHPlugin
                     if (opt.Equals("list"))
                     { 
                         // Only allow furnishing list when the housing window is open.
-                        if (!this.memory.IsHousingOpen())
+                        if (!memory.IsHousingOpen())
                         {
-                            this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
-                            this.ui.ListVisible = false;
+                            pi.Framework.Gui.Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
+                            ui.ListVisible = false;
                             return;
                         }
 
                         // Disallow the ability to open furnishing list outdoors.
-                        if (this.IsOutdoors())
+                        if (IsOutdoors())
                         {
-                            this.pi.Framework.Gui.Chat.PrintError("Cannot open furnishing outdoors currently.");
-                            this.ui.ListVisible = false;
+                            pi.Framework.Gui.Chat.PrintError("Cannot open furnishing outdoors currently.");
+                            ui.ListVisible = false;
                             return;
                         }
 
-                        this.ui.ListVisible = !this.ui.ListVisible;
+                        ui.ListVisible = !ui.ListVisible;
                     }
 
                     if (opt.Equals("debug"))
-                        this.ui.debugVisible = !this.ui.debugVisible;
+                        ui.debugVisible = !ui.debugVisible;
                 }
 
                 // Position or rotation values are being passed in, and we're not disabled.
@@ -187,19 +187,19 @@ namespace BDTHPlugin
                         var z = float.Parse(argArray[2], NumberStyles.Any, CultureInfo.InvariantCulture);
 
                         // Set the position in the memory object.
-                        this.memory.position.X = x;
-                        this.memory.position.Y = y;
-                        this.memory.position.Z = z;
+                        memory.position.X = x;
+                        memory.position.Y = y;
+                        memory.position.Z = z;
 
                         // Write the position.
-                        this.memory.WritePosition(this.memory.position);
+                        memory.WritePosition(memory.position);
 
                         // Specifying the rotation as well.
                         if(argArray.Length == 4)
                         {
                             // Parse and write the rotation.
-                            this.memory.rotation.Y = (float)(float.Parse(argArray[3], NumberStyles.Any, CultureInfo.InvariantCulture) * 180 / Math.PI);
-                            this.memory.WriteRotation(this.memory.rotation);
+                            memory.rotation.Y = (float)(float.Parse(argArray[3], NumberStyles.Any, CultureInfo.InvariantCulture) * 180 / Math.PI);
+                            memory.WriteRotation(memory.rotation);
                         }
                     }
                     catch (Exception ex)
@@ -211,13 +211,13 @@ namespace BDTHPlugin
             else
             {
                 // Hide or show the UI.
-                this.ui.Visible = !this.ui.Visible;
+                ui.Visible = !ui.Visible;
             }
         }
 
         private void DrawUI()
         {
-            this.ui.Draw();
+            ui.Draw();
         }
     }
 }
