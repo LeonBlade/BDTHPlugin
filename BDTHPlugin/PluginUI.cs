@@ -10,11 +10,10 @@ namespace BDTHPlugin
 {
 	// It is good to have this be disposable in general, in case you ever need it
 	// to do any cleanup
-	class PluginUI : IDisposable
+	public class PluginUI
 	{
-		private readonly Plugin plugin;
-		private readonly Configuration configuration;
-		private readonly PluginMemory memory;
+		private PluginMemory memory => Plugin.Memory;
+		private Configuration configuration => Plugin.Configuration;
 
 		private static float[] identityMatrix =
 		{
@@ -36,9 +35,9 @@ namespace BDTHPlugin
 		private MODE gizmoMode = MODE.LOCAL;
 
 		// Components for the active item.
-		private Vector3 translate = new Vector3();
-		private Vector3 rotation = new Vector3();
-		private Vector3 scale = new Vector3();
+		private Vector3 translate = new();
+		private Vector3 rotation = new();
+		private Vector3 scale = new();
 
 		// this extra bool exists for ImGui, since you can't ref a property
 		private bool visible = false;
@@ -65,29 +64,28 @@ namespace BDTHPlugin
 		private bool dummyInventory;
 
 		private bool placeAnywhere = false;
-		private readonly Vector4 ORANGE_COLOR = new Vector4(0.871f, 0.518f, 0f, 1f);
+		private readonly Vector4 ORANGE_COLOR = new(0.871f, 0.518f, 0f, 1f);
 
-		public PluginUI(Plugin p, DalamudPluginInterface pi, Configuration configuration, PluginMemory memory)
+		public PluginUI()
 		{
-			this.plugin = p;
-			this.configuration = configuration;
-			this.memory = memory;
-
 			drag = configuration.Drag;
 			useGizmo = configuration.UseGizmo;
 			doSnap = configuration.DoSnap;
 		}
 
-		public void Dispose()
-		{
-		}
-
 		public void Draw()
 		{
-			DrawGizmo();
-			DrawMainWindow();
-			DrawHousingList();
-			DrawDebug();
+			try
+      {
+				DrawGizmo();
+				DrawMainWindow();
+				DrawHousingList();
+				DrawDebug();
+			}
+			catch (Exception ex)
+      {
+				PluginLog.LogError(ex, "Error drawing UI");
+      }
 		}
 
 		public unsafe void DrawMainWindow()
@@ -101,7 +99,7 @@ namespace BDTHPlugin
 			ImGui.PushStyleColor(ImGuiCol.CheckMark, ORANGE_COLOR);
 
 			var invalid = memory.HousingStructure->ActiveItem == null 
-				|| memory.GamepadMode
+				|| PluginMemory.GamepadMode
 				|| memory.HousingStructure->Mode != HousingLayoutMode.Rotate;
 			var fontScale = ImGui.GetIO().FontGlobalScale;
 			var size = new Vector2(320 * fontScale, (!invalid ? 312 : 170) * fontScale);
@@ -170,7 +168,7 @@ namespace BDTHPlugin
 
 				if (memory.HousingStructure->Mode == HousingLayoutMode.None)
 					ImGui.Text("Enter housing mode to get started");
-				else if (memory.GamepadMode)
+				else if (PluginMemory.GamepadMode)
 				{
 					ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
 					ImGui.Text("Does not support Gamepad");
@@ -200,11 +198,11 @@ namespace BDTHPlugin
 					ImGui.EndTooltip();
 				}
 
-				dummyHousingGoods = memory.HousingGoods != null && memory.HousingVisible;
+				dummyHousingGoods = PluginMemory.HousingGoods != null && PluginMemory.HousingGoods->IsVisible;
 				dummyInventory = memory.InventoryVisible;
  
 				if (ImGui.Checkbox("Display in-game list", ref dummyHousingGoods))
-					if (memory.HousingGoods != null) memory.HousingVisible = dummyHousingGoods;
+					if (PluginMemory.HousingGoods != null) PluginMemory.HousingGoods->IsVisible = dummyHousingGoods;
 				ImGui.SameLine();
 				if (ImGui.Checkbox("Display inventory", ref dummyInventory))
 					memory.InventoryVisible = dummyInventory;
@@ -383,8 +381,8 @@ namespace BDTHPlugin
 
 			var snap = doSnap ? new Vector3(drag, drag, drag) : Vector3.Zero;
 
-			// ImGuizmo.Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0]);
-			Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0], ref snap.X);
+      // ImGuizmo.Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0]);
+      Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0], ref snap.X);
 
 			ImGuizmo.DecomposeMatrixToComponents(ref itemMatrix[0], ref translate.X, ref rotation.X, ref scale.X);
 
@@ -402,7 +400,7 @@ namespace BDTHPlugin
 
 			if (ImGui.Begin("BDTH Debug", ref debugVisible))
 			{
-				ImGui.Text($"Gamepad Mode: {memory.GamepadMode}");
+				ImGui.Text($"Gamepad Mode: {PluginMemory.GamepadMode}");
 				ImGui.Text($"CanEditItem: {memory.CanEditItem()}");
 				ImGui.Text($"IsHousingOpen: {memory.IsHousingOpen()}");
 				ImGui.Separator();
@@ -450,7 +448,7 @@ namespace BDTHPlugin
 			}
 
 			// Disallow the ability to open furnishing list outdoors.
-			if (plugin.IsOutdoors())
+			if (Plugin.IsOutdoors())
 			{
 				listVisible = false;
 				return;
@@ -491,12 +489,12 @@ namespace BDTHPlugin
 							{
 								var name = "";
 								ushort icon = 0;
-								if (plugin.TryGetYardObject(items[i].HousingRowId, out var yardObject))
+								if (Plugin.TryGetYardObject(items[i].HousingRowId, out var yardObject))
 								{
 									name = yardObject.Item.Value.Name.ToString();
 									icon = yardObject.Item.Value.Icon;
 								}
-								if (plugin.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
+								if (Plugin.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
 								{
 									name = furnitureObject.Item.Value.Name.ToString();
 									icon = furnitureObject.Item.Value.Icon;
@@ -521,7 +519,7 @@ namespace BDTHPlugin
 									PluginLog.Log($"{ImGui.GetScrollY()} {ImGui.GetScrollMaxY()}");
 								}
 
-								ImGui.SameLine(); plugin.DrawIcon(icon, new Vector2(20, 20));
+								ImGui.SameLine(); Plugin.DrawIcon(icon, new Vector2(20, 20));
 								ImGui.PopStyleVar();
 								// var distance = Util.DistanceFromPlayer(items[i], playerPos);
 
@@ -552,7 +550,7 @@ namespace BDTHPlugin
 		}
 
 		// Bypass the delta matrix to just only use snap.
-		private bool Manipulate(ref float view, ref float projection, OPERATION operation, MODE mode, ref float matrix, ref float snap)
+		private static bool Manipulate(ref float view, ref float projection, OPERATION operation, MODE mode, ref float matrix, ref float snap)
 		{
 			unsafe
 			{
