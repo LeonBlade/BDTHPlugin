@@ -62,6 +62,7 @@ namespace BDTHPlugin
 
 		private bool dummyHousingGoods;
 		private bool dummyInventory;
+		private bool autoVisible;
 
 		private bool placeAnywhere = false;
 		private readonly Vector4 ORANGE_COLOR = new(0.871f, 0.518f, 0f, 1f);
@@ -71,6 +72,7 @@ namespace BDTHPlugin
 			drag = configuration.Drag;
 			useGizmo = configuration.UseGizmo;
 			doSnap = configuration.DoSnap;
+			autoVisible = configuration.AutoVisible;
 		}
 
 		public void Draw()
@@ -216,6 +218,12 @@ namespace BDTHPlugin
 					ImGui.Text("NOTE: Does not currently work outdoors!");
 					ImGui.EndTooltip();
 				}
+				ImGui.SameLine();
+				if(ImGui.Checkbox("Auto Open", ref autoVisible))
+                		{
+					configuration.AutoVisible = autoVisible;
+					configuration.Save();
+               			}
 
 				// ImGui.SameLine();
 				// if (ImGui.Button("Place Item"))
