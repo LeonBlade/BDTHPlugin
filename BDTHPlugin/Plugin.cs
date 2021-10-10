@@ -1,6 +1,7 @@
 using Dalamud.Data;
 using Dalamud.Game;
 using Dalamud.Game.ClientState;
+using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Command;
 using Dalamud.Game.Gui;
 using Dalamud.IoC;
@@ -34,6 +35,7 @@ namespace BDTHPlugin
     [PluginService] public static ChatGui Chat { get; private set; } = null!;
     [PluginService] public static GameGui GameGui { get; private set; } = null!;
     [PluginService] public static SigScanner TargetModuleScanner { get; private set; } = null!;
+    [PluginService] public static Dalamud.Game.ClientState.Conditions.Condition Condition { get; private set; } = null!;
 
     public static Configuration Configuration;
     public static PluginUI Ui;
@@ -64,10 +66,20 @@ namespace BDTHPlugin
       ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
 
       PluginInterface.UiBuilder.Draw += DrawUI;
+      Condition.ConditionChange += Condition_ConditionChange;
+    }
+    
+    private void Condition_ConditionChange(ConditionFlag flag, bool value)
+    {
+      if (flag == ConditionFlag.UsingHousingFunctions)
+      {
+        Ui.Visible = value;
+      }
     }
 
     public void Dispose()
     {
+      Condition.ConditionChange -= Condition_ConditionChange;
       // Dispose everything in the texture dictionary.
       foreach (var t in TextureDictionary)
         t.Value?.Dispose();
