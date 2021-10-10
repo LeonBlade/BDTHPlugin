@@ -71,7 +71,7 @@ namespace BDTHPlugin
     
     private void Condition_ConditionChange(ConditionFlag flag, bool value)
     {
-      if (flag == ConditionFlag.UsingHousingFunctions)
+      if (Configuration.AutoVisible && flag == ConditionFlag.UsingHousingFunctions)
       {
         Ui.Visible = value;
       }
