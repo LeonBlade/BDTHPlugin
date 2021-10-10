@@ -11,6 +11,7 @@ namespace BDTHPlugin
         public bool DoSnap { get; set; } = false;
         public float Drag { get; set; } = 0.05f;
         public bool SortByDistance { get; set; } = false;
+        public bool AutoVisible { get; set; } = true;
 
         public void Save()
         {
