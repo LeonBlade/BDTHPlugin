@@ -209,7 +209,7 @@ namespace BDTHPlugin
 				if (ImGui.Checkbox("Display inventory", ref dummyInventory))
 					memory.InventoryVisible = dummyInventory;
 
-				if (ImGui.Button("Open Furnishing List"))
+				/*if (ImGui.Button("Open Furnishing List"))
 					Plugin.CommandManager.ProcessCommand("/bdth list");
 				if (ImGui.IsItemHovered())
 				{
@@ -218,12 +218,12 @@ namespace BDTHPlugin
 					ImGui.Text("NOTE: Does not currently work outdoors!");
 					ImGui.EndTooltip();
 				}
-				ImGui.SameLine();
+				*/
 				if(ImGui.Checkbox("Auto Open", ref autoVisible))
-                		{
+                {
 					configuration.AutoVisible = autoVisible;
 					configuration.Save();
-               			}
+               	}
 
 				// ImGui.SameLine();
 				// if (ImGui.Button("Place Item"))
