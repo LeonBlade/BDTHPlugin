@@ -55,6 +55,6 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="Build" Condition="$(Configuration) == 'Release'">
-    <Exec Command="powershell Compress-Archive -Path '$(ProjectDir)$(OutDir)$(TargetName).json', '$(ProjectDir)$(OutDir)$(TargetName).dll' -DestinationPath '$(ProjectDir)bin\$(TargetName).zip' -Force" />
+    <Exec Command="powershell Compress-Archive -Force $(TargetPath), $(TargetDir)$(TargetName).json, $(TargetDir)$(TargetName).pdb $(TargetDir)$(TargetName).zip" />
   </Target>
 </Project>
