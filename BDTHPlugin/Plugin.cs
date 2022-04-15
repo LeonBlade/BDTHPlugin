@@ -68,7 +68,7 @@ namespace BDTHPlugin
       PluginInterface.UiBuilder.Draw += DrawUI;
       Condition.ConditionChange += Condition_ConditionChange;
     }
-    
+
     private void Condition_ConditionChange(ConditionFlag flag, bool value)
     {
       if (Configuration.AutoVisible && flag == ConditionFlag.UsingHousingFunctions)
@@ -89,7 +89,6 @@ namespace BDTHPlugin
       Memory.Dispose();
 
       CommandManager.RemoveHandler(commandName);
-      PluginInterface.Dispose();
 
       GC.SuppressFinalize(this);
     }
@@ -143,10 +142,11 @@ namespace BDTHPlugin
 
     private static readonly ushort[] outdoors = new ushort[]
     {
-            339, // Mist
-            340, // The Lavender Beds
-            341, // The Goblet
-            641  // Shirogane
+      339, // Mist
+      340, // The Lavender Beds
+      341, // The Goblet
+      641, // Shirogane
+      979  // Empyreum
     };
 
     public static bool IsOutdoors() => outdoors.Contains(ClientState.TerritoryType);
