@@ -55,6 +55,10 @@ jobs:
         with:
           name: PluginZip
 
+      - name: Get Tag Name
+        id: tag
+        uses: WyriHaximus/github-action-get-previous-tag@v1
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
