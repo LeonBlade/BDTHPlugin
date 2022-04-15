@@ -10,9 +10,7 @@ on:
     branches: [main]
 
 env:
-  SOLUTION_NAME: BDTHPlugin
-  RELEASE_NAME: BDTHPlugin
-  ZIP_PATH: BDTHPlugin\bin\BDTHPlugin.zip
+  PROJECT_NAME: BDTHPlugin
 
 jobs:
   build:
@@ -34,21 +32,25 @@ jobs:
 
       - name: Build
         run: |
-          dotnet restore -r win ${{ env.SOLUTION_NAME }}.sln
-          dotnet build --configuration Release
+          dotnet restore
+          dotnet build --configuration Release --nologo --output bin/
         env:
           DOTNET_CLI_TELEMETRY_OUTPUT: true
 
       - name: Create artifact
-        uses: actions/upload-artifact@v2
+        run: |
+          Compress-Archive -Path "bin/*" -DestinationPath BDTHPlugin.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2.2.1
         with:
           name: PluginZip
-          path: ${{ env.ZIP_PATH }}
+          path: BDTHPlugin.zip
           if-no-files-found: error
 
   release:
     needs: build
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
 
     steps:
@@ -70,7 +72,7 @@ jobs:
       - name: Create release
         uses: softprops/action-gh-release@v1
         with:
-          name: ${{ env.RELEASE_NAME }} ${{ steps.tag.outputs.tag }}
+          name: ${{ env.PROJECT_NAME }} ${{ steps.tag.outputs.tag }}
           tag_name: ${{ steps.tag.outputs.tag }}
           body: ${{ github.events.commits[0].message }}
           files: ${{ steps.download.outputs.download-path }}/BDTHPlugin.zip
