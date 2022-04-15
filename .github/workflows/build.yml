@@ -1,26 +1,31 @@
 name: Build
 
 on:
-  push:
-    branches: '*'
-    tags: '*'
-  pull_request:
   workflow_dispatch:
+  push:
+    branches: [main]
+    tags:
+      - '*'
+  pull_request:
+    branches: [main]
+
+env:
+  SOLUTION_NAME: BDTHPlugin
+  RELEASE_NAME: BDTHPlugin
+  ZIP_PATH: BDTHPlugin\bin\BDTHPlugin.zip
 
 jobs:
   build:
     runs-on: windows-latest
 
     steps:
-      - uses: actions/checkout@v2
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v2
+      - name: Checkout
+        uses: actions/checkout@v2
         with:
-          dotnet-version: 6.0.100
+          submodules: recursive
 
-      - name: Restore Dependencies
-        run: dotnet restore
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.0.3
 
       - name: Download Dalamud
         run: |
@@ -29,37 +34,40 @@ jobs:
 
       - name: Build
         run: |
-          dotnet build --no-restore --configuration Release --nologo --output bin
+          dotnet restore -r win ${{ env.SOLUTION_NAME }}.sln
+          dotnet build --configuration Release
+        env:
+          DOTNET_CLI_TELEMETRY_OUTPUT: true
 
-      - name: Create Artifact
-        run: |
-          Compress-Archive -Path "bin/*" -DestinationPath BDTHPlugin.zip
-
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v2.2.1
+      - name: Create artifact
+        uses: actions/upload-artifact@v2
         with:
           name: PluginZip
-          path: BDTHPlugin.zip
+          path: ${{ env.ZIP_PATH }}
+          if-no-files-found: error
 
   release:
     needs: build
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repo
+        uses: actions/checkout@v2.2.0
+        with:
+          fetch-depth: 0
 
-      - name: Download Artifact
+      - name: Download artifact
         uses: actions/download-artifact@v2
         id: download
         with:
           name: PluginZip
 
-      - name: Get Tag Name
+      - name: Get tag name
         id: tag
         uses: WyriHaximus/github-action-get-previous-tag@v1
 
-      - name: Create Release
+      - name: Create release
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ env.RELEASE_NAME }} ${{ steps.tag.outputs.tag }}
@@ -67,7 +75,7 @@ jobs:
           body: ${{ github.events.commits[0].message }}
           files: ${{ steps.download.outputs.download-path }}/BDTHPlugin.zip
 
-      - name: Trigger Plugin Repo Update
+      - name: Trigger plugin repo update
         uses: peter-evans/repository-dispatch@v1
         with:
           token: ${{ secrets.PAT }}
