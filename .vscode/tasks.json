@@ -13,8 +13,7 @@
       ],
       "problemMatcher": "$msCompile",
       "group": {
-        "kind": "build",
-        "isDefault": true
+        "kind": "build"
       }
     },
     {
@@ -29,7 +28,10 @@
         "-c",
         "Release"
       ],
-      "problemMatcher": "$msCompile"
+      "problemMatcher": "$msCompile",
+      "group": {
+        "kind": "build"
+      }
     }
   ]
 }

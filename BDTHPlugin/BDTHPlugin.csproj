@@ -10,7 +10,7 @@
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <PreserveCompilationContext>false</PreserveCompilationContext>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-    <OutputPath>$(AppData)/XIVLauncher/devPlugins/BDTHPlugin</OutputPath>
+    <OutputPath>$(AppData)\XIVLauncher\devPlugins\BDTHPlugin</OutputPath>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -50,11 +50,7 @@
 
   <ItemGroup>
     <None Update="BDTHPlugin.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
-
-  <Target Name="PostBuild" AfterTargets="Build" Condition="$(Configuration) == 'Release'">
-    <Exec Command="powershell Compress-Archive -Force $(TargetPath), $(TargetDir)$(TargetName).json, $(TargetDir)$(TargetName).pdb $(TargetDir)$(TargetName).zip" />
-  </Target>
 </Project>
