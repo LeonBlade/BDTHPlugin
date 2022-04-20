@@ -208,16 +208,16 @@ namespace BDTHPlugin
         if (ImGui.Checkbox("Display inventory", ref dummyInventory))
           memory.InventoryVisible = dummyInventory;
 
-        /*if (ImGui.Button("Open Furnishing List"))
-					Plugin.CommandManager.ProcessCommand("/bdth list");
-				if (ImGui.IsItemHovered())
-				{
-					ImGui.BeginTooltip();
-					ImGui.Text("Opens a furnishing list that you can use to sort by distance and click to select objects.");
-					ImGui.Text("NOTE: Does not currently work outdoors!");
-					ImGui.EndTooltip();
-				}
-				*/
+        if (ImGui.Button("Open Furnishing List"))
+          Plugin.CommandManager.ProcessCommand("/bdth list");
+        if (ImGui.IsItemHovered())
+        {
+          ImGui.BeginTooltip();
+          ImGui.Text("Opens a furnishing list that you can use to sort by distance and click to select objects.");
+          ImGui.Text("NOTE: Does not currently work outdoors!");
+          ImGui.EndTooltip();
+        }
+
         if (ImGui.Checkbox("Auto Open", ref autoVisible))
         {
           configuration.AutoVisible = autoVisible;
@@ -484,36 +484,53 @@ namespace BDTHPlugin
 
         ImGui.BeginChild("FurnishingList");
 
-        var playerPos = Plugin.ClientState.LocalPlayer?.Position;
+        if (Plugin.ClientState.LocalPlayer == null)
+          return;
 
-        if (playerPos.HasValue)
+        var playerPos = Plugin.ClientState.LocalPlayer.Position;
+        // An active item is being selected.
+        var hasActiveItem = memory.HousingStructure->ActiveItem != null;
+
+        if (ImGui.BeginTable("FurnishingListItems", 3))
         {
+          ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 0f);
+          ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 0f);
+          ImGui.TableSetupColumn("Distance", ImGuiTableColumnFlags.WidthFixed, 0f);
+
           try
           {
-            if (memory.GetFurnishings(out var items, playerPos.Value, sortByDistance))
+            if (memory.GetFurnishings(out var items, playerPos, sortByDistance))
             {
               for (var i = 0; i < items.Count; i++)
               {
+                ImGui.TableNextRow(ImGuiTableRowFlags.None, 28 * fontScale);
+                ImGui.TableNextColumn();
+                ImGui.AlignTextToFramePadding();
+
                 var name = "";
                 ushort icon = 0;
+
                 if (Plugin.TryGetYardObject(items[i].HousingRowId, out var yardObject))
                 {
                   name = yardObject.Item.Value.Name.ToString();
                   icon = yardObject.Item.Value.Icon;
                 }
+
                 if (Plugin.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
                 {
                   name = furnitureObject.Item.Value.Name.ToString();
                   icon = furnitureObject.Item.Value.Icon;
                 }
 
-                // An active item is being selected.
-                var hasActiveItem = memory.HousingStructure->ActiveItem != null;
+                // Skip item if we can't find a name or item icon.
+                if (name == string.Empty || icon == 0)
+                  continue;
+
                 // The currently selected item.
                 var thisActive = hasActiveItem && items[i].Item == memory.HousingStructure->ActiveItem;
 
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0f, 4f));
-                if (ImGui.Selectable($"##Item{i}", hasActiveItem && thisActive))
+                if (ImGui.Selectable($"##Item{i}", thisActive, ImGuiSelectableFlags.SpanAllColumns, new(0, 20 * fontScale)))
                   memory.SelectItem((IntPtr)memory.HousingStructure, (IntPtr)items[i].Item);
 
                 if (thisActive)
@@ -526,12 +543,19 @@ namespace BDTHPlugin
                   PluginLog.Log($"{ImGui.GetScrollY()} {ImGui.GetScrollMaxY()}");
                 }
 
-                ImGui.SameLine(); Plugin.DrawIcon(icon, new Vector2(20, 20));
-                ImGui.PopStyleVar();
-                // var distance = Util.DistanceFromPlayer(items[i], playerPos);
+                ImGui.SameLine();
+                Plugin.DrawIcon(icon, new Vector2(24 * fontScale, 24 * fontScale));
+                var distance = Util.DistanceFromPlayer(items[i], playerPos);
 
-                ImGui.SameLine(); ImGui.Text(name);
-                // ImGui.SameLine(); ImGui.Text($"{distance:F2}");
+                ImGui.TableNextColumn();
+                ImGui.SetNextItemWidth(-1);
+                ImGui.Text(name);
+
+                ImGui.TableNextColumn();
+                ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(.5f, .5f, .5f, 1));
+                ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetColumnWidth() - ImGui.CalcTextSize(distance.ToString("F2")).X - ImGui.GetScrollX() - 2 * ImGui.GetStyle().ItemSpacing.X);
+                ImGui.Text($"{distance:F2}");
+                ImGui.PopStyleColor();
               }
 
               if (renderCount >= 10)
@@ -544,6 +568,7 @@ namespace BDTHPlugin
           }
           finally
           {
+            ImGui.EndTable();
             ImGui.EndChild();
           }
         }

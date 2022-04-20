@@ -47,16 +47,7 @@ namespace BDTHPlugin
     }
 
     public static float DistanceFromPlayer(HousingGameObject obj, Vector3 playerPos)
-      => Distance(new Vector3(playerPos.X, playerPos.Z, playerPos.Y), new Vector3(obj.X, obj.Y, obj.Z));
-
-    public static float Distance(Vector3 v1, Vector3 v2)
-    {
-      var x1 = Math.Pow(v2.X - v1.X, 2);
-      var y1 = Math.Pow(v2.Y - v1.Y, 2);
-      var z1 = Math.Pow(v2.Z - v1.Z, 2);
-
-      return (float)Math.Sqrt(x1 + y1 + z1);
-    }
+      => Vector3.Distance(playerPos, new(obj.X, obj.Y, obj.Z));
   }
 
   public static class QuaternionExtensions
