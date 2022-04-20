@@ -532,6 +532,7 @@ namespace BDTHPlugin
                 ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0f, 4f));
                 if (ImGui.Selectable($"##Item{i}", thisActive, ImGuiSelectableFlags.SpanAllColumns, new(0, 20 * fontScale)))
                   memory.SelectItem((IntPtr)memory.HousingStructure, (IntPtr)items[i].Item);
+                ImGui.PopStyleVar();
 
                 if (thisActive)
                   ImGui.SetItemDefaultFocus();
