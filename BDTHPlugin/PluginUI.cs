@@ -103,7 +103,7 @@ namespace BDTHPlugin
         || PluginMemory.GamepadMode
         || memory.HousingStructure->Mode != HousingLayoutMode.Rotate;
       var fontScale = ImGui.GetIO().FontGlobalScale;
-      var size = new Vector2(320 * fontScale, (!invalid ? 312 : 170) * fontScale);
+      var size = new Vector2(320 * fontScale, (!invalid ? 312 : 197) * fontScale);
 
       ImGui.SetNextWindowSize(size, ImGuiCond.Always);
       ImGui.SetNextWindowSizeConstraints(size, size);
