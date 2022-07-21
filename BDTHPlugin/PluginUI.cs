@@ -103,7 +103,7 @@ namespace BDTHPlugin
         || PluginMemory.GamepadMode
         || memory.HousingStructure->Mode != HousingLayoutMode.Rotate;
       var fontScale = ImGui.GetIO().FontGlobalScale;
-      var size = new Vector2(320 * fontScale, (!invalid ? 312 : 197) * fontScale);
+      var size = new Vector2(-1, -1);
 
       ImGui.SetNextWindowSize(size, ImGuiCond.Always);
       ImGui.SetNextWindowSizeConstraints(size, size);
@@ -235,9 +235,6 @@ namespace BDTHPlugin
 
     private unsafe void DrawItemControls()
     {
-      var io = ImGui.GetIO();
-      ImGuizmo.SetRect(0, 0, io.DisplaySize.X, io.DisplaySize.Y);
-
       ImGui.BeginGroup();
 
       ImGui.PushItemWidth(73f);
@@ -367,24 +364,20 @@ namespace BDTHPlugin
       // Gizmo setup.
       ImGuizmo.Enable(!memory.HousingStructure->Rotating);
       ImGuizmo.SetID("BDTHPlugin".GetHashCode());
-      ImGuizmo.BeginFrame();
 
       ImGuizmo.SetOrthographic(false);
 
       var vp = ImGui.GetMainViewport();
       ImGui.SetNextWindowSize(vp.Size);
-      ImGui.SetNextWindowPos(new Vector2(0, 0), ImGuiCond.Always);
+      ImGui.SetNextWindowPos(vp.Pos, ImGuiCond.Always);
       ImGui.SetNextWindowViewport(vp.ID);
 
-      ImGui.Begin("Gizmo", ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoNavInputs | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoInputs);
-      ImGui.BeginChild("##gizmoChild", new Vector2(-1, -1), false, ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoNavInputs | ImGuiWindowFlags.NoInputs);
+      ImGui.Begin("BDTHGizmo", ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoNavInputs | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoInputs);
+      ImGui.BeginChild("##BDTHGizmoChild", new Vector2(-1, -1), false, ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoNavInputs | ImGuiWindowFlags.NoInputs);
 
       ImGuizmo.SetDrawlist();
 
-      var windowWidth = ImGui.GetWindowWidth();
-      var windowHeight = ImGui.GetWindowHeight();
-
-      ImGuizmo.SetRect(ImGui.GetWindowPos().X, ImGui.GetWindowPos().Y, windowWidth, windowHeight);
+      ImGuizmo.SetRect(vp.Pos.X, vp.Pos.Y, vp.Size.X, vp.Size.Y);
 
       var snap = doSnap ? new Vector3(drag, drag, drag) : Vector3.Zero;
 
@@ -431,8 +424,6 @@ namespace BDTHPlugin
           var pos = memory.HousingStructure->ActiveItem->Position;
           ImGui.Text($"Position: {pos.X}, {pos.Y}, {pos.Z}");
         }
-
-
       }
       ImGui.End();
     }
