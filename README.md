@@ -1,7 +1,5 @@
 # BDTHPlugin
 
-![BDTHPlugin UI](https://i.imgur.com/AdznUyJ.png)
-
 ## What is it?
 BDTHPlugin is a Dalamud plugin for FFXIV which gives you more control over placing housing items.
 
