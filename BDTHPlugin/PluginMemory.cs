@@ -162,11 +162,6 @@ namespace BDTHPlugin
     public SelectItemDelegate SelectItem;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void SoftSelectDelegate(IntPtr housingStruct, IntPtr item);
-    private readonly IntPtr softSelectAddress;
-    private readonly Hook<SoftSelectDelegate> SoftSelectHook;
-
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void PlaceHousingItemDelegate(IntPtr item, Vector3 position);
     private readonly IntPtr placeHousingItemAddress;
     public PlaceHousingItemDelegate PlaceHousingItem;
@@ -175,6 +170,8 @@ namespace BDTHPlugin
     public delegate void HousingLayoutModelUpdateDelegate(IntPtr item, Vector3 position);
     private readonly IntPtr housingLayoutModelUpdateAddress;
     public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate;
+
+    private bool hasError = false;
 
     public PluginMemory()
     {
@@ -201,11 +198,6 @@ namespace BDTHPlugin
         // Select housing item.
         selectItemAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
         SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(selectItemAddress);
-
-        // Soft select hook.
-        softSelectAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 83 3B 05 75 26 48 8B CB") + 9;
-        SoftSelectHook = new Hook<SoftSelectDelegate>(softSelectAddress, new SoftSelectDelegate(SoftSelectDetour));
-        // SoftSelectHook.Enable();
 
         // Address for the place item function.
         placeHousingItemAddress = Plugin.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
@@ -236,10 +228,6 @@ namespace BDTHPlugin
         // Disable the place anywhere in case it's on.
         SetPlaceAnywhere(false);
 
-        // Get rid of the hook.
-        SoftSelectHook.Disable();
-        SoftSelectHook.Dispose();
-
         // Enable the housing goods menu again.
         if (HousingGoods != null) HousingGoods->IsVisible = true;
 
@@ -263,14 +251,6 @@ namespace BDTHPlugin
           return i;
       }
       return -1;
-    }
-
-    private void SoftSelectDetour(IntPtr housing, IntPtr item)
-    {
-      if (item == IntPtr.Zero)
-        return;
-      SoftSelectHook.Original(housing, item);
-      SelectItem(housing, item);
     }
 
     /// <summary>
@@ -398,10 +378,17 @@ namespace BDTHPlugin
             rotation = ReadRotation();
           }
 
+          hasError = false;
+
           Thread.Sleep(50);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+          if ((IntPtr)(HousingStructure->ActiveItem) != IntPtr.Zero && !hasError)
+          {
+            hasError = true;
+            PluginLog.LogError(ex.Message);
+          }
           position = Vector3.Zero;
           rotation = Vector3.Zero;
         }
