@@ -58,16 +58,17 @@ namespace BDTHPlugin
     private float drag;
     private bool useGizmo;
     private bool doSnap;
+    private bool placeAnywhere;
 
     private bool dummyHousingGoods;
     private bool dummyInventory;
     private bool autoVisible;
 
-    private bool placeAnywhere = false;
     private readonly Vector4 ORANGE_COLOR = new(0.871f, 0.518f, 0f, 1f);
 
     public PluginUI()
     {
+      placeAnywhere = configuration.PlaceAnywhere;
       drag = configuration.Drag;
       useGizmo = configuration.UseGizmo;
       doSnap = configuration.DoSnap;
@@ -168,7 +169,11 @@ namespace BDTHPlugin
         ImGui.Separator();
 
         if (memory.HousingStructure->Mode == HousingLayoutMode.None)
+        {
+          ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
           ImGui.Text("Enter housing mode to get started");
+          ImGui.PopStyleColor();
+        }
         else if (PluginMemory.GamepadMode)
         {
           ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
@@ -177,7 +182,9 @@ namespace BDTHPlugin
         }
         else if (memory.HousingStructure->ActiveItem == null || memory.HousingStructure->Mode != HousingLayoutMode.Rotate)
         {
+          ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(1, 0, 0, 1));
           ImGui.Text("Select a housing item in Rotate mode");
+          ImGui.PopStyleColor();
           ImGuiComponents.HelpMarker("Are you doing everything right? Try using the /bdth debug command and report this issue in Discord!");
         }
         else
@@ -223,10 +230,6 @@ namespace BDTHPlugin
           configuration.AutoVisible = autoVisible;
           configuration.Save();
         }
-
-        // ImGui.SameLine();
-        // if (ImGui.Button("Place Item"))
-        //	 if (memory.CanEditItem() && memory.HousingStructure->ActiveItem != null) memory.PlaceHousingItem((IntPtr)memory.HousingStructure->ActiveItem, memory.position);
       }
       ImGui.End();
 
@@ -239,50 +242,27 @@ namespace BDTHPlugin
 
       ImGui.PushItemWidth(73f);
 
-      if (ImGui.DragFloat("##xdrag", ref memory.position.X, drag))
+      if (ImGui.DragFloat("##bdth-xdrag", ref memory.position.X, drag))
         memory.WritePosition(memory.position);
       ImGui.SameLine(0, 4);
-      var xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-      if (ImGui.DragFloat("##ydrag", ref memory.position.Y, drag))
+      if (ImGui.DragFloat("##bdth-ydrag", ref memory.position.Y, drag))
         memory.WritePosition(memory.position);
       ImGui.SameLine(0, 4);
-      var yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
-      if (ImGui.DragFloat("##zdrag", ref memory.position.Z, drag))
+      if (ImGui.DragFloat("##bdth-zdrag", ref memory.position.Z, drag))
         memory.WritePosition(memory.position);
       ImGui.SameLine(0, 4);
-      var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
       ImGui.Text("position");
 
-      if (ImGui.DragFloat("##rydrag", ref memory.rotation.Y, drag))
+      if (ImGui.DragFloat("##bdth-rydrag", ref memory.rotation.Y, drag))
         memory.WriteRotation(memory.rotation);
       ImGui.SameLine(0, 4);
-      var ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
       ImGui.Text("rotation");
 
       ImGui.PopItemWidth();
-
-      // Mouse wheel direction.
-      var delta = ImGui.GetIO().MouseWheel * drag;
-
-      // Move position based on which control is being hovered.
-      if (xHover)
-        memory.position.X += delta;
-      if (yHover)
-        memory.position.Y += delta;
-      if (zHover)
-        memory.position.Z += delta;
-      if (xHover || yHover || zHover)
-        memory.WritePosition(memory.position);
-
-      // Move rotation based on which control is being hovered.
-      if (ryHover)
-        memory.rotation.Y += delta;
-      if (ryHover && delta > 0)
-        memory.WriteRotation(memory.rotation);
 
       ImGui.EndGroup(); // End group for the drag section.
 
@@ -294,39 +274,16 @@ namespace BDTHPlugin
         ImGui.EndTooltip();
       }
 
-      if (ImGui.InputFloat("x coord", ref memory.position.X, drag))
-        memory.WritePosition(memory.position);
-      xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-      if (ImGui.InputFloat("y coord", ref memory.position.Y, drag))
-        memory.WritePosition(memory.position);
-      yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-      if (ImGui.InputFloat("z coord", ref memory.position.Z, drag))
-        memory.WritePosition(memory.position);
-      zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-      if (ImGui.InputFloat("ry degree", ref memory.rotation.Y, drag))
-        memory.WriteRotation(memory.rotation);
-      ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
-
-      // Mouse wheel direction.
-      delta = ImGui.GetIO().MouseWheel * drag;
-
-      // Move position based on which control is being hovered.
-      if (xHover)
-        memory.position.X += delta;
-      if (yHover)
-        memory.position.Y += delta;
-      if (zHover)
-        memory.position.Z += delta;
-      if (xHover || yHover || zHover)
+      if (ImGui.InputFloat("x coord##bdth-x", ref memory.position.X, drag))
         memory.WritePosition(memory.position);
 
-      // Move rotation based on which control is being hovered.
-      if (ryHover)
-        memory.rotation.Y += delta;
-      if (ryHover && delta > 0)
+      if (ImGui.InputFloat("y coord##bdth-y", ref memory.position.Y, drag))
+        memory.WritePosition(memory.position);
+
+      if (ImGui.InputFloat("z coord##bdth-z", ref memory.position.Z, drag))
+        memory.WritePosition(memory.position);
+
+      if (ImGui.InputFloat("ry degree##bdth-ry", ref memory.rotation.Y, drag))
         memory.WriteRotation(memory.rotation);
     }
 

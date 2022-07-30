@@ -171,8 +171,6 @@ namespace BDTHPlugin
     private readonly IntPtr housingLayoutModelUpdateAddress;
     public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate;
 
-    private bool hasError = false;
-
     public PluginMemory()
     {
       try
@@ -378,17 +376,10 @@ namespace BDTHPlugin
             rotation = ReadRotation();
           }
 
-          hasError = false;
-
           Thread.Sleep(50);
         }
-        catch (Exception ex)
+        catch
         {
-          if ((IntPtr)(HousingStructure->ActiveItem) != IntPtr.Zero && !hasError)
-          {
-            hasError = true;
-            PluginLog.LogError(ex.Message);
-          }
           position = Vector3.Zero;
           rotation = Vector3.Zero;
         }

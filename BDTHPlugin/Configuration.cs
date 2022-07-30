@@ -12,6 +12,7 @@ namespace BDTHPlugin
     public float Drag { get; set; } = 0.05f;
     public bool SortByDistance { get; set; } = false;
     public bool AutoVisible { get; set; } = true;
+    public bool PlaceAnywhere { get; set; } = false;
 
     public void Save()
     {
