@@ -1,4 +1,3 @@
-using Dalamud.Hooking;
 using Dalamud.Logging;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using System;
@@ -6,14 +5,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace BDTHPlugin
 {
   public class PluginMemory
   {
-    private readonly Thread thread;
-    private bool threadRunning = false;
     private int inventoryType = 0;
 
     // Pointers to modify assembly to enable place anywhere.
@@ -204,11 +200,6 @@ namespace BDTHPlugin
         // Housing item model update.
         housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8D 15 ?? ?? ?? ?? 0F 1F 40 00 48 8D 48 F0", 2) + 0x238;
         HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(housingLayoutModelUpdateAddress);
-
-        // Thread loop to read active item.
-        thread = new Thread(new ThreadStart(Loop));
-        thread.Start();
-        threadRunning = true;
       }
       catch (Exception ex)
       {
@@ -228,10 +219,6 @@ namespace BDTHPlugin
 
         // Enable the housing goods menu again.
         if (HousingGoods != null) HousingGoods->IsVisible = true;
-
-        // Kind of pointless if I'm just gonna abort the thread but whatever.
-        threadRunning = false;
-        thread.Interrupt();
       }
       catch (Exception ex)
       {
@@ -285,12 +272,12 @@ namespace BDTHPlugin
     {
       // Ensure that we're hooked and have the housing structure address.
       if (HousingStructure == null)
-        throw new Exception("Housing structure is invalid!");
+        throw new PluginException("Housing structure is invalid!");
 
       // Ensure active item pointer isn't null.
       var item = HousingStructure->ActiveItem;
       if (item == null)
-        throw new Exception("No valid item selected!");
+        throw new PluginException("No valid item selected!");
 
       // Return the position vector.
       return item->Position;
@@ -304,12 +291,12 @@ namespace BDTHPlugin
     {
       // Ensure that we're hooked and have the housing structure address.
       if (HousingStructure == null)
-        throw new Exception("Housing structure is invalid!");
+        throw new PluginException("Housing structure is invalid!");
 
       // Ensure active item pointer isn't null.
       var item = HousingStructure->ActiveItem;
       if (item == null)
-        throw new Exception("No valid item selected!");
+        throw new PluginException("No valid item selected!");
 
       // Return the rotation radian.
       return Util.FromQ(item->Rotation);
@@ -364,25 +351,26 @@ namespace BDTHPlugin
     /// <summary>
     /// Thread loop for reading memory.
     /// </summary>
-    public unsafe void Loop()
+    public unsafe void Update()
     {
-      while (threadRunning)
+      try
       {
-        try
+        if (CanEditItem())
         {
-          if (CanEditItem())
-          {
-            position = ReadPosition();
-            rotation = ReadRotation();
-          }
-
-          Thread.Sleep(50);
+          position = ReadPosition();
+          rotation = ReadRotation();
         }
-        catch
-        {
-          position = Vector3.Zero;
-          rotation = Vector3.Zero;
-        }
+      }
+      catch (PluginException)
+      {
+        position = Vector3.Zero;
+        rotation = Vector3.Zero;
+      }
+      catch (Exception ex)
+      {
+        PluginLog.LogError(ex, "Unknown exception");
+        position = Vector3.Zero;
+        rotation = Vector3.Zero;
       }
     }
 

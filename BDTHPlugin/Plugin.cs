@@ -67,6 +67,12 @@ namespace BDTHPlugin
 
       PluginInterface.UiBuilder.Draw += DrawUI;
       Condition.ConditionChange += Condition_ConditionChange;
+      Framework.Update += Framework_Update;
+    }
+
+    private void Framework_Update(Framework framework)
+    {
+      Memory.Update();
     }
 
     private void Condition_ConditionChange(ConditionFlag flag, bool value)

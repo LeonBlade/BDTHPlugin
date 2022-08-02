@@ -245,24 +245,47 @@ namespace BDTHPlugin
       if (ImGui.DragFloat("##bdth-xdrag", ref memory.position.X, drag))
         memory.WritePosition(memory.position);
       ImGui.SameLine(0, 4);
+      var xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
       if (ImGui.DragFloat("##bdth-ydrag", ref memory.position.Y, drag))
         memory.WritePosition(memory.position);
       ImGui.SameLine(0, 4);
+      var yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
       if (ImGui.DragFloat("##bdth-zdrag", ref memory.position.Z, drag))
         memory.WritePosition(memory.position);
       ImGui.SameLine(0, 4);
+      var zHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
       ImGui.Text("position");
 
       if (ImGui.DragFloat("##bdth-rydrag", ref memory.rotation.Y, drag))
         memory.WriteRotation(memory.rotation);
       ImGui.SameLine(0, 4);
+      var ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
       ImGui.Text("rotation");
 
       ImGui.PopItemWidth();
+
+      // Mouse wheel direction.
+      var delta = ImGui.GetIO().MouseWheel * drag;
+
+      // Move position based on which control is being hovered.
+      if (xHover)
+        memory.position.X += delta;
+      if (yHover)
+        memory.position.Y += delta;
+      if (zHover)
+        memory.position.Z += delta;
+      if (xHover || yHover || zHover)
+        memory.WritePosition(memory.position);
+
+      // Move rotation based on which control is being hovered.
+      if (ryHover)
+        memory.rotation.Y += delta;
+      if (ryHover && delta > 0)
+        memory.WriteRotation(memory.rotation);
 
       ImGui.EndGroup(); // End group for the drag section.
 
@@ -276,14 +299,36 @@ namespace BDTHPlugin
 
       if (ImGui.InputFloat("x coord##bdth-x", ref memory.position.X, drag))
         memory.WritePosition(memory.position);
+      xHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
       if (ImGui.InputFloat("y coord##bdth-y", ref memory.position.Y, drag))
         memory.WritePosition(memory.position);
+      yHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
 
       if (ImGui.InputFloat("z coord##bdth-z", ref memory.position.Z, drag))
         memory.WritePosition(memory.position);
 
       if (ImGui.InputFloat("ry degree##bdth-ry", ref memory.rotation.Y, drag))
+        memory.WriteRotation(memory.rotation);
+      ryHover = ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax());
+
+      // Mouse wheel direction.
+      delta = ImGui.GetIO().MouseWheel * drag;
+
+      // Move position based on which control is being hovered.
+      if (xHover)
+        memory.position.X += delta;
+      if (yHover)
+        memory.position.Y += delta;
+      if (zHover)
+        memory.position.Z += delta;
+      if (xHover || yHover || zHover)
+        memory.WritePosition(memory.position);
+
+      // Move rotation based on which control is being hovered.
+      if (ryHover)
+        memory.rotation.Y += delta;
+      if (ryHover && delta > 0)
         memory.WriteRotation(memory.rotation);
     }
 
