@@ -200,6 +200,11 @@ namespace BDTHPlugin
         // Housing item model update.
         housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.ScanText("48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 50 48 8B E9 48 8B 49 ??");
         HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(housingLayoutModelUpdateAddress);
+
+        if (Plugin.Configuration.PlaceAnywhere)
+        {
+          SetPlaceAnywhere(Plugin.Configuration.PlaceAnywhere);
+        }
       }
       catch (Exception ex)
       {
@@ -436,6 +441,18 @@ namespace BDTHPlugin
       return true;
     }
 
+    private void WriteProtectedBytes(IntPtr addr, byte[] b)
+    {
+      VirtualProtect(addr, 1, Protection.PAGE_EXECUTE_READWRITE, out var oldProtection);
+      Marshal.Copy(b, 0, addr, b.Length);
+      VirtualProtect(addr, 1, oldProtection, out _);
+    }
+
+    private void WriteProtectedBytes(IntPtr addr, byte b)
+    {
+      WriteProtectedBytes(addr, new[] { b });
+    }
+
     /// <summary>
     /// Sets the flag for place anywhere in memory.
     /// </summary>
@@ -446,43 +463,16 @@ namespace BDTHPlugin
       var bstate = (byte)(state ? 1 : 0);
 
       // Write the bytes for place anywhere.
-      VirtualProtect(placeAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out var oldProtection);
-      Marshal.WriteByte(placeAnywhere, bstate);
-      VirtualProtect(placeAnywhere, 1, oldProtection, out _);
-
-      // Write the bytes for wall anywhere.
-      VirtualProtect(wallAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-      Marshal.WriteByte(wallAnywhere, bstate);
-      VirtualProtect(wallAnywhere, 1, oldProtection, out _);
-
-      // Write the bytes for the wall mount anywhere.
-      VirtualProtect(wallmountAnywhere, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-      Marshal.WriteByte(wallmountAnywhere, bstate);
-      VirtualProtect(wallmountAnywhere, 1, oldProtection, out _);
+      WriteProtectedBytes(placeAnywhere, bstate);
+      WriteProtectedBytes(wallAnywhere, bstate);
+      WriteProtectedBytes(wallmountAnywhere, bstate);
 
       // Which bytes to write.
       var showcaseBytes = state ? new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 } : new byte[] { 0x88, 0x87, 0x73, 0x01, 0x00, 0x00 };
 
       // Write bytes for showcase anywhere (nop or original bytes).
-      VirtualProtect(showcaseAnywhereRotate, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-      WriteBytes(showcaseAnywhereRotate, showcaseBytes);
-      VirtualProtect(showcaseAnywhereRotate, 1, oldProtection, out _);
-
-      // Write bytes for showcase anywhere (nop or original bytes).
-      VirtualProtect(showcaseAnywherePlace, 1, Protection.PAGE_EXECUTE_READWRITE, out oldProtection);
-      WriteBytes(showcaseAnywherePlace, showcaseBytes);
-      VirtualProtect(showcaseAnywherePlace, 1, oldProtection, out _);
-    }
-
-    /// <summary>
-    /// Writes a series of bytes.
-    /// </summary>
-    /// <param name="ptr">Pointer to write to</param>
-    /// <param name="bytes">The bytes to write</param>
-    private static void WriteBytes(IntPtr ptr, byte[] bytes)
-    {
-      for (var i = 0; i < bytes.Length; i++)
-        Marshal.WriteByte(ptr + i, bytes[i]);
+      WriteProtectedBytes(showcaseAnywhereRotate, showcaseBytes);
+      WriteProtectedBytes(showcaseAnywherePlace, showcaseBytes);
     }
 
     #region Kernel32
