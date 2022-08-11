@@ -85,7 +85,10 @@ namespace BDTHPlugin
 
     public void Dispose()
     {
+      PluginInterface.UiBuilder.Draw -= DrawUI;
       Condition.ConditionChange -= Condition_ConditionChange;
+      Framework.Update -= Framework_Update;
+
       // Dispose everything in the texture dictionary.
       foreach (var t in TextureDictionary)
         t.Value?.Dispose();

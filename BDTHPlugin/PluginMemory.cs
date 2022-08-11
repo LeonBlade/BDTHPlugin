@@ -357,6 +357,7 @@ namespace BDTHPlugin
       {
         if (CanEditItem())
         {
+          // Don't really need to load position if we're reading it in the UI thread anyway, but leaving it for now for redudency...
           position = ReadPosition();
           rotation = ReadRotation();
 
