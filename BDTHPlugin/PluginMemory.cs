@@ -163,7 +163,7 @@ namespace BDTHPlugin
     public PlaceHousingItemDelegate PlaceHousingItem;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void HousingLayoutModelUpdateDelegate(IntPtr item);
+    public delegate void HousingLayoutModelUpdateDelegate(IntPtr item, Vector3 position);
     private readonly IntPtr housingLayoutModelUpdateAddress;
     public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate;
 
@@ -198,7 +198,7 @@ namespace BDTHPlugin
         PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(placeHousingItemAddress);
 
         // Housing item model update.
-        housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.ScanText("48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 50 48 8B E9 48 8B 49 ??");
+        housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8D 15 ?? ?? ?? ?? 0F 1F 40 00 48 8D 48 F0", 2) + 0x238;
         HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(housingLayoutModelUpdateAddress);
       }
       catch (Exception ex)
@@ -360,11 +360,6 @@ namespace BDTHPlugin
           // Don't really need to load position if we're reading it in the UI thread anyway, but leaving it for now for redudency...
           position = ReadPosition();
           rotation = ReadRotation();
-
-          // Update the model of active item, the game doesn't do this for wall mounted and outside in rotate mode
-          var item = HousingStructure->ActiveItem;
-          if (item != null)
-            HousingLayoutModelUpdate((IntPtr)item + 0x80);
         }
       }
       catch (PluginException)
