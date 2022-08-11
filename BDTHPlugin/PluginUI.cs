@@ -250,21 +250,44 @@ namespace BDTHPlugin
         }
       }
     }
+    
+    private unsafe bool DrawDrag(string name, ref float f)
+    {
+      var changed = ImGui.DragFloat(name, ref f, drag);
+      ImGui.SameLine(0, 4);
+      HandleScrollInput(ref f);
+      return changed;
+    }
 
     private unsafe void DrawDragCoord(string name, ref float f)
     {
-      if (ImGui.DragFloat(name, ref f, drag))
+      if (DrawDrag(name, ref f))
         memory.WritePosition(memory.position);
-      ImGui.SameLine(0, 4);
+    }
+    
+    private unsafe void DrawDragRotate(string name, ref float f)
+    {
+      if (DrawDrag(name, ref f))
+        memory.WriteRotation(memory.rotation);
+    }
+    
+    private unsafe bool DrawInput(string name, ref float f)
+    {
+      var changed = ImGui.InputFloat(name, ref f, drag);
       HandleScrollInput(ref f);
+      ImGui.SameLine();
+      return changed;
+    }
+    
+    private unsafe void DrawInputCoord(string name, ref float f)
+    {
+      if (DrawInput(name, ref f))
+        memory.WritePosition(memory.position);
     }
 
     private unsafe void DrawInputCoord(string name, ref float f, ref float? locked)
     {
-      if (ImGui.InputFloat(name, ref f, drag))
-        memory.WritePosition(memory.position);
-      HandleScrollInput(ref f);
-      ImGui.SameLine();
+      DrawInputCoord(name, ref f);
       if (ImGuiComponents.IconButton((int)ImGui.GetID(name), locked == null ? Dalamud.Interface.FontAwesomeIcon.Unlock : Dalamud.Interface.FontAwesomeIcon.Lock))
         locked = locked == null ? f : null;
     }
@@ -311,6 +334,7 @@ namespace BDTHPlugin
       DrawInputCoord("x coord##bdth-x", ref memory.position.X, ref lockX);
       DrawInputCoord("y coord##bdth-y", ref memory.position.Y, ref lockY);
       DrawInputCoord("z coord##bdth-z", ref memory.position.Z, ref lockZ);
+      DrawInputCoord("ry degree##bdth-ry", ref memory.rotate.Y);
     }
 
     public unsafe void DrawGizmo()
