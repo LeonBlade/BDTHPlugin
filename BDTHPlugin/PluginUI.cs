@@ -334,7 +334,7 @@ namespace BDTHPlugin
       DrawInputCoord("x coord##bdth-x", ref memory.position.X, ref lockX);
       DrawInputCoord("y coord##bdth-y", ref memory.position.Y, ref lockY);
       DrawInputCoord("z coord##bdth-z", ref memory.position.Z, ref lockZ);
-      DrawInputCoord("ry degree##bdth-ry", ref memory.rotate.Y);
+      DrawInputCoord("ry degree##bdth-ry", ref memory.rotation.Y);
     }
 
     public unsafe void DrawGizmo()
