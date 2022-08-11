@@ -3,7 +3,7 @@
   "Name": "Burning Down the House",
   "Description": "Move around housing items with coordinates and allows you to place anywhere.",
   "InternalName": "BDTHPlugin",
-  "AssemblyVersion": "1.5.0",
+  "AssemblyVersion": "1.5.1",
   "RepoUrl": "https://github.com/LeonBlade/BDTHPlugin",
   "ApplicableVersion": "any",
   "Tags": [ "bdth", "housing", "float", "place", "glitch", "furnishing", "LeonBlade" ],
