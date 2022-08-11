@@ -285,6 +285,12 @@ namespace BDTHPlugin
         memory.WritePosition(memory.position);
     }
 
+    private unsafe void DrawInputRotate(string name, ref float f)
+    {
+      if (DrawInput(name, ref f))
+        memory.WriteRotation(memory.rotation);
+    }
+
     private unsafe void DrawInputCoord(string name, ref float f, ref float? locked)
     {
       DrawInputCoord(name, ref f);
@@ -316,7 +322,7 @@ namespace BDTHPlugin
           DrawDragCoord("##bdth-zdrag", ref memory.position.Z);
           ImGui.Text("position");
 
-          DrawDragCoord("##bdth-rydrag", ref memory.rotation.Y);
+          DrawDragRotate("##bdth-rydrag", ref memory.rotation.Y);
           ImGui.Text("rotation");
         }
         ImGui.PopItemWidth();
@@ -334,7 +340,7 @@ namespace BDTHPlugin
       DrawInputCoord("x coord##bdth-x", ref memory.position.X, ref lockX);
       DrawInputCoord("y coord##bdth-y", ref memory.position.Y, ref lockY);
       DrawInputCoord("z coord##bdth-z", ref memory.position.Z, ref lockZ);
-      DrawInputCoord("ry degree##bdth-ry", ref memory.rotation.Y);
+      DrawInputRotate("ry degree##bdth-ry", ref memory.rotation.Y);
     }
 
     public unsafe void DrawGizmo()
