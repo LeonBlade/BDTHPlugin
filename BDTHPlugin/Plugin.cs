@@ -203,6 +203,9 @@ namespace BDTHPlugin
 
           if (opt.Equals("debug"))
             Ui.debugVisible = !Ui.debugVisible;
+
+          if (opt.Equals("reset"))
+            Ui.resetWindow = true;
         }
 
         // Position or rotation values are being passed in, and we're not disabled.

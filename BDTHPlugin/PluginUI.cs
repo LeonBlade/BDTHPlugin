@@ -57,6 +57,8 @@ namespace BDTHPlugin
 
     public bool debugVisible = false;
 
+    public bool resetWindow = false;
+
     private float drag;
     private bool useGizmo;
     private bool doSnap;
@@ -145,7 +147,13 @@ namespace BDTHPlugin
       ImGui.SetNextWindowSize(size, ImGuiCond.Always);
       ImGui.SetNextWindowSizeConstraints(size, size);
 
-      if (ImGui.Begin($"Burning Down the House", ref visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
+      if (resetWindow)
+      {
+        ImGui.SetNextWindowPos(new Vector2(69, 69), ImGuiCond.Always);
+        resetWindow = false;
+      }
+
+      if (ImGui.Begin($"Burning Down the House##BDTH", ref visible, ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize))
       {
         ImGui.BeginGroup();
 
