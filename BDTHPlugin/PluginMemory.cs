@@ -172,7 +172,7 @@ namespace BDTHPlugin
       try
       {
         // Assembly address for asm rewrites.
-        placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4D") + 6;
+        placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4C") + 6;
         wallAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
         wallmountAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
         showcaseAnywhereRotate = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
