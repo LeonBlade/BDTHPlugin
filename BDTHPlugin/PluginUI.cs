@@ -1,3 +1,4 @@
+using Dalamud.Interface;
 using Dalamud.Interface.Components;
 using Dalamud.Logging;
 using ImGuiNET;
@@ -187,7 +188,7 @@ namespace BDTHPlugin
         DrawTooltip("Enables snapping of gizmo movement based on the drag value set below.");
 
         ImGui.SameLine();
-        if (ImGuiComponents.IconButton(1, gizmoMode == MODE.LOCAL ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
+        if (ImGuiComponents.IconButton(gizmoMode == MODE.LOCAL ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
           gizmoMode = gizmoMode == MODE.LOCAL ? MODE.WORLD : MODE.LOCAL;
         DrawTooltip(new[]
         {
@@ -302,7 +303,7 @@ namespace BDTHPlugin
     private unsafe void DrawInputCoord(string name, ref float f, ref float? locked)
     {
       DrawInputCoord(name, ref f);
-      if (ImGuiComponents.IconButton((int)ImGui.GetID(name), locked == null ? Dalamud.Interface.FontAwesomeIcon.Unlock : Dalamud.Interface.FontAwesomeIcon.Lock))
+      if (ImGuiComponents.IconButton(locked == null ? Dalamud.Interface.FontAwesomeIcon.Unlock.ToIconString() + name : Dalamud.Interface.FontAwesomeIcon.Lock.ToIconString() + name))
         locked = locked == null ? f : null;
     }
 
@@ -345,10 +346,10 @@ namespace BDTHPlugin
         ImGui.EndTooltip();
       }
 
-      DrawInputCoord("x coord##bdth-x", ref memory.position.X, ref lockX);
-      DrawInputCoord("y coord##bdth-y", ref memory.position.Y, ref lockY);
-      DrawInputCoord("z coord##bdth-z", ref memory.position.Z, ref lockZ);
-      DrawInputRotate("ry degree##bdth-ry", ref memory.rotation.Y);
+      DrawInputCoord("##bdth-x", ref memory.position.X, ref lockX);
+      DrawInputCoord("##bdth-y", ref memory.position.Y, ref lockY);
+      DrawInputCoord("##bdth-z", ref memory.position.Z, ref lockZ);
+      DrawInputRotate("##bdth-ry", ref memory.rotation.Y);
     }
 
     public unsafe void DrawGizmo()
