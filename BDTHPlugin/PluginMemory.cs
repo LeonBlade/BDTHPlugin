@@ -23,9 +23,12 @@ namespace BDTHPlugin
     private readonly IntPtr layoutWorldPtr;
     private readonly IntPtr housingModulePtr;
 
-    public unsafe LayoutWorld* Layout => (LayoutWorld*)layoutWorldPtr;
+    public unsafe HousingModule* HousingModule => housingModulePtr != IntPtr.Zero ? (HousingModule*)Marshal.ReadIntPtr(housingModulePtr) : null;
+    public unsafe LayoutWorld* Layout => layoutWorldPtr != IntPtr.Zero ? (LayoutWorld*)Marshal.ReadIntPtr(layoutWorldPtr) : null;
+
+    //public unsafe LayoutWorld* Layout => (LayoutWorld*)layoutWorldPtr;
     public unsafe HousingStructure* HousingStructure => Layout->HousingStruct;
-    public unsafe HousingModule* HousingModule => (HousingModule*)housingModulePtr;
+    //public unsafe HousingModule* HousingModule => (HousingModule*)housingModulePtr;
     public unsafe HousingObjectManger* CurrentManager => HousingModule->GetCurrentManager();
 
     public static unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingLayout", 1);
@@ -179,11 +182,14 @@ namespace BDTHPlugin
         showcaseAnywherePlace = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
 
         // Pointers for housing structures.
-        layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??", 2);
-        housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07", 0xA);
+        //layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("E8 ?? ?? ?? ?? 48 8B C8 48 89 05 ?? ?? ?? ?? 48 8B 00", 2);
+        //housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07", 0xA);
+
+        housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 8B 52");
+        layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 85 D2");
         // Read the pointers.
-        layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
-        housingModulePtr = Marshal.ReadIntPtr(housingModulePtr);
+        //layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
+        //housingModulePtr = Marshal.ReadIntPtr(housingModulePtr);
 
         // Matrix address for gizmo usage.
         matrixSingletonAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
