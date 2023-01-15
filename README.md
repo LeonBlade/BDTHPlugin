@@ -17,4 +17,4 @@ https://github.com/LeonBlade/BDTHPlugin
 
 I have removed the original README so that the above info doesn't get lost, but please go to https://github.com/LeonBlade/DalamudPlugins for the official readme, code, and other related resources and info.
 
-Note that I don't intend to support this myself now and into, and only made this edit because I wanted to use BDTH. I figured it would be useful for others too so I released it publically. I will happily answer questions or help out where possible though.
+Note that I don't intend to support this myself now and into the future, and only made this edit because I wanted to use BDTH. I figured it would be useful for others too so I released it publically. I will happily answer questions or help out where possible though.
