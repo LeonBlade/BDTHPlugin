@@ -1,0 +1,30 @@
+[
+  {
+    "Author": "LeonBlade, modded by Gedwey",
+    "Name": "Burning Down the House",
+    "Description": "[unofficial edit for 6.3] Move around housing items with coordinates and allows you to place anywhere.",
+    "InternalName": "BDTHPlugin",
+    "AssemblyVersion": "1.5.8",
+    "RepoUrl": "https://github.com/gedwey/BDTHPlugin_6.3",
+    "ApplicableVersion": "any",
+    "Tags": [
+      "bdth",
+      "housing",
+      "float",
+      "place",
+      "glitch",
+      "furnishing",
+      "LeonBlade",
+      "Gedwey"
+    ],
+    "DalamudApiLevel": 7,
+    "IconUrl": "https://github.com/gedwey/BDTHPlugin_6.3/raw/main/icon.png",
+    "IsHide": "False",
+    "IsTestingExclusive": "False",
+    "LastUpdated": 1673821562,
+    "DownloadCount": 0,
+    "DownloadLinkInstall": "https://github.com/gedwey/BDTHPlugin_6.3/releases/download/6.3/BDTHPlugin.zip",
+    "DownloadLinkTesting": "https://github.com/gedwey/BDTHPlugin_6.3/releases/download/6.3/BDTHPlugin.zip",
+    "DownloadLinkUpdate": "https://github.com/gedwey/BDTHPlugin_6.3/releases/download/6.3/BDTHPlugin.zip"
+  }
+]
