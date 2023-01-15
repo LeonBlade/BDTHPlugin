@@ -1,39 +1,67 @@
-# BDTHPlugin
+1
 
-## What is it?
-BDTHPlugin is a Dalamud plugin for FFXIV which gives you more control over placing housing items.
+# This is an unofficial edit of BDTHPlugin for 6.3 until LeonBlade releases their own version
 
-## What do I need to run it?
-First, you must use the [FFXIVQuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher) to run your game. The Quick Launcher allows for custom plugins to be installed to add new functionality to the game. To install, you first need to have the Quick Launcher setup for your game, instructions can be found on the [FFXIVQuickLauncher](https://github.com/goatcorp/FFXIVQuickLauncher) page.
+2
 
-## How do I install it?
-### **[Please visit this page on how to install my plugin via third party repository support.](https://github.com/LeonBlade/DalamudPlugins)**
+​
 
-### **ONLY ASK FOR HELP FOR THIS PLUGIN FROM ME OR ON MY DISCORD SERVER**
+3
 
-## How do I use it?
-`/bdth` brings up the window to move items around. You **MUST** be in rotate mode for it to work.
+Add the following to your Dalamud custom repository list, under Settings -> Experimental:
 
-Enabling the "Place Anywhere" checkbox will remove restrictions on placing items down for most cases.
+4
 
-Enabling the "Gizmo" checkbox will give you access to a movement tool in game to manipulate the selected object on all three axis.
+https://raw.githubusercontent.com/gedwey/BDTHPlugin_6.3/main/plugin.json
 
-Enabling the "Snap" checkbox will lock your gizmo movements to the interval defined in the "drag" box at the bottom.
+5
 
-Clicking on the image button will change the movement mode to world and local movement.
+​
 
-Click and drag on the boxes to change their values based on the drag input, alternatively, use the + and - buttons on the other inputs to adjust by the drag value as well. You can also enter numbers in here if you like by typing them.
+6
 
-`/bdth list` opens a furnishing list used for indoors. Allows you to sort objects by distance to refine the list of items in item dense house.
+You can find a good guide on this process over at https://github.com/paissaheavyindustries/Dalamud-Repo (just replace the repo URL mentioned there with the one above).
 
-## FAQ
-Please check out the [FAQ](https://github.com/LeonBlade/BDTHPlugin/wiki/FAQ) page to see if your issue might be listed here.
+7
 
-## Final message
-Thank you for using my tool, I'm very grateful to everyone who uses my tools and I enjoy seeing what people do with them. If you wish to support me, you can do so at any of the links below. You can also join at the Discord to ask questions or share your creations.
+​
 
-**Ko-Fi:** https://ko-fi.com/LeonBlade
+8
 
-**Patreon:** https://patreon.com/LeonBlade
+### Note that you will need to remove the original LeonBlade repo (https://raw.githubusercontent.com/LeonBlade/DalamudPlugins/main/repo.json) from this list first, or else the two plugins might conflict and cause problems. I dunno if you need this but to be safe you probably should. In future you will need to remove mine and re-add LeonBlade's repo though, when BDTH is updated officially, to get the official releases again.
 
-**Discord:** https://discord.com/invite/crystallinemeans
+9
+
+​
+
+10
+
+​
+
+11
+
+​
+
+12
+
+See the original project here, and for future official updates:
+
+13
+
+https://github.com/LeonBlade/BDTHPlugin
+
+14
+
+​
+
+15
+
+I have removed the original README so that the above info doesn't get lost, but please go to https://github.com/LeonBlade/DalamudPlugins for the official readme, code, and other related resources and info.
+
+16
+
+​
+
+17
+
+Note that I don't intend to support this myself now and into, and only made this edit because I wanted to use BDTH. I figured it would be useful for others too so I released it publically. I will happily answer questions or help out where possible though.
