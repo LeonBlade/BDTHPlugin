@@ -56,9 +56,9 @@ namespace BDTHPlugin
   {
     [FieldOffset(0x30)] public fixed byte Name[64];
     [FieldOffset(0x80)] public uint HousingRowId;
-    [FieldOffset(0xA0)] public float X;
-    [FieldOffset(0xA4)] public float Y;
-    [FieldOffset(0xA8)] public float Z;
+    [FieldOffset(0xB0)] public float X;
+    [FieldOffset(0xB4)] public float Y;
+    [FieldOffset(0xB8)] public float Z;
     [FieldOffset(0x108)] public HousingItem* Item;
   }
 
