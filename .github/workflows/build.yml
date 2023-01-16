@@ -75,7 +75,7 @@ jobs:
           name: ${{ env.PROJECT_NAME }} ${{ steps.tag.outputs.tag }}
           tag_name: ${{ steps.tag.outputs.tag }}
           body: ${{ github.events.commits[0].message }}
-          files: ${{ steps.download.outputs.download-path }}/BDTHPlugin.zip
+          files: ./BDTHPlugin.zip
 
       - name: Trigger plugin repo update
         uses: peter-evans/repository-dispatch@v1
