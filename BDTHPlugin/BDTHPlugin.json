@@ -7,6 +7,6 @@
   "RepoUrl": "https://github.com/LeonBlade/BDTHPlugin",
   "ApplicableVersion": "any",
   "Tags": ["bdth", "housing", "float", "place", "glitch", "furnishing", "LeonBlade"],
-  "DalamudApiLevel": 7,
+  "DalamudApiLevel": 8,
   "IconUrl": "https://github.com/LeonBlade/BDTHPlugin/raw/main/icon.png"
 }

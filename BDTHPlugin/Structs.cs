@@ -59,7 +59,7 @@ namespace BDTHPlugin
     [FieldOffset(0xA0)] public float X;
     [FieldOffset(0xA4)] public float Y;
     [FieldOffset(0xA8)] public float Z;
-    [FieldOffset(0xF8)] public HousingItem* Item;
+    [FieldOffset(0x108)] public HousingItem* Item;
   }
 
   [StructLayout(LayoutKind.Explicit)]
