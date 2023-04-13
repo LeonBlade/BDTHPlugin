@@ -5,20 +5,14 @@ using ImGuizmoNET;
 using System;
 using System.Numerics;
 
+using FFXIVClientStructs.FFXIV.Client.Game.Control;
+
 namespace BDTHPlugin
 {
   public class PluginUI
   {
     private PluginMemory memory => Plugin.Memory;
     private Configuration configuration => Plugin.Configuration;
-
-    private static float[] identityMatrix =
-    {
-      1.0f, 0.0f, 0.0f, 0.0f,
-      0.0f, 1.0f, 0.0f, 0.0f,
-      0.0f, 0.0f, 1.0f, 0.0f,
-      0.0f, 0.0f, 0.0f, 1.0f
-    };
 
     private readonly float[] itemMatrix =
     {
@@ -372,16 +366,14 @@ namespace BDTHPlugin
       {
       }
 
-      var matrixSingleton = memory.GetMatrixSingleton();
-      if (matrixSingleton == IntPtr.Zero)
+      var camera = CameraManager.Instance->GetActiveCamera();
+      if (camera == null)
         return;
-
-      var viewProjectionMatrix = new float[16];
-
-      var rawMatrix = (float*)(matrixSingleton + 0x1B4).ToPointer();
-      for (var i = 0; i < 16; i++, rawMatrix++)
-        viewProjectionMatrix[i] = *rawMatrix;
-
+      
+      var projMatrix = camera->CameraBase.SceneCamera.RenderCamera->ProjectionMatrix;
+      var viewMatrix = camera->CameraBase.SceneCamera.ViewMatrix;
+      viewMatrix.M44 = 1f;
+      
       // Gizmo setup.
       ImGuizmo.Enable(!memory.HousingStructure->Rotating);
       ImGuizmo.SetID("BDTHPlugin".GetHashCode());
@@ -403,7 +395,7 @@ namespace BDTHPlugin
       var snap = doSnap ? new Vector3(drag, drag, drag) : Vector3.Zero;
 
       // ImGuizmo.Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0]);
-      Manipulate(ref viewProjectionMatrix[0], ref identityMatrix[0], gizmoOperation, gizmoMode, ref itemMatrix[0], ref snap.X);
+      Manipulate(ref viewMatrix.M11, ref projMatrix.M11, gizmoOperation, gizmoMode, ref itemMatrix[0], ref snap.X);
 
       ImGuizmo.DecomposeMatrixToComponents(ref itemMatrix[0], ref translate.X, ref rotation.X, ref scale.X);
 
