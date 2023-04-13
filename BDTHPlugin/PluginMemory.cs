@@ -145,12 +145,6 @@ namespace BDTHPlugin
     public Vector3 position;
     public Vector3 rotation;
 
-    // Matrix function used for gizmo view projection stuff.
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate IntPtr GetMatrixSingletonDelegate();
-    private readonly IntPtr matrixSingletonAddress;
-    public GetMatrixSingletonDelegate GetMatrixSingleton;
-
     // Function for selecting an item, usually used when clicking on one in game.
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void SelectItemDelegate(IntPtr housingStruct, IntPtr item);
@@ -181,13 +175,10 @@ namespace BDTHPlugin
         // Pointers for housing structures.
         layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??");
         housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07");
+        
         // Read the pointers.
         layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
         housingModulePtr = Marshal.ReadIntPtr(housingModulePtr);
-
-        // Matrix address for gizmo usage.
-        matrixSingletonAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8D 4C 24 ?? 48 89 4c 24 ?? 4C 8D 4D ?? 4C 8D 44 24 ??");
-        GetMatrixSingleton = Marshal.GetDelegateForFunctionPointer<GetMatrixSingletonDelegate>(matrixSingletonAddress);
 
         // Select housing item.
         selectItemAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
