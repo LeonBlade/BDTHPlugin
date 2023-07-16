@@ -4,6 +4,7 @@ using ImGuiNET;
 using ImGuizmoNET;
 using System;
 using System.Numerics;
+using Dalamud.Interface;
 
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 
@@ -33,6 +34,9 @@ namespace BDTHPlugin
     private float? lockX = null;
     private float? lockY = null;
     private float? lockZ = null;
+
+    private Vector3? copyPosition;
+    private float? copyRotation;
 
     // this extra bool exists for ImGui, since you can't ref a property
     private bool visible = false;
@@ -332,6 +336,32 @@ namespace BDTHPlugin
         ImGui.Text("Change the drag option below to influence how much it moves as you drag.");
         ImGui.EndTooltip();
       }
+
+      ImGui.SameLine();
+      ImGui.BeginGroup();
+      {
+        if (ImGuiComponents.IconButton(FontAwesomeIcon.Copy))
+        {
+          copyPosition = Memory.position;
+          copyRotation = Memory.rotation.Y;
+        }
+        if (ImGui.IsItemHovered())
+          ImGui.SetTooltip("Copy Position & Rotation");
+
+        ImGui.BeginDisabled(copyPosition == null || copyRotation == null);
+        {
+          if (ImGuiComponents.IconButton(FontAwesomeIcon.Paste) && copyPosition != null && copyRotation != null)
+          {
+            Memory.WritePosition(copyPosition.Value);
+            Memory.WriteRotation(Memory.rotation with { Y = copyRotation.Value });
+          }
+          if (ImGui.IsItemHovered())
+            ImGui.SetTooltip("Paste Position & Rotation");
+        }
+        ImGui.EndDisabled();
+      }
+
+      ImGui.EndGroup();
 
       DrawInputCoord("x coord##bdth-x", ref Memory.position.X, ref lockX);
       DrawInputCoord("y coord##bdth-y", ref Memory.position.Y, ref lockY);
