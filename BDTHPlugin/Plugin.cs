@@ -1,15 +1,11 @@
-using Dalamud.Data;
 using Dalamud.Game;
-using Dalamud.Game.ClientState;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Command;
-using Dalamud.Game.Gui;
 using Dalamud.IoC;
 using Dalamud.Logging;
 using Dalamud.Plugin;
-using Dalamud.Utility;
+using Dalamud.Plugin.Services;
 using ImGuiNET;
-using ImGuiScene;
 using ImGuizmoNET;
 using Lumina.Excel.GeneratedSheets;
 using System;
@@ -17,36 +13,32 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.Threading.Tasks;
 
 namespace BDTHPlugin
 {
   public class Plugin : IDalamudPlugin
   {
-    public string Name => "Burning Down the House";
-
     private const string commandName = "/bdth";
 
     [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
-    [PluginService] public static DataManager Data { get; private set; } = null!;
-    [PluginService] public static CommandManager CommandManager { get; private set; } = null!;
-    [PluginService] public static ClientState ClientState { get; private set; } = null!;
-    [PluginService] public static Framework Framework { get; private set; } = null!;
-    [PluginService] public static ChatGui Chat { get; private set; } = null!;
-    [PluginService] public static GameGui GameGui { get; private set; } = null!;
-    [PluginService] public static SigScanner TargetModuleScanner { get; private set; } = null!;
-    [PluginService] public static Dalamud.Game.ClientState.Conditions.Condition Condition { get; private set; } = null!;
+    [PluginService] public static IDataManager Data { get; private set; } = null!;
+    [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
+    [PluginService] public static IClientState ClientState { get; private set; } = null!;
+    [PluginService] public static IFramework Framework { get; private set; } = null!;
+    [PluginService] public static IChatGui Chat { get; private set; } = null!;
+    [PluginService] public static IGameGui GameGui { get; private set; } = null!;
+    [PluginService] public static ISigScanner TargetModuleScanner { get; private set; } = null!;
+    [PluginService] public static ICondition Condition { get; private set; } = null!;
+    [PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
+    [PluginService] public static IPluginLog Log { get; private set; } = null!;
 
-    public static Configuration Configuration;
-    public static PluginUI Ui;
-    public static PluginMemory Memory;
+    private static Configuration Configuration;
+    private static PluginUI Ui;
+    private static PluginMemory Memory;
 
     // Sheets used to get housing item info.
-    public static Dictionary<uint, HousingFurniture> FurnitureDict;
-    public static Dictionary<uint, HousingYardObject> YardObjectDict;
-
-    // Texture dictionary for the housing item icons.
-    public static readonly Dictionary<ushort, TextureWrap> TextureDictionary = new();
+    private static Dictionary<uint, HousingFurniture> FurnitureDict;
+    private static Dictionary<uint, HousingYardObject> YardObjectDict;
 
     public Plugin()
     {
@@ -66,11 +58,27 @@ namespace BDTHPlugin
       ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
 
       PluginInterface.UiBuilder.Draw += DrawUI;
+      PluginInterface.UiBuilder.OpenMainUi += OpenMainUI;
       Condition.ConditionChange += Condition_ConditionChange;
       Framework.Update += Framework_Update;
     }
 
-    private void Framework_Update(Framework framework)
+    public static Configuration GetConfiguration()
+    {
+      return Configuration;
+    }
+
+    public static PluginMemory GetMemory()
+    {
+      return Memory;
+    }
+
+    public static PluginUI GetUi()
+    {
+      return Ui;
+    }
+
+    private void Framework_Update(IFramework framework)
     {
       Memory.Update();
     }
@@ -86,13 +94,9 @@ namespace BDTHPlugin
     public void Dispose()
     {
       PluginInterface.UiBuilder.Draw -= DrawUI;
+      PluginInterface.UiBuilder.OpenMainUi -= OpenMainUI;
       Condition.ConditionChange -= Condition_ConditionChange;
       Framework.Update -= Framework_Update;
-
-      // Dispose everything in the texture dictionary.
-      foreach (var t in TextureDictionary)
-        t.Value?.Dispose();
-      TextureDictionary.Clear();
 
       // Dispose for stuff in Plugin Memory class.
       Memory.Dispose();
@@ -100,6 +104,11 @@ namespace BDTHPlugin
       CommandManager.RemoveHandler(commandName);
 
       GC.SuppressFinalize(this);
+    }
+
+    private void OpenMainUI()
+    {
+      Ui.Visible = true;
     }
 
     /// <summary>
@@ -111,41 +120,8 @@ namespace BDTHPlugin
     {
       if (icon < 65000)
       {
-        if (TextureDictionary.ContainsKey(icon))
-        {
-          var tex = TextureDictionary[icon];
-          if (tex == null || tex.ImGuiHandle == IntPtr.Zero)
-          {
-            ImGui.PushStyleColor(ImGuiCol.Border, new Vector4(1, 0, 0, 1));
-            ImGui.BeginChild("FailedTexture", size);
-            ImGui.Text(icon.ToString());
-            ImGui.EndChild();
-            ImGui.PopStyleColor();
-          }
-          else
-            ImGui.Image(TextureDictionary[icon].ImGuiHandle, size);
-        }
-        else
-        {
-          ImGui.BeginChild("WaitingTexture", size, true);
-          ImGui.EndChild();
-
-          TextureDictionary[icon] = null;
-
-          Task.Run(() =>
-          {
-            try
-            {
-              var iconTex = Data.GetIcon(icon);
-              var tex = PluginInterface.UiBuilder.LoadImageRaw(iconTex.GetRgbaImageData(), iconTex.Header.Width, iconTex.Header.Height, 4);
-              if (tex != null && tex.ImGuiHandle != IntPtr.Zero)
-                TextureDictionary[icon] = tex;
-            }
-            catch
-            {
-            }
-          });
-        }
+        var iconTexture = TextureProvider.GetIcon(icon);
+        ImGui.Image(iconTexture.ImGuiHandle, size);
       }
     }
 
@@ -236,7 +212,7 @@ namespace BDTHPlugin
           }
           catch (Exception ex)
           {
-            PluginLog.LogError(ex, "Error when positioning with command");
+            Log.Error(ex, "Error when positioning with command");
           }
         }
       }

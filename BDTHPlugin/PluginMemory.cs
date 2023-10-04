@@ -1,4 +1,5 @@
 using Dalamud.Logging;
+using FFXIVClientStructs.FFXIV.Client.Game.Housing;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using System;
 using System.Collections.Generic;
@@ -136,7 +137,7 @@ namespace BDTHPlugin
         }
         catch
         {
-          PluginLog.LogError("IsVisible setter not present");
+          Plugin.Log.Error("IsVisible setter not present");
         }
       }
     }
@@ -166,16 +167,16 @@ namespace BDTHPlugin
       try
       {
         // Assembly address for asm rewrites.
-        placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 4C") + 6;
-        wallAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 80") + 6;
-        wallmountAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 73 01 00 00 ?? 48 81 C4 80") + 6;
-        showcaseAnywhereRotate = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 8B");
-        showcaseAnywherePlace = Plugin.TargetModuleScanner.ScanText("88 87 73 01 00 00 48 83");
+        placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 ?? ?? 00 00 ?? 4C 8B B0") + 6;
+        wallAnywhere = Plugin.TargetModuleScanner.ScanText("48 85 C0 74 ?? C6 87 ?? ?? 00 00 00") + 11;
+        wallmountAnywhere = Plugin.TargetModuleScanner.ScanText("C0 E8 ?? 24 ?? 74 ?? C6 87 ?? ?? 00 00 00") + 13;
+        showcaseAnywhereRotate = Plugin.TargetModuleScanner.ScanText("84 C0 75 ?? 88 87 ?? ?? 00 00 48 8B 9C") + 4;
+        showcaseAnywherePlace = Plugin.TargetModuleScanner.ScanText("84 C0 75 ?? 88 87 ?? ?? 00 00 48 83") + 4;
 
         // Pointers for housing structures.
         layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??");
         housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07");
-        
+
         // Read the pointers.
         layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
         housingModulePtr = Marshal.ReadIntPtr(housingModulePtr);
@@ -192,14 +193,14 @@ namespace BDTHPlugin
         housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.ScanText("48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 50 48 8B E9 48 8B 49 ??");
         HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(housingLayoutModelUpdateAddress);
 
-        if (Plugin.Configuration.PlaceAnywhere)
+        if (Plugin.GetConfiguration().PlaceAnywhere)
         {
-          SetPlaceAnywhere(Plugin.Configuration.PlaceAnywhere);
+          SetPlaceAnywhere(Plugin.GetConfiguration().PlaceAnywhere);
         }
       }
       catch (Exception ex)
       {
-        PluginLog.LogError(ex, "Error while calling PluginMemory.ctor()");
+        Plugin.Log.Error(ex, "Error while calling PluginMemory.ctor()");
       }
     }
 
@@ -218,7 +219,7 @@ namespace BDTHPlugin
       }
       catch (Exception ex)
       {
-        PluginLog.LogError(ex, "Error while calling PluginMemory.Dispose()");
+        Plugin.Log.Error(ex, "Error while calling PluginMemory.Dispose()");
       }
     }
 
@@ -253,11 +254,18 @@ namespace BDTHPlugin
     /// <returns>Boolean state if housing menu is on or off.</returns>
     public unsafe bool CanEditItem()
     {
-      if (HousingStructure == null)
-        return false;
+      try
+      {
+        if (HousingStructure == null)
+          return false;
 
-      // Rotate mode only.
-      return HousingStructure->Mode == HousingLayoutMode.Rotate;
+        // Rotate mode only.
+        return HousingStructure->Mode == HousingLayoutMode.Rotate;
+      }
+      catch
+      {
+        return false;
+      }
     }
 
     /// <summary>
@@ -319,7 +327,7 @@ namespace BDTHPlugin
       }
       catch (Exception ex)
       {
-        PluginLog.LogError(ex, "Error occured while writing position!");
+        Plugin.Log.Error(ex, "Error occured while writing position!");
       }
     }
 
@@ -340,7 +348,7 @@ namespace BDTHPlugin
       }
       catch (Exception ex)
       {
-        PluginLog.LogError(ex, "Error occured while writing rotation!");
+        Plugin.Log.Error(ex, "Error occured while writing rotation!");
       }
     }
 
@@ -370,7 +378,7 @@ namespace BDTHPlugin
       }
       catch (Exception ex)
       {
-        PluginLog.LogError(ex, "Unknown exception");
+        Plugin.Log.Error(ex, "Unknown exception");
         position = Vector3.Zero;
         rotation = Vector3.Zero;
       }
@@ -432,15 +440,17 @@ namespace BDTHPlugin
       return true;
     }
 
-    private void WriteProtectedBytes(IntPtr addr, byte[] b)
+    private static void WriteProtectedBytes(IntPtr addr, byte[] b)
     {
+      if (addr == IntPtr.Zero) return;
       VirtualProtect(addr, 1, Protection.PAGE_EXECUTE_READWRITE, out var oldProtection);
       Marshal.Copy(b, 0, addr, b.Length);
       VirtualProtect(addr, 1, oldProtection, out _);
     }
 
-    private void WriteProtectedBytes(IntPtr addr, byte b)
+    private static void WriteProtectedBytes(IntPtr addr, byte b)
     {
+      if (addr == IntPtr.Zero) return;
       WriteProtectedBytes(addr, new[] { b });
     }
 
@@ -450,6 +460,9 @@ namespace BDTHPlugin
     /// <param name="state">Boolean state for if you can place anywhere.</param>
     public void SetPlaceAnywhere(bool state)
     {
+      if (placeAnywhere == IntPtr.Zero || wallAnywhere == IntPtr.Zero || wallmountAnywhere == IntPtr.Zero)
+        return;
+
       // The byte state from boolean.
       var bstate = (byte)(state ? 1 : 0);
 
