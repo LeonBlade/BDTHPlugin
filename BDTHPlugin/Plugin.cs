@@ -14,6 +14,8 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 
+using BDTHPlugin.Interface;
+
 namespace BDTHPlugin
 {
   public class Plugin : IDalamudPlugin
@@ -57,7 +59,7 @@ namespace BDTHPlugin
       // Set the ImGui context 
       ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
 
-      PluginInterface.UiBuilder.Draw += DrawUI;
+      PluginInterface.UiBuilder.Draw += Ui.Draw;
       PluginInterface.UiBuilder.OpenMainUi += OpenMainUI;
       Condition.ConditionChange += Condition_ConditionChange;
       Framework.Update += Framework_Update;
@@ -86,14 +88,12 @@ namespace BDTHPlugin
     private void Condition_ConditionChange(ConditionFlag flag, bool value)
     {
       if (Configuration.AutoVisible && flag == ConditionFlag.UsingHousingFunctions)
-      {
-        Ui.Visible = value;
-      }
+        Ui.Main.IsOpen = value;
     }
 
     public void Dispose()
     {
-      PluginInterface.UiBuilder.Draw -= DrawUI;
+      PluginInterface.UiBuilder.Draw -= Ui.Draw;
       PluginInterface.UiBuilder.OpenMainUi -= OpenMainUI;
       Condition.ConditionChange -= Condition_ConditionChange;
       Framework.Update -= Framework_Update;
@@ -108,7 +108,7 @@ namespace BDTHPlugin
 
     private void OpenMainUI()
     {
-      Ui.Visible = true;
+      Ui.Main.IsOpen = true;
     }
 
     /// <summary>
@@ -162,7 +162,7 @@ namespace BDTHPlugin
             if (!Memory.IsHousingOpen())
             {
               Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
-              Ui.ListVisible = false;
+              Ui.Furniture.IsOpen = false;
               return;
             }
 
@@ -170,18 +170,18 @@ namespace BDTHPlugin
             if (IsOutdoors())
             {
               Chat.PrintError("Cannot open furnishing outdoors currently.");
-              Ui.ListVisible = false;
+              Ui.Furniture.IsOpen = false;
               return;
             }
 
-            Ui.ListVisible = !Ui.ListVisible;
+            Ui.Furniture.Toggle();
           }
 
           if (opt.Equals("debug"))
-            Ui.debugVisible = !Ui.debugVisible;
+           Ui.Debug.Toggle();
 
           if (opt.Equals("reset"))
-            Ui.resetWindow = true;
+            Ui.Main.Reset = true;
         }
 
         // Position or rotation values are being passed in, and we're not disabled.
@@ -219,13 +219,8 @@ namespace BDTHPlugin
       else
       {
         // Hide or show the UI.
-        Ui.Visible = !Ui.Visible;
+        Ui.Main.Toggle();
       }
-    }
-
-    private void DrawUI()
-    {
-      Ui.Draw();
     }
   }
 }
