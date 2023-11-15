@@ -1,11 +1,12 @@
-using Dalamud.Logging;
-using FFXIVClientStructs.FFXIV.Client.Game.Housing;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+
+using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
+using CameraManager = FFXIVClientStructs.FFXIV.Client.Game.Control.CameraManager;
 
 namespace BDTHPlugin
 {
@@ -28,6 +29,7 @@ namespace BDTHPlugin
     public unsafe HousingStructure* HousingStructure => Layout->HousingStruct;
     public unsafe HousingModule* HousingModule => (HousingModule*)housingModulePtr;
     public unsafe HousingObjectManger* CurrentManager => HousingModule->GetCurrentManager();
+    public unsafe Camera* Camera => &CameraManager.Instance()->GetActiveCamera()->CameraBase.SceneCamera;
 
     public static unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingLayout", 1);
     public static unsafe bool GamepadMode => !(HousingLayout != null && HousingLayout->IsVisible);
