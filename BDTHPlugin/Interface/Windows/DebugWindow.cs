@@ -2,14 +2,15 @@
 
 using ImGuiNET;
 
-namespace BDTHPlugin.Interface.Windows {
+namespace BDTHPlugin.Interface.Windows
+{
   public class DebugWindow : Window
   {
     private static PluginMemory Memory => Plugin.GetMemory();
-    
+
     public DebugWindow() : base("BDTH Debug")
     {
-      
+
     }
 
     public unsafe override void Draw()
@@ -28,7 +29,7 @@ namespace BDTHPlugin.Interface.Windows {
       ImGui.Text($"Rotating: {Memory.HousingStructure->Rotating}");
       ImGui.Separator();
       ImGui.Text($"Housing Module: {(ulong)Memory.HousingModule:X}");
-      ImGui.Text($"Housing Module: {(ulong)Memory.HousingModule->CurrentTerritory:X}");
+      ImGui.Text($"Current Territory: {(ulong)Memory.HousingModule->CurrentTerritory:X}");
       ImGui.Text($"Outdoor Territory: {(ulong)Memory.HousingModule->OutdoorTerritory:X}");
       ImGui.Text($"Indoor Territory: {(ulong)Memory.HousingModule->IndoorTerritory:X}");
       var active = Memory.HousingStructure->ActiveItem;

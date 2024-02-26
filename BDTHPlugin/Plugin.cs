@@ -125,16 +125,7 @@ namespace BDTHPlugin
       }
     }
 
-    private static readonly ushort[] outdoors = new ushort[]
-    {
-      339, // Mist
-      340, // The Lavender Beds
-      341, // The Goblet
-      641, // Shirogane
-      979  // Empyreum
-    };
-
-    public static bool IsOutdoors() => outdoors.Contains(ClientState.TerritoryType);
+    public unsafe static bool IsOutdoors() => Memory.HousingModule->OutdoorTerritory != null;
 
     public static bool TryGetFurnishing(uint id, out HousingFurniture furniture) => FurnitureDict.TryGetValue(id, out furniture);
     public static bool TryGetYardObject(uint id, out HousingYardObject furniture) => YardObjectDict.TryGetValue(id, out furniture);
@@ -178,7 +169,7 @@ namespace BDTHPlugin
           }
 
           if (opt.Equals("debug"))
-           Ui.Debug.Toggle();
+            Ui.Debug.Toggle();
 
           if (opt.Equals("reset"))
             Ui.Main.Reset = true;
