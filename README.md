@@ -36,4 +36,4 @@ Thank you for using my tool, I'm very grateful to everyone who uses my tools and
 
 **Patreon:** https://patreon.com/LeonBlade
 
-**Discord:** https://discord.com/invite/crystallinemeans
+**Discord:** https://discord.gg/H4sSAyb25r
