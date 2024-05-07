@@ -2,7 +2,6 @@ using Dalamud.Game;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.Command;
 using Dalamud.IoC;
-using Dalamud.Logging;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
@@ -94,6 +93,7 @@ namespace BDTHPlugin
     public void Dispose()
     {
       PluginInterface.UiBuilder.Draw -= Ui.Draw;
+
       PluginInterface.UiBuilder.OpenMainUi -= OpenMainUI;
       Condition.ConditionChange -= Condition_ConditionChange;
       Framework.Update -= Framework_Update;
