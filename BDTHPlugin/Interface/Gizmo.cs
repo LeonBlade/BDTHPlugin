@@ -1,5 +1,5 @@
 ﻿using System.Numerics;
-
+using Dalamud.Interface.Utility;
 using ImGuiNET;
 using ImGuizmoNET;
 
@@ -9,82 +9,101 @@ namespace BDTHPlugin.Interface
   {
     private static PluginMemory Memory => Plugin.GetMemory();
     private static Configuration Configuration => Plugin.GetConfiguration();
-    
+
     private static unsafe bool CanEdit => Configuration.UseGizmo && Memory.CanEditItem() && Memory.HousingStructure->ActiveItem != null;
-    
+
     public MODE Mode = MODE.LOCAL;
 
     private Vector3 translate;
     private Vector3 rotation;
     private Vector3 scale = Vector3.One;
-    
-    private Matrix4x4 itemMatrix = Matrix4x4.Identity;
-    
+
+    private Matrix4x4 matrix = Matrix4x4.Identity;
+
+    private ImGuiIOPtr Io;
+    private Vector2 Wp;
+
     public void Draw()
     {
       if (!CanEdit)
         return;
-      
-      var vp = ImGui.GetMainViewport();
-      ImGui.SetNextWindowSize(vp.Size);
-      ImGui.SetNextWindowPos(vp.Pos, ImGuiCond.Always);
-      ImGui.SetNextWindowViewport(vp.ID);
-        
+
+      ImGuiHelpers.ForceNextWindowMainViewport();
+      ImGuiHelpers.SetNextWindowPosRelativeMainViewport(new Vector2(0, 0));
+
+      ImGui.PushStyleVar(ImGuiStyleVar.WindowPadding, new Vector2(0, 0));
+
       const ImGuiWindowFlags windowFlags = ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoDocking | ImGuiWindowFlags.NoNavFocus | ImGuiWindowFlags.NoNavInputs | ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoInputs;
       if (!ImGui.Begin("BDTHGizmo", windowFlags))
         return;
 
+      Io = ImGui.GetIO();
+      ImGui.SetWindowSize(Io.DisplaySize);
+
+      Wp = ImGui.GetWindowPos();
+
       try
       {
-        DrawGizmo(vp.Pos, vp.Size);
+        DrawGizmo(Wp, new Vector2(Io.DisplaySize.X, Io.DisplaySize.Y));
       }
       finally
       {
+        ImGui.PopStyleVar();
         ImGui.End();
       }
     }
 
     private unsafe void DrawGizmo(Vector2 pos, Vector2 size)
     {
-      var projMatrix = Memory.Camera->RenderCamera->ProjectionMatrix;
-      var viewMatrix = Memory.Camera->ViewMatrix;
-      viewMatrix.M44 = 1.0f;
-      
+      ImGuizmo.BeginFrame();
+
+      var proj = Memory.Camera->RenderCamera->ProjectionMatrix;
+      var view = Memory.Camera->ViewMatrix;
+      view.M44 = 1.0f;
+
       ImGuizmo.SetDrawlist();
-      
+
       ImGuizmo.Enable(Memory.HousingStructure->Rotating);
       ImGuizmo.SetID((int)ImGui.GetID("BDTHPlugin"));
       ImGuizmo.SetOrthographic(false);
-      
+
       ImGuizmo.SetRect(pos.X, pos.Y, size.X, size.Y);
 
       ComposeMatrix();
 
-      var drag = Configuration.Drag;
-      var snap = Configuration.DoSnap ? new Vector3(drag, drag, drag) : Vector3.Zero;
-      
-      var moved = Manipulate(ref viewMatrix.M11, ref projMatrix.M11, OPERATION.TRANSLATE, Mode, ref itemMatrix.M11, ref snap.X);
-      if (moved) WriteMatrix();
+      var snap = Configuration.DoSnap ? Configuration.Drag : 0;
+
+      if (Manipulate(
+        ref view.M11,
+        ref proj.M11,
+        OPERATION.TRANSLATE,
+        Mode,
+        ref matrix.M11,
+        ref snap
+      ))
+      {
+        WriteMatrix();
+      }
 
       ImGuizmo.SetID(-1);
     }
 
     private void ComposeMatrix()
     {
-      try {
+      try
+      {
         translate = Memory.ReadPosition();
         rotation = Memory.ReadRotation();
-        ImGuizmo.RecomposeMatrixFromComponents(ref translate.X, ref rotation.X, ref scale.X, ref itemMatrix.M11);
+        ImGuizmo.RecomposeMatrixFromComponents(ref translate.X, ref rotation.X, ref scale.X, ref matrix.M11);
       }
       catch
       {
-        // ignored
       }
     }
 
     private void WriteMatrix()
     {
-      ImGuizmo.DecomposeMatrixToComponents(ref itemMatrix.M11, ref translate.X, ref rotation.X, ref scale.X);
+      ImGuizmo.DecomposeMatrixToComponents(ref matrix.M11, ref translate.X, ref rotation.X, ref scale.X);
       Memory.WritePosition(translate);
     }
 

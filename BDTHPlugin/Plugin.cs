@@ -14,6 +14,7 @@ using System.Linq;
 using System.Numerics;
 
 using BDTHPlugin.Interface;
+using Dalamud.Interface.Textures;
 
 namespace BDTHPlugin
 {
@@ -21,7 +22,7 @@ namespace BDTHPlugin
   {
     private const string commandName = "/bdth";
 
-    [PluginService] public static DalamudPluginInterface PluginInterface { get; private set; } = null!;
+    [PluginService] public static IDalamudPluginInterface PluginInterface { get; private set; } = null!;
     [PluginService] public static IDataManager Data { get; private set; } = null!;
     [PluginService] public static ICommandManager CommandManager { get; private set; } = null!;
     [PluginService] public static IClientState ClientState { get; private set; } = null!;
@@ -38,14 +39,14 @@ namespace BDTHPlugin
     private static PluginMemory Memory;
 
     // Sheets used to get housing item info.
-    private static Dictionary<uint, HousingFurniture> FurnitureDict;
-    private static Dictionary<uint, HousingYardObject> YardObjectDict;
+    private static Dictionary<uint, HousingFurniture> FurnitureDict = new();
+    private static Dictionary<uint, HousingYardObject> YardObjectDict = new();
 
     public Plugin()
     {
       Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-      Memory = new();
       Ui = new();
+      Memory = new();
 
       FurnitureDict = Data.GetExcelSheet<HousingFurniture>().ToDictionary(row => row.RowId, row => row);
       YardObjectDict = Data.GetExcelSheet<HousingYardObject>().ToDictionary(row => row.RowId, row => row);
@@ -120,15 +121,15 @@ namespace BDTHPlugin
     {
       if (icon < 65000)
       {
-        var iconTexture = TextureProvider.GetIcon(icon);
-        ImGui.Image(iconTexture.ImGuiHandle, size);
+        var iconTexture = TextureProvider.GetFromGameIcon(new GameIconLookup(icon));
+        ImGui.Image(iconTexture.GetWrapOrEmpty().ImGuiHandle, size);
       }
     }
 
     public unsafe static bool IsOutdoors() => Memory.HousingModule->OutdoorTerritory != null;
 
-    public static bool TryGetFurnishing(uint id, out HousingFurniture furniture) => FurnitureDict.TryGetValue(id, out furniture);
-    public static bool TryGetYardObject(uint id, out HousingYardObject furniture) => YardObjectDict.TryGetValue(id, out furniture);
+    public static bool TryGetFurnishing(uint id, out HousingFurniture? furniture) => FurnitureDict.TryGetValue(id, out furniture);
+    public static bool TryGetYardObject(uint id, out HousingYardObject? furniture) => YardObjectDict.TryGetValue(id, out furniture);
 
     private unsafe void OnCommand(string command, string args)
     {

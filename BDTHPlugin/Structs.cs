@@ -1,5 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.Housing;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace BDTHPlugin
