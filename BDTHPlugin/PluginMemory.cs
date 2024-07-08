@@ -30,7 +30,7 @@ namespace BDTHPlugin
     public unsafe LayoutWorld* Layout => (LayoutWorld*)layoutWorldPtr;
     public unsafe HousingStructure* HousingStructure => Layout->HousingStruct;
     public unsafe HousingModule* HousingModule => (HousingModule*)housingModulePtr;
-    public unsafe HousingObjectManger* CurrentManager => HousingModule->GetCurrentManager();
+    public unsafe HousingObjectManager* CurrentManager => HousingModule->GetCurrentManager();
     public unsafe Camera* Camera => &CameraManager.Instance()->GetActiveCamera()->CameraBase.SceneCamera;
 
     public static unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingLayout", 1);

@@ -29,7 +29,7 @@ namespace BDTHPlugin
   }
 
   [StructLayout(LayoutKind.Explicit)]
-  public unsafe struct HousingObjectManger
+  public unsafe struct HousingObjectManager
   {
     [FieldOffset(0x8980)] public fixed ulong Objects[400];
     [FieldOffset(0x96E8)] public HousingGameObject* IndoorActiveObject2;
@@ -43,11 +43,11 @@ namespace BDTHPlugin
   [StructLayout(LayoutKind.Explicit)]
   public unsafe struct HousingModule
   {
-    [FieldOffset(0x0)] public HousingObjectManger* CurrentTerritory;
-    [FieldOffset(0x8)] public HousingObjectManger* OutdoorTerritory;
-    [FieldOffset(0x10)] public HousingObjectManger* IndoorTerritory;
+    [FieldOffset(0x0)] public HousingObjectManager* CurrentTerritory;
+    [FieldOffset(0x8)] public HousingObjectManager* OutdoorTerritory;
+    [FieldOffset(0x10)] public HousingObjectManager* IndoorTerritory;
 
-    public HousingObjectManger* GetCurrentManager()
+    public HousingObjectManager* GetCurrentManager()
       => OutdoorTerritory != null ? OutdoorTerritory : IndoorTerritory;
   }
 
