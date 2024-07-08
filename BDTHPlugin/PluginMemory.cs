@@ -29,7 +29,7 @@ namespace BDTHPlugin
 
     public unsafe LayoutWorld* Layout => (LayoutWorld*)layoutWorldPtr;
     public unsafe HousingStructure* HousingStructure => Layout->HousingStruct;
-    public unsafe HousingModule* HousingModule => (HousingModule*)housingModulePtr;
+    public unsafe HousingModule* HousingModule => housingModulePtr != IntPtr.Zero ? (HousingModule*) Marshal.ReadIntPtr(housingModulePtr) : null;
     public unsafe HousingObjectManager* CurrentManager => HousingModule->GetCurrentManager();
     public unsafe Camera* Camera => &CameraManager.Instance()->GetActiveCamera()->CameraBase.SceneCamera;
 
@@ -149,11 +149,10 @@ namespace BDTHPlugin
 
         // Pointers for housing structures.
         layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B D1 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 0A", 3);
-        housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC ?? 33 ?? 48 39 ?? ?? ?? ?? 01 75", 8);
+        housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 8B 52");
 
         // Read the pointers.
         layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
-        housingModulePtr = Marshal.ReadIntPtr(housingModulePtr);
 
         // Select housing item.
         selectItemAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? 00 00 48 8B CE E8 ?? ?? 00 00 48 8B ?? ?? ?? 48");
