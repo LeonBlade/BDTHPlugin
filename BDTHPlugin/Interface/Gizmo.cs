@@ -80,7 +80,7 @@ namespace BDTHPlugin.Interface
 
       ComposeMatrix();
 
-      var snap = Configuration.DoSnap ? new(Configuration.Drag, Configuration.Drag) : Vector2.Zero;
+      var snap = Configuration.DoSnap ? new(Configuration.Drag, Configuration.Drag, Configuration.Drag) : Vector3.Zero;
 
       if (Manipulate(ref view.M11, ref proj.M11, OPERATION.TRANSLATE, Mode, ref matrix.M11, ref snap.X))
         WriteMatrix();
