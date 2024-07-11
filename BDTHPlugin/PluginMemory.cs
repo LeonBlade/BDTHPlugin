@@ -155,7 +155,7 @@ namespace BDTHPlugin
         layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
 
         // Select housing item.
-        selectItemAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? 00 00 48 8B CE E8 ?? ?? 00 00 48 8B ?? ?? ?? 48");
+        selectItemAddress = Plugin.TargetModuleScanner.ScanText("48 85 D2 0F 84 49 09 00 00 53 41 56 48 83 EC 48 48 89 6C 24 60 48 8B DA 48 89 74 24 70 4C 8B F1");
         SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(selectItemAddress);
 
         // Address for the place item function.
