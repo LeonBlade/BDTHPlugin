@@ -34,13 +34,13 @@ namespace BDTHPlugin
     [PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
 
-    private static Configuration Configuration;
-    private static PluginUI Ui;
-    private static PluginMemory Memory;
+    private static Configuration Configuration = null!;
+    private static PluginUI Ui = null!;
+    private static PluginMemory Memory = null!;
 
     // Sheets used to get housing item info.
-    private static Dictionary<uint, HousingFurniture> FurnitureDict = new();
-    private static Dictionary<uint, HousingYardObject> YardObjectDict = new();
+    private static Dictionary<uint, HousingFurniture> FurnitureDict = [];
+    private static Dictionary<uint, HousingYardObject> YardObjectDict = [];
 
     public Plugin()
     {
@@ -48,8 +48,8 @@ namespace BDTHPlugin
       Ui = new();
       Memory = new();
 
-      FurnitureDict = Data.GetExcelSheet<HousingFurniture>().ToDictionary(row => row.RowId, row => row);
-      YardObjectDict = Data.GetExcelSheet<HousingYardObject>().ToDictionary(row => row.RowId, row => row);
+      FurnitureDict = Data.GetExcelSheet<HousingFurniture>()!.ToDictionary(row => row.RowId, row => row);
+      YardObjectDict = Data.GetExcelSheet<HousingYardObject>()!.ToDictionary(row => row.RowId, row => row);
 
       CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
       {
