@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Net.WebSockets;
+using System.Numerics;
 using Dalamud.Interface.Utility;
 using ImGuiNET;
 using ImGuizmoNET;
@@ -57,8 +58,16 @@ namespace BDTHPlugin.Interface
     {
       ImGuizmo.BeginFrame();
 
-      var proj = Memory.Camera->RenderCamera->ProjectionMatrix;
+      var cam = Memory.Camera->RenderCamera;
       var view = Memory.Camera->ViewMatrix;
+      var proj = cam->ProjectionMatrix;
+
+      var far = cam->FarPlane;
+      var near = cam->NearPlane;
+      var clip = far / (far - near);
+
+      proj.M43 = -(clip * near);
+      proj.M33 = -((far + near) / (far - near));
       view.M44 = 1.0f;
 
       ImGuizmo.SetDrawlist();
@@ -71,19 +80,10 @@ namespace BDTHPlugin.Interface
 
       ComposeMatrix();
 
-      var snap = Configuration.DoSnap ? Configuration.Drag : 0;
+      var snap = Configuration.DoSnap ? new(Configuration.Drag, Configuration.Drag) : Vector2.Zero;
 
-      if (Manipulate(
-        ref view.M11,
-        ref proj.M11,
-        OPERATION.TRANSLATE,
-        Mode,
-        ref matrix.M11,
-        ref snap
-      ))
-      {
+      if (Manipulate(ref view.M11, ref proj.M11, OPERATION.TRANSLATE, Mode, ref matrix.M11, ref snap.X))
         WriteMatrix();
-      }
 
       ImGuizmo.SetID(-1);
     }
