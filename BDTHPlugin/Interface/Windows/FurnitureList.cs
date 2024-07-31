@@ -24,7 +24,7 @@ namespace BDTHPlugin.Interface.Windows
     {
       // Only allows furnishing list when the housing window is open.
       // Disallows the ability to open furnishing list outdoors.
-      IsOpen &= Memory.IsHousingOpen() && !Plugin.IsOutdoors();
+      IsOpen &= Memory.IsHousingOpen() && !Memory.IsOutdoors();
     }
 
     public unsafe override void Draw()
@@ -77,13 +77,13 @@ namespace BDTHPlugin.Interface.Windows
               var name = "";
               ushort icon = 0;
 
-              if (Plugin.TryGetYardObject(items[i].HousingRowId, out var yardObject))
+              if (PluginMemory.TryGetYardObject(items[i].HousingRowId, out var yardObject))
               {
                 name = yardObject?.Item?.Value?.Name.ToString();
                 icon = yardObject?.Item?.Value?.Icon ?? 0;
               }
 
-              if (Plugin.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
+              if (PluginMemory.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
               {
                 name = furnitureObject?.Item?.Value?.Name.ToString();
                 icon = furnitureObject?.Item?.Value?.Icon ?? 0;

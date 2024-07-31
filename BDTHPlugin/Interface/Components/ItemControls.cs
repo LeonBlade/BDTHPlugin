@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System.Linq;
+using System.Numerics;
 
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
@@ -12,29 +13,60 @@ namespace BDTHPlugin.Interface.Components
     private static PluginMemory Memory => Plugin.GetMemory();
     private static Configuration Configuration => Plugin.GetConfiguration();
 
-    private static float drag => Configuration.Drag;
-    
+    private static float Drag => Configuration.Drag;
+
     private float? lockX;
     private float? lockY;
     private float? lockZ;
-    
+
     private Vector3? copyPosition;
     private float? copyRotation;
-    
+
+    private unsafe void GetFurnishingItem(out string name, out ushort icon)
+    {
+      name = "";
+      icon = 0;
+
+      if (Memory.GetFurnishings(out var items))
+      {
+        var item = (from i in items where i.Item == Memory.HousingStructure->ActiveItem select i).FirstOrDefault();
+
+        if (PluginMemory.TryGetYardObject(item.HousingRowId, out var yardObject))
+        {
+          name = yardObject?.Item?.Value?.Name.ToString() ?? "N/A";
+          icon = yardObject?.Item?.Value?.Icon ?? 0;
+        }
+
+        if (PluginMemory.TryGetFurnishing(item.HousingRowId, out var furnitureObject))
+        {
+          name = furnitureObject?.Item?.Value?.Name.ToString() ?? "N/A";
+          icon = furnitureObject?.Item?.Value?.Icon ?? 0;
+        }
+      }
+    }
+
     public unsafe void Draw()
     {
-      if (Memory.HousingStructure->ActiveItem != null)
+      var fontScale = ImGui.GetIO().FontGlobalScale;
+
+      Memory.position = Memory.ReadPosition();
+      // Handle lock logic.
+      if (lockX != null)
+        Memory.position.X = (float)lockX;
+      if (lockY != null)
+        Memory.position.Y = (float)lockY;
+      if (lockZ != null)
+        Memory.position.Z = (float)lockZ;
+      Memory.WritePosition(Memory.position);
+
+      ImGui.BeginGroup();
       {
-        Memory.position = Memory.ReadPosition();
-        // Handle lock logic.
-        if (lockX != null)
-          Memory.position.X = (float)lockX;
-        if (lockY != null)
-          Memory.position.Y = (float)lockY;
-        if (lockZ != null)
-          Memory.position.Z = (float)lockZ;
-        Memory.WritePosition(Memory.position);
+        GetFurnishingItem(out var name, out var icon);
+        Plugin.DrawIcon(icon, new Vector2(24 * fontScale, 24 * fontScale));
+        ImGui.SameLine();
+        ImGui.Text(name);
       }
+      ImGui.EndGroup();
 
       ImGui.BeginGroup();
       {
@@ -91,12 +123,12 @@ namespace BDTHPlugin.Interface.Components
       DrawInputCoord("z coord##bdth-z", ref Memory.position.Z, ref lockZ);
       DrawInputRotate("ry degree##bdth-ry", ref Memory.rotation.Y);
     }
-    
-    private void HandleScrollInput(ref float f)
+
+    private static void HandleScrollInput(ref float f)
     {
       if (ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax()))
       {
-        var delta = ImGui.GetIO().MouseWheel * drag;
+        var delta = ImGui.GetIO().MouseWheel * Drag;
         if (delta != 0)
         {
           f += delta;
@@ -104,48 +136,48 @@ namespace BDTHPlugin.Interface.Components
         }
       }
     }
-    
-    private bool DrawDrag(string name, ref float f)
+
+    private static bool DrawDrag(string name, ref float f)
     {
-      var changed = ImGui.DragFloat(name, ref f, drag);
+      var changed = ImGui.DragFloat(name, ref f, Drag);
       ImGui.SameLine(0, 4);
       HandleScrollInput(ref f);
       return changed;
     }
 
-    private void DrawDragCoord(string name, ref float f)
+    private static void DrawDragCoord(string name, ref float f)
     {
       if (DrawDrag(name, ref f))
         Memory.WritePosition(Memory.position);
     }
-    
-    private void DrawDragRotate(string name, ref float f)
+
+    private static void DrawDragRotate(string name, ref float f)
     {
       if (DrawDrag(name, ref f))
         Memory.WriteRotation(Memory.rotation);
     }
-    
-    private bool DrawInput(string name, ref float f)
+
+    private static bool DrawInput(string name, ref float f)
     {
-      var changed = ImGui.InputFloat(name, ref f, drag);
+      var changed = ImGui.InputFloat(name, ref f, Drag);
       HandleScrollInput(ref f);
       ImGui.SameLine();
       return changed;
     }
-    
-    private void DrawInputCoord(string name, ref float f)
+
+    private static void DrawInputCoord(string name, ref float f)
     {
       if (DrawInput(name, ref f))
         Memory.WritePosition(Memory.position);
     }
 
-    private void DrawInputRotate(string name, ref float f)
+    private static void DrawInputRotate(string name, ref float f)
     {
       if (DrawInput(name, ref f))
         Memory.WriteRotation(Memory.rotation);
     }
 
-    private void DrawInputCoord(string name, ref float f, ref float? locked)
+    private static void DrawInputCoord(string name, ref float f, ref float? locked)
     {
       DrawInputCoord(name, ref f);
       if (ImGuiComponents.IconButton((int)ImGui.GetID(name), locked == null ? FontAwesomeIcon.Unlock : FontAwesomeIcon.Lock))

@@ -5,9 +5,9 @@ using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 
 using ImGuiNET;
-using ImGuizmoNET;
 
 using BDTHPlugin.Interface.Components;
+using BDTHPlugin.Game;
 
 namespace BDTHPlugin.Interface.Windows
 {
@@ -19,6 +19,7 @@ namespace BDTHPlugin.Interface.Windows
     private static readonly Vector4 RED_COLOR = new(1, 0, 0, 1);
 
     private readonly Gizmo Gizmo;
+    private readonly BasicControls BasicControls;
     private readonly ItemControls ItemControls = new();
 
     public bool Reset;
@@ -30,6 +31,7 @@ namespace BDTHPlugin.Interface.Windows
     )
     {
       Gizmo = gizmo;
+      BasicControls = new BasicControls(Gizmo);
     }
 
     public override void PreDraw()
@@ -43,51 +45,7 @@ namespace BDTHPlugin.Interface.Windows
 
     public unsafe override void Draw()
     {
-      ImGui.BeginGroup();
-
-      var placeAnywhere = Configuration.PlaceAnywhere;
-      if (ImGui.Checkbox("Place Anywhere", ref placeAnywhere))
-      {
-        // Set the place anywhere based on the checkbox state.
-        Memory.SetPlaceAnywhere(placeAnywhere);
-        Configuration.PlaceAnywhere = placeAnywhere;
-        Configuration.Save();
-      }
-      DrawTooltip("Allows the placement of objects without limitation from the game engine.");
-
-      ImGui.SameLine();
-
-      // Checkbox is clicked, set the configuration and save.
-      var useGizmo = Configuration.UseGizmo;
-      if (ImGui.Checkbox("Gizmo", ref useGizmo))
-      {
-        Configuration.UseGizmo = useGizmo;
-        Configuration.Save();
-      }
-      DrawTooltip("Displays a movement gizmo on the selected item to allow for in-game movement on all axis.");
-
-      ImGui.SameLine();
-
-      // Checkbox is clicked, set the configuration and save.
-      var doSnap = Configuration.DoSnap;
-      if (ImGui.Checkbox("Snap", ref doSnap))
-      {
-        Configuration.DoSnap = doSnap;
-        Configuration.Save();
-      }
-      DrawTooltip("Enables snapping of gizmo movement based on the drag value set below.");
-
-      ImGui.SameLine();
-      if (ImGuiComponents.IconButton(1, Gizmo.Mode == MODE.LOCAL ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
-        Gizmo.Mode = Gizmo.Mode == MODE.LOCAL ? MODE.WORLD : MODE.LOCAL;
-
-      DrawTooltip(
-      [
-        $"Mode: {(Gizmo.Mode == MODE.LOCAL ? "Local" : "World")}",
-        "Changes gizmo mode between local and world movement."
-      ]);
-
-      ImGui.Separator();
+      BasicControls.Draw();
 
       if (Memory.HousingStructure->Mode == HousingLayoutMode.None)
         DrawError("Enter housing mode to get started");
@@ -113,12 +71,12 @@ namespace BDTHPlugin.Interface.Windows
       }
       DrawTooltip("Sets the amount to change when dragging the controls, also influences the gizmo snap feature.");
 
-      var dummyHousingGoods = PluginMemory.HousingGoods != null && PluginMemory.HousingGoods->IsVisible;
-      var dummyInventory = Memory.InventoryVisible;
+      var dummyHousingGoods = Addons.HousingGoods != null && Addons.HousingGoods->IsVisible;
+      var dummyInventory = Addons.InventoryVisible;
 
       if (ImGui.Checkbox("Display in-game list", ref dummyHousingGoods))
       {
-        Memory.ShowFurnishingList(dummyHousingGoods);
+        Addons.ShowFurnishingList(dummyHousingGoods);
 
         Configuration.DisplayFurnishingList = dummyHousingGoods;
         Configuration.Save();
@@ -127,7 +85,7 @@ namespace BDTHPlugin.Interface.Windows
 
       if (ImGui.Checkbox("Display inventory", ref dummyInventory))
       {
-        Memory.ShowInventory(dummyInventory);
+        Addons.ShowInventory(dummyInventory);
 
         Configuration.DisplayInventory = dummyInventory;
         Configuration.Save();
@@ -149,7 +107,7 @@ namespace BDTHPlugin.Interface.Windows
       }
     }
 
-    private static void DrawTooltip(string[] text)
+    public static void DrawTooltip(string[] text)
     {
       if (ImGui.IsItemHovered())
       {
@@ -160,12 +118,12 @@ namespace BDTHPlugin.Interface.Windows
       }
     }
 
-    private static void DrawTooltip(string text)
+    public static void DrawTooltip(string text)
     {
       DrawTooltip([text]);
     }
 
-    private void DrawError(string text)
+    private static void DrawError(string text)
     {
       ImGui.PushStyleColor(ImGuiCol.Text, RED_COLOR);
       ImGui.Text(text);

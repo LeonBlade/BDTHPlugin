@@ -1,4 +1,3 @@
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,14 +7,17 @@ using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
 using CameraManager = FFXIVClientStructs.FFXIV.Client.Game.Control.CameraManager;
 
-using Dalamud.Utility.Signatures;
+using BDTHPlugin.Game;
+using Lumina.Excel.GeneratedSheets;
+using BDTHPlugin.Interface;
 
 namespace BDTHPlugin
 {
-  public class PluginMemory
+  public partial class PluginMemory
   {
+    public static unsafe bool GamepadMode => !(Addons.HousingLayout != null && Addons.HousingLayout->IsVisible);
+
     private bool isHousingOpen = false;
-    private int inventoryType = 0;
 
     // Pointers to modify assembly to enable place anywhere.
     public IntPtr placeAnywhere;
@@ -33,89 +35,6 @@ namespace BDTHPlugin
     public unsafe HousingModule* HousingModule => housingModulePtr != IntPtr.Zero ? (HousingModule*)Marshal.ReadIntPtr(housingModulePtr) : null;
     public unsafe HousingObjectManager* CurrentManager => HousingModule->GetCurrentManager();
     public unsafe Camera* Camera => &CameraManager.Instance()->GetActiveCamera()->CameraBase.SceneCamera;
-
-    public static unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingLayout", 1);
-    public static unsafe bool GamepadMode => !(HousingLayout != null && HousingLayout->IsVisible);
-
-    public static unsafe AtkUnitBase* HousingGoods => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingGoods", 1);
-    public static unsafe AtkUnitBase* InventoryExpansion => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryExpansion", 1);
-    public static unsafe AtkUnitBase* InventoryGrid0E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid0E", 1);
-    public static unsafe AtkUnitBase* InventoryGrid1E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid1E", 1);
-    public static unsafe AtkUnitBase* InventoryGrid2E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid2E", 1);
-    public static unsafe AtkUnitBase* InventoryGrid3E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid3E", 1);
-    public static unsafe AtkUnitBase* InventoryLarge => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryLarge", 1);
-    public static unsafe AtkUnitBase* Inventory => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("Inventory", 1);
-    public static unsafe AtkUnitBase* InventoryGrid0 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid0", 1);
-    public static unsafe AtkUnitBase* InventoryGrid1 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid1", 1);
-    public static unsafe AtkUnitBase* InventoryEventGrid0 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid0", 1);
-    public static unsafe AtkUnitBase* InventoryEventGrid1 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid1", 1);
-    public static unsafe AtkUnitBase* InventoryEventGrid2 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid2", 1);
-    public static unsafe AtkUnitBase* InventoryGrid => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGrid", 1);
-    public static unsafe AtkUnitBase* InventoryEventGrid0E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid0E", 1);
-    public static unsafe AtkUnitBase* InventoryEventGrid1E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid1E", 1);
-    public static unsafe AtkUnitBase* InventoryEventGrid2E => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryEventGrid2E", 1);
-    public static unsafe AtkUnitBase* InventoryGridCrystal => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryGridCrystal", 1);
-    public static unsafe AtkUnitBase* InventoryCrystalGrid => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 1);
-    public static unsafe AtkUnitBase* InventoryCrystalGrid2 => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 2);
-
-    public unsafe bool InventoryVisible
-    {
-      get => InventoryExpansion != null && InventoryExpansion->IsVisible ||
-          InventoryLarge != null && InventoryLarge->IsVisible ||
-          Inventory != null && Inventory->IsVisible;
-
-      set
-      {
-        if (HousingGoods == null || InventoryExpansion == null || InventoryLarge == null || Inventory == null)
-          return;
-
-        // Determine which inventory is open assuming it's visible
-        if (InventoryExpansion->IsVisible || InventoryLarge->IsVisible || Inventory->IsVisible)
-        {
-          if (InventoryExpansion->IsVisible) inventoryType = 1;
-          else if (InventoryLarge->IsVisible) inventoryType = 2;
-          else if (Inventory->IsVisible) inventoryType = 3;
-        }
-
-        try
-        {
-          switch (inventoryType)
-          {
-            case 1:
-              InventoryExpansion->IsVisible = value;
-              InventoryGrid0E->IsVisible = value;
-              InventoryGrid1E->IsVisible = value;
-              InventoryGrid2E->IsVisible = value;
-              InventoryGrid3E->IsVisible = value;
-              InventoryEventGrid0E->IsVisible = value;
-              InventoryEventGrid1E->IsVisible = value;
-              InventoryEventGrid2E->IsVisible = value;
-              InventoryCrystalGrid2->IsVisible = value;
-              break;
-            case 2:
-              InventoryLarge->IsVisible = value;
-              InventoryGrid0->IsVisible = value;
-              InventoryGrid1->IsVisible = value;
-              InventoryEventGrid0->IsVisible = value;
-              InventoryEventGrid1->IsVisible = value;
-              InventoryEventGrid2->IsVisible = value;
-              InventoryCrystalGrid->IsVisible = value;
-              break;
-            case 3:
-              Inventory->IsVisible = value;
-              InventoryGrid->IsVisible = value;
-              InventoryGridCrystal->IsVisible = value;
-              break;
-            default:
-              break;
-          }
-        }
-        catch
-        {
-          Plugin.Log.Error("IsVisible setter not present");
-        }
-      }
-    }
 
     // Local references to position and rotation to use to free them when an item isn't selected but to keep the UI bound to a reference.
     public Vector3 position;
@@ -137,10 +56,22 @@ namespace BDTHPlugin
     private readonly IntPtr housingLayoutModelUpdateAddress;
     public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate = null!;
 
+    // Sheets used to get housing item info.
+    private static Dictionary<uint, HousingFurniture> FurnitureDict = [];
+    private static Dictionary<uint, HousingYardObject> YardObjectDict = [];
+
+    public unsafe bool IsOutdoors() => HousingModule->OutdoorTerritory != null;
+
+    public static bool TryGetFurnishing(uint id, out HousingFurniture? furniture) => FurnitureDict.TryGetValue(id, out furniture);
+    public static bool TryGetYardObject(uint id, out HousingYardObject? furniture) => YardObjectDict.TryGetValue(id, out furniture);
+
     public PluginMemory()
     {
       try
       {
+        FurnitureDict = Plugin.Data.GetExcelSheet<HousingFurniture>()!.ToDictionary(row => row.RowId, row => row);
+        YardObjectDict = Plugin.Data.GetExcelSheet<HousingYardObject>()!.ToDictionary(row => row.RowId, row => row);
+
         // Assembly address for asm rewrites.
         placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 ?? ?? ?? 00 00 00 8B FE 48 89") + 6;
         wallAnywhere = Plugin.TargetModuleScanner.ScanText("48 85 C0 74 ?? C6 87 ?? ?? 00 00 00") + 11;
@@ -171,6 +102,8 @@ namespace BDTHPlugin
 
         if (config.PlaceAnywhere)
           SetPlaceAnywhere(Plugin.GetConfiguration().PlaceAnywhere);
+
+        Plugin.Gizmo.GizmoChanged += GizmoChanged;
       }
       catch (Exception ex)
       {
@@ -178,26 +111,15 @@ namespace BDTHPlugin
       }
     }
 
-    public unsafe void ShowFurnishingList(bool state)
-    {
-      if (HousingGoods != null)
-        HousingGoods->IsVisible = state;
-    }
+    private void GizmoChanged(object? sender, GizmoChangeArgs e) => WritePosition(e.position);
 
-    public void ShowInventory(bool state) => InventoryVisible = state;
-
-    /// <summary>
-    /// Dispose for the memory functions.
-    /// </summary>
     public unsafe void Dispose()
     {
       try
       {
         // Disable the place anywhere in case it's on.
         SetPlaceAnywhere(false);
-
-        // Enable the housing goods menu again.
-        if (HousingGoods != null) HousingGoods->IsVisible = true;
+        Addons.Dispose();
       }
       catch (Exception ex)
       {
@@ -217,10 +139,6 @@ namespace BDTHPlugin
       return -1;
     }
 
-    /// <summary>
-    /// Is the housing menu open.
-    /// </summary>
-    /// <returns>Boolean state.</returns>
     public unsafe bool IsHousingOpen()
     {
       if (HousingStructure == null)
@@ -230,10 +148,6 @@ namespace BDTHPlugin
       return HousingStructure->Mode != HousingLayoutMode.None;
     }
 
-    /// <summary>
-    /// Checks if you can edit a housing item, specifically checks that rotate mode is active.
-    /// </summary>
-    /// <returns>Boolean state if housing menu is on or off.</returns>
     public unsafe bool CanEditItem()
     {
       try
@@ -250,10 +164,6 @@ namespace BDTHPlugin
       }
     }
 
-    /// <summary>
-    /// Read the position of the active item.
-    /// </summary>
-    /// <returns>Vector3 of the position.</returns>
     public unsafe Vector3 ReadPosition()
     {
       // Ensure that we're hooked and have the housing structure address.
@@ -269,10 +179,6 @@ namespace BDTHPlugin
       return item->Position;
     }
 
-    /// <summary>
-    /// Reads the rotation of the item.
-    /// </summary>
-    /// <returns></returns>
     public unsafe Vector3 ReadRotation()
     {
       // Ensure that we're hooked and have the housing structure address.
@@ -288,10 +194,8 @@ namespace BDTHPlugin
       return Util.FromQ(item->Rotation);
     }
 
-    /// <summary>
-    /// Writes the position vector to memory.
-    /// </summary>
-    /// <param name="newPosition">Position vector to write.</param>
+    public unsafe bool IsItemSelected() => HousingStructure->ActiveItem != null;
+
     public unsafe void WritePosition(Vector3 newPosition)
     {
       // Don't write if housing mode isn't on.
@@ -334,9 +238,6 @@ namespace BDTHPlugin
       }
     }
 
-    /// <summary>
-    /// Thread loop for reading memory.
-    /// </summary>
     public unsafe void Update()
     {
       try
@@ -350,9 +251,9 @@ namespace BDTHPlugin
           Plugin.Log.Info("Housing opened");
           var config = Plugin.GetConfiguration();
           if (!config.DisplayFurnishingList)
-            ShowFurnishingList(false);
+            Addons.ShowFurnishingList(false);
           if (!config.DisplayInventory)
-            ShowInventory(false);
+            Addons.ShowInventory(false);
         }
 
         if (CanEditItem())
@@ -360,6 +261,8 @@ namespace BDTHPlugin
           // Don't really need to load position if we're reading it in the UI thread anyway, but leaving it for now for redudency...
           position = ReadPosition();
           rotation = ReadRotation();
+
+          Plugin.Gizmo.SetTransform(position, rotation);
 
           // Update the model of active item, the game doesn't do this for wall mounted and outside in rotate mode
           var item = HousingStructure->ActiveItem;
@@ -380,17 +283,12 @@ namespace BDTHPlugin
       }
     }
 
-    /// <summary>
-    /// Get furnishings as they appear in the array in memory.
-    /// </summary>
-    /// <param name="objects"></param>
-    /// <returns></returns>
-    public unsafe bool GetFurnishings(out List<HousingGameObject> objects, Vector3 point, bool sortByDistance = false)
+    public unsafe bool GetFurnishings(out List<HousingGameObject> objects, Vector3? point = null, bool sortByDistance = false)
     {
       if (sortByDistance == true)
-        return GetFurnishingByDistance(out objects, point);
+        return GetFurnishingByDistance(out objects, point ?? Vector3.Zero);
 
-      objects = new List<HousingGameObject>();
+      objects = [];
 
       if (HousingModule == null || HousingModule->GetCurrentManager() == null || HousingModule->GetCurrentManager()->Objects == null)
         return false;
@@ -406,12 +304,6 @@ namespace BDTHPlugin
       return true;
     }
 
-    /// <summary>
-    /// Get furnishings and sort by distance to a given point.
-    /// </summary>
-    /// <param name="objects"></param>
-    /// <param name="point"></param>
-    /// <returns></returns>
     public unsafe bool GetFurnishingByDistance(out List<HousingGameObject> objects, Vector3 point)
     {
       objects = [];
@@ -420,7 +312,7 @@ namespace BDTHPlugin
         return false;
 
       var tmpObjects = new List<(HousingGameObject gObj, float distance)>();
-      objects = new List<HousingGameObject>();
+      objects = [];
       for (var i = 0; i < 400; i++)
       {
         var oPtr = HousingModule->GetCurrentManager()->Objects[i];
@@ -477,8 +369,9 @@ namespace BDTHPlugin
 
     #region Kernel32
 
-    [DllImport("kernel32.dll", SetLastError = true)]
-    private static extern bool VirtualProtect(IntPtr lpAddress, uint dwSize, Protection flNewProtect, out Protection lpflOldProtect);
+    [LibraryImport("kernel32.dll", SetLastError = true)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    private static partial bool VirtualProtect(IntPtr lpAddress, uint dwSize, Protection flNewProtect, out Protection lpflOldProtect);
 
     public enum Protection
     {

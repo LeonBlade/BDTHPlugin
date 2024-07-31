@@ -10,7 +10,6 @@ namespace BDTHPlugin.Interface.Windows
 
     public DebugWindow() : base("BDTH Debug")
     {
-
     }
 
     public unsafe override void Draw()

@@ -7,24 +7,29 @@ namespace BDTHPlugin.Interface
   public class PluginUI
   {
     private readonly WindowSystem Windows = new("BDTH");
-    
-    private readonly Gizmo Gizmo = new();
 
     public readonly MainWindow Main;
     public readonly DebugWindow Debug = new();
     public readonly FurnitureList Furniture = new();
+    public readonly GroupWindow Group = new();
 
-    public PluginUI()
+    private Gizmo gizmo;
+
+    public PluginUI(Gizmo gizmo)
     {
-      Main = new MainWindow(Gizmo);
+      this.gizmo = gizmo;
+
+      Main = new MainWindow(gizmo);
+
       Windows.AddWindow(Main);
       Windows.AddWindow(Debug);
       Windows.AddWindow(Furniture);
+      Windows.AddWindow(Group);
     }
 
     public void Draw()
     {
-      Gizmo.Draw();
+      gizmo.Draw();
       Windows.Draw();
     }
   }

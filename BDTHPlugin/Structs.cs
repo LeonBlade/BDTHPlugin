@@ -1,4 +1,5 @@
-﻿using System.Numerics;
+﻿using System;
+using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace BDTHPlugin
@@ -85,5 +86,6 @@ namespace BDTHPlugin
   {
     [FieldOffset(0x50)] public Vector3 Position;
     [FieldOffset(0x60)] public Quaternion Rotation;
+    [FieldOffset(0x80)] public IntPtr Model;
   }
 }

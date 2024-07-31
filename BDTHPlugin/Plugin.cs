@@ -6,11 +6,8 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
 using ImGuizmoNET;
-using Lumina.Excel.GeneratedSheets;
 using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 
 using BDTHPlugin.Interface;
@@ -38,18 +35,13 @@ namespace BDTHPlugin
     private static PluginUI Ui = null!;
     private static PluginMemory Memory = null!;
 
-    // Sheets used to get housing item info.
-    private static Dictionary<uint, HousingFurniture> FurnitureDict = [];
-    private static Dictionary<uint, HousingYardObject> YardObjectDict = [];
+    public static readonly Gizmo Gizmo = new();
 
     public Plugin()
     {
       Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-      Ui = new();
+      Ui = new(Gizmo);
       Memory = new();
-
-      FurnitureDict = Data.GetExcelSheet<HousingFurniture>()!.ToDictionary(row => row.RowId, row => row);
-      YardObjectDict = Data.GetExcelSheet<HousingYardObject>()!.ToDictionary(row => row.RowId, row => row);
 
       CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
       {
@@ -112,11 +104,6 @@ namespace BDTHPlugin
       Ui.Main.IsOpen = true;
     }
 
-    /// <summary>
-    /// Draws icon from game data.
-    /// </summary>
-    /// <param name="icon"></param>
-    /// <param name="size"></param>
     public static void DrawIcon(ushort icon, Vector2 size)
     {
       if (icon < 65000)
@@ -125,11 +112,6 @@ namespace BDTHPlugin
         ImGui.Image(iconTexture.GetWrapOrEmpty().ImGuiHandle, size);
       }
     }
-
-    public unsafe static bool IsOutdoors() => Memory.HousingModule->OutdoorTerritory != null;
-
-    public static bool TryGetFurnishing(uint id, out HousingFurniture? furniture) => FurnitureDict.TryGetValue(id, out furniture);
-    public static bool TryGetYardObject(uint id, out HousingYardObject? furniture) => YardObjectDict.TryGetValue(id, out furniture);
 
     private unsafe void OnCommand(string command, string args)
     {
@@ -159,7 +141,7 @@ namespace BDTHPlugin
             }
 
             // Disallow the ability to open furnishing list outdoors.
-            if (IsOutdoors())
+            if (Memory.IsOutdoors())
             {
               Chat.PrintError("Cannot open furnishing outdoors currently.");
               Ui.Furniture.IsOpen = false;
@@ -171,6 +153,9 @@ namespace BDTHPlugin
 
           if (opt.Equals("debug"))
             Ui.Debug.Toggle();
+
+          if (opt.Equals("group"))
+            Ui.Group.Toggle();
 
           if (opt.Equals("reset"))
             Ui.Main.Reset = true;
