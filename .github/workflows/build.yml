@@ -14,7 +14,10 @@ env:
 
 jobs:
   build:
-    runs-on: [ubuntu-latest, windows-latest]
+    strategy:
+      matrix:
+        runs-on: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.runs-on }}
 
     steps:
       - name: Checkout
@@ -23,7 +26,7 @@ jobs:
           submodules: recursive
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.0.3
+        uses: microsoft/setup-msbuild@v2
 
       - name: Download Dalamud
         run: |
@@ -44,7 +47,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PluginZip-${{matrix.runs-on}}
+          name: PluginZip-${{ matrix.runs-on }}
           path: BDTHPlugin.zip
           if-no-files-found: error
 
@@ -55,7 +58,7 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2.2.0
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
@@ -70,7 +73,7 @@ jobs:
         uses: WyriHaximus/github-action-get-previous-tag@v1
 
       - name: Create release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: ${{ env.PROJECT_NAME }} ${{ steps.tag.outputs.tag }}
           tag_name: ${{ steps.tag.outputs.tag }}
