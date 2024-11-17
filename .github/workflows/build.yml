@@ -14,7 +14,7 @@ env:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: [ubuntu-latest, windows-latest]
 
     steps:
       - name: Checkout
@@ -42,9 +42,9 @@ jobs:
           Compress-Archive -Path "bin/*" -DestinationPath BDTHPlugin.zip
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2.2.1
+        uses: actions/upload-artifact@v4
         with:
-          name: PluginZip
+          name: PluginZip-${{matrix.runs-on}}
           path: BDTHPlugin.zip
           if-no-files-found: error
 
@@ -60,10 +60,10 @@ jobs:
           fetch-depth: 0
 
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         id: download
         with:
-          name: PluginZip
+          pattern: PluginZip-*
 
       - name: Get tag name
         id: tag
