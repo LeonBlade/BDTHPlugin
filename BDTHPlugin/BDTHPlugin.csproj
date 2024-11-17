@@ -9,9 +9,15 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-  </PropertyGroup>
+<!-- Dalamud Configuration (Windows-specific) -->
+  <PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <DalamudLibPath>$(APPDATA)\XIVLauncher\addon\Hooks\$(DalamudVersion)\</DalamudLibPath>
+</PropertyGroup>
+
+<!-- Dalamud Configuration (Linux-specific) -->
+<PropertyGroup Condition="$([MSBuild]::IsOSPlatform('Linux'))">
+    <DalamudLibPath>$(HOME)/.xlcore/dalamud/Hooks/$(DalamudVersion)/</DalamudLibPath>
+</PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Dalamud.NET.Sdk" Version="9.0.2" />
