@@ -23,7 +23,7 @@ jobs:
           submodules: recursive
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.0.3
+        uses: microsoft/setup-msbuild@v2
 
       - name: Download Dalamud
         run: |
@@ -33,13 +33,13 @@ jobs:
       - name: Build
         run: |
           dotnet restore
-          dotnet build --configuration Release --nologo --property:OutputPath=bin/
+          dotnet build --configuration Release --nologo --property:OutputPath=D:/build
         env:
           DOTNET_CLI_TELEMETRY_OUTPUT: true
 
       - name: Create artifact
         run: |
-          Compress-Archive -Path "bin/*" -DestinationPath BDTHPlugin.zip
+          Compress-Archive -Path "D:/build/*" -DestinationPath BDTHPlugin.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
