@@ -44,7 +44,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: PluginZip
+          name: BDTHPlugin
           path: D:/build/BDTHPlugin.zip
           if-no-files-found: error
 
