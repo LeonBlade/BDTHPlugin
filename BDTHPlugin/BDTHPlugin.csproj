@@ -1,6 +1,6 @@
-﻿<Project Sdk="Dalamud.NET.Sdk/9.0.2">
+﻿<Project Sdk="Dalamud.NET.Sdk/11.0.0">
   <PropertyGroup>
-    <Version>1.6.6</Version>
+    <Version>1.6.76</Version>
     <TargetFramework>net8.0-windows</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
@@ -9,17 +9,8 @@
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="Dalamud.NET.Sdk" Version="9.0.2" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <Reference Include="SharpDX">
-      <HintPath>$(DalamudLibPath)SharpDX.dll</HintPath>
-      <Private>false</Private>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

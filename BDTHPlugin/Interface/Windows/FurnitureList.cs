@@ -79,14 +79,14 @@ namespace BDTHPlugin.Interface.Windows
 
               if (Plugin.TryGetYardObject(items[i].HousingRowId, out var yardObject))
               {
-                name = yardObject?.Item?.Value?.Name.ToString();
-                icon = yardObject?.Item?.Value?.Icon ?? 0;
+                name = yardObject.Item.Value.Name.ToString();
+                icon = yardObject.Item.Value.Icon;
               }
 
               if (Plugin.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
               {
-                name = furnitureObject?.Item?.Value?.Name.ToString();
-                icon = furnitureObject?.Item?.Value?.Icon ?? 0;
+                name = furnitureObject.Item.Value.Name.ToString();
+                icon = furnitureObject.Item.Value.Icon;
               }
 
               // Skip item if we can't find a name or item icon.

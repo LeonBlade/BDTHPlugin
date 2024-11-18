@@ -4,10 +4,10 @@
   "Description": "Move around housing items with coordinates and allows you to place anywhere.",
   "Punchline": "House decorating made easy!",
   "InternalName": "BDTHPlugin",
-  "AssemblyVersion": "1.6.6",
+  "AssemblyVersion": "1.6.7",
   "RepoUrl": "https://github.com/LeonBlade/BDTHPlugin",
   "ApplicableVersion": "any",
   "Tags": ["bdth", "housing", "float", "place", "glitch", "furnishing", "LeonBlade"],
-  "DalamudApiLevel": 10,
+  "DalamudApiLevel": 11,
   "IconUrl": "https://github.com/LeonBlade/BDTHPlugin/raw/main/icon.png"
 }

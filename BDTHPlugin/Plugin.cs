@@ -6,7 +6,7 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
 using ImGuizmoNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -128,8 +128,8 @@ namespace BDTHPlugin
 
     public unsafe static bool IsOutdoors() => Memory.HousingModule->OutdoorTerritory != null;
 
-    public static bool TryGetFurnishing(uint id, out HousingFurniture? furniture) => FurnitureDict.TryGetValue(id, out furniture);
-    public static bool TryGetYardObject(uint id, out HousingYardObject? furniture) => YardObjectDict.TryGetValue(id, out furniture);
+    public static bool TryGetFurnishing(uint id, out HousingFurniture furniture) => FurnitureDict.TryGetValue(id, out furniture);
+    public static bool TryGetYardObject(uint id, out HousingYardObject furniture) => YardObjectDict.TryGetValue(id, out furniture);
 
     private unsafe void OnCommand(string command, string args)
     {
