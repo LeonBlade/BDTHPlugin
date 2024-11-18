@@ -39,13 +39,13 @@ jobs:
 
       - name: Create artifact
         run: |
-          Compress-Archive -Path "D:/build/*" -DestinationPath BDTHPlugin.zip
+          Compress-Archive -Path "D:/build/*" -DestinationPath D:/build/BDTHPlugin.zip
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: PluginZip
-          path: BDTHPlugin.zip
+          path: D:/build/BDTHPlugin.zip
           if-no-files-found: error
 
   release:
