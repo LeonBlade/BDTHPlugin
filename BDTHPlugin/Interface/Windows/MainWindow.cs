@@ -81,11 +81,11 @@ namespace BDTHPlugin.Interface.Windows
       if (ImGuiComponents.IconButton(1, Gizmo.Mode == MODE.LOCAL ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
         Gizmo.Mode = Gizmo.Mode == MODE.LOCAL ? MODE.WORLD : MODE.LOCAL;
 
-      DrawTooltip(new[]
-      {
+      DrawTooltip(
+      [
         $"Mode: {(Gizmo.Mode == MODE.LOCAL ? "Local" : "World")}",
         "Changes gizmo mode between local and world movement."
-      });
+      ]);
 
       ImGui.Separator();
 
@@ -117,20 +117,29 @@ namespace BDTHPlugin.Interface.Windows
       var dummyInventory = Memory.InventoryVisible;
 
       if (ImGui.Checkbox("Display in-game list", ref dummyHousingGoods))
-        if (PluginMemory.HousingGoods != null)
-          PluginMemory.HousingGoods->IsVisible = dummyHousingGoods;
+      {
+        Memory.ShowFurnishingList(dummyHousingGoods);
+
+        Configuration.DisplayFurnishingList = dummyHousingGoods;
+        Configuration.Save();
+      }
       ImGui.SameLine();
 
       if (ImGui.Checkbox("Display inventory", ref dummyInventory))
-        Memory.InventoryVisible = dummyInventory;
+      {
+        Memory.ShowInventory(dummyInventory);
+
+        Configuration.DisplayInventory = dummyInventory;
+        Configuration.Save();
+      }
 
       if (ImGui.Button("Open Furnishing List"))
         Plugin.CommandManager.ProcessCommand("/bdth list");
-      DrawTooltip(new[]
-      {
+      DrawTooltip(
+      [
         "Opens a furnishing list that you can use to sort by distance and click to select objects.",
         "NOTE: Does not currently work outdoors!"
-      });
+      ]);
 
       var autoVisible = Configuration.AutoVisible;
       if (ImGui.Checkbox("Auto Open", ref autoVisible))
@@ -153,7 +162,7 @@ namespace BDTHPlugin.Interface.Windows
 
     private static void DrawTooltip(string text)
     {
-      DrawTooltip(new[] { text });
+      DrawTooltip([text]);
     }
 
     private void DrawError(string text)

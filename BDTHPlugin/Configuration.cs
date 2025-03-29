@@ -13,6 +13,8 @@ namespace BDTHPlugin
     public bool SortByDistance { get; set; } = false;
     public bool AutoVisible { get; set; } = true;
     public bool PlaceAnywhere { get; set; } = false;
+    public bool DisplayFurnishingList { get; set; } = true;
+    public bool DisplayInventory { get; set; } = true;
 
     public void Save()
     {

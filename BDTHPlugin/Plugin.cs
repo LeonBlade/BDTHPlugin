@@ -6,7 +6,7 @@ using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
 using ImGuiNET;
 using ImGuizmoNET;
-using Lumina.Excel.GeneratedSheets;
+using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -34,13 +34,13 @@ namespace BDTHPlugin
     [PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
 
-    private static Configuration Configuration;
-    private static PluginUI Ui;
-    private static PluginMemory Memory;
+    private static Configuration Configuration = null!;
+    private static PluginUI Ui = null!;
+    private static PluginMemory Memory = null!;
 
     // Sheets used to get housing item info.
-    private static Dictionary<uint, HousingFurniture> FurnitureDict = new();
-    private static Dictionary<uint, HousingYardObject> YardObjectDict = new();
+    private static Dictionary<uint, HousingFurniture> FurnitureDict = [];
+    private static Dictionary<uint, HousingYardObject> YardObjectDict = [];
 
     public Plugin()
     {
@@ -48,8 +48,8 @@ namespace BDTHPlugin
       Ui = new();
       Memory = new();
 
-      FurnitureDict = Data.GetExcelSheet<HousingFurniture>().ToDictionary(row => row.RowId, row => row);
-      YardObjectDict = Data.GetExcelSheet<HousingYardObject>().ToDictionary(row => row.RowId, row => row);
+      FurnitureDict = Data.GetExcelSheet<HousingFurniture>()!.ToDictionary(row => row.RowId, row => row);
+      YardObjectDict = Data.GetExcelSheet<HousingYardObject>()!.ToDictionary(row => row.RowId, row => row);
 
       CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
       {
@@ -128,8 +128,8 @@ namespace BDTHPlugin
 
     public unsafe static bool IsOutdoors() => Memory.HousingModule->OutdoorTerritory != null;
 
-    public static bool TryGetFurnishing(uint id, out HousingFurniture? furniture) => FurnitureDict.TryGetValue(id, out furniture);
-    public static bool TryGetYardObject(uint id, out HousingYardObject? furniture) => YardObjectDict.TryGetValue(id, out furniture);
+    public static bool TryGetFurnishing(uint id, out HousingFurniture furniture) => FurnitureDict.TryGetValue(id, out furniture);
+    public static bool TryGetYardObject(uint id, out HousingYardObject furniture) => YardObjectDict.TryGetValue(id, out furniture);
 
     private unsafe void OnCommand(string command, string args)
     {

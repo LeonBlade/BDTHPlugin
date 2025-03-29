@@ -14,6 +14,7 @@ namespace BDTHPlugin
 {
   public class PluginMemory
   {
+    private bool isHousingOpen = false;
     private int inventoryType = 0;
 
     // Pointers to modify assembly to enable place anywhere.
@@ -29,7 +30,7 @@ namespace BDTHPlugin
 
     public unsafe LayoutWorld* Layout => (LayoutWorld*)layoutWorldPtr;
     public unsafe HousingStructure* HousingStructure => Layout->HousingStruct;
-    public unsafe HousingModule* HousingModule => housingModulePtr != IntPtr.Zero ? (HousingModule*) Marshal.ReadIntPtr(housingModulePtr) : null;
+    public unsafe HousingModule* HousingModule => housingModulePtr != IntPtr.Zero ? (HousingModule*)Marshal.ReadIntPtr(housingModulePtr) : null;
     public unsafe HousingObjectManager* CurrentManager => HousingModule->GetCurrentManager();
     public unsafe Camera* Camera => &CameraManager.Instance()->GetActiveCamera()->CameraBase.SceneCamera;
 
@@ -124,17 +125,17 @@ namespace BDTHPlugin
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void SelectItemDelegate(IntPtr housingStruct, IntPtr item);
     private readonly IntPtr selectItemAddress;
-    public SelectItemDelegate SelectItem;
+    public SelectItemDelegate SelectItem = null!;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void PlaceHousingItemDelegate(IntPtr item, Vector3 position);
     private readonly IntPtr placeHousingItemAddress;
-    public PlaceHousingItemDelegate PlaceHousingItem;
+    public PlaceHousingItemDelegate PlaceHousingItem = null!;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void HousingLayoutModelUpdateDelegate(IntPtr item);
     private readonly IntPtr housingLayoutModelUpdateAddress;
-    public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate;
+    public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate = null!;
 
     public PluginMemory()
     {
@@ -166,16 +167,24 @@ namespace BDTHPlugin
         housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.ScanText("48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 50 48 8B E9 48 8B 49");
         HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(housingLayoutModelUpdateAddress);
 
-        if (Plugin.GetConfiguration().PlaceAnywhere)
-        {
+        var config = Plugin.GetConfiguration();
+
+        if (config.PlaceAnywhere)
           SetPlaceAnywhere(Plugin.GetConfiguration().PlaceAnywhere);
-        }
       }
       catch (Exception ex)
       {
         Plugin.Log.Error(ex, "Error while calling PluginMemory.ctor()");
       }
     }
+
+    public unsafe void ShowFurnishingList(bool state)
+    {
+      if (HousingGoods != null)
+        HousingGoods->IsVisible = state;
+    }
+
+    public void ShowInventory(bool state) => InventoryVisible = state;
 
     /// <summary>
     /// Dispose for the memory functions.
@@ -332,6 +341,20 @@ namespace BDTHPlugin
     {
       try
       {
+        var lastIsHousingOpen = isHousingOpen;
+        isHousingOpen = IsHousingOpen();
+
+        // Just perform once when housing is opened
+        if (lastIsHousingOpen != isHousingOpen && isHousingOpen)
+        {
+          Plugin.Log.Info("Housing opened");
+          var config = Plugin.GetConfiguration();
+          if (!config.DisplayFurnishingList)
+            ShowFurnishingList(false);
+          if (!config.DisplayInventory)
+            ShowInventory(false);
+        }
+
         if (CanEditItem())
         {
           // Don't really need to load position if we're reading it in the UI thread anyway, but leaving it for now for redudency...

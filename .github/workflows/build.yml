@@ -23,7 +23,7 @@ jobs:
           submodules: recursive
 
       - name: Setup MSBuild
-        uses: microsoft/setup-msbuild@v1.0.3
+        uses: microsoft/setup-msbuild@v2
 
       - name: Download Dalamud
         run: |
@@ -33,19 +33,19 @@ jobs:
       - name: Build
         run: |
           dotnet restore
-          dotnet build --configuration Release --nologo --output bin/
+          dotnet build --configuration Release --nologo --property:OutputPath=D:/build
         env:
           DOTNET_CLI_TELEMETRY_OUTPUT: true
 
       - name: Create artifact
         run: |
-          Compress-Archive -Path "bin/*" -DestinationPath BDTHPlugin.zip
+          Compress-Archive -Path "D:/build/*" -DestinationPath D:/build/BDTHPlugin.zip
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v2.2.1
+        uses: actions/upload-artifact@v4
         with:
-          name: PluginZip
-          path: BDTHPlugin.zip
+          name: BDTHPlugin
+          path: D:/build/BDTHPlugin.zip
           if-no-files-found: error
 
   release:
@@ -55,22 +55,22 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v2.2.0
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Download artifact
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         id: download
         with:
-          name: PluginZip
+          pattern: PluginZip
 
       - name: Get tag name
         id: tag
         uses: WyriHaximus/github-action-get-previous-tag@v1
 
       - name: Create release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: ${{ env.PROJECT_NAME }} ${{ steps.tag.outputs.tag }}
           tag_name: ${{ steps.tag.outputs.tag }}
