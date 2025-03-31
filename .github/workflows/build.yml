@@ -61,6 +61,8 @@ jobs:
 
       - name: Download artifact
         uses: actions/download-artifact@v4
+        with:
+          path: D:/BDTHPlugin.zip
 
       - name: Get tag name
         id: tag
@@ -72,7 +74,7 @@ jobs:
           name: ${{ env.PROJECT_NAME }} ${{ steps.tag.outputs.tag }}
           tag_name: ${{ steps.tag.outputs.tag }}
           body: ${{ github.events.commits[0].message }}
-          files: ./BDTHPlugin.zip
+          files: D:/BDTHPlugin.zip
 
       - name: Trigger plugin repo update
         uses: peter-evans/repository-dispatch@v1
