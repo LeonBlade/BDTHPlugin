@@ -4,8 +4,8 @@ using Dalamud.Game.Command;
 using Dalamud.IoC;
 using Dalamud.Plugin;
 using Dalamud.Plugin.Services;
-using ImGuiNET;
-using ImGuizmoNET;
+using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGuizmo;
 using Lumina.Excel.Sheets;
 using System;
 using System.Collections.Generic;
@@ -122,7 +122,7 @@ namespace BDTHPlugin
       if (icon < 65000)
       {
         var iconTexture = TextureProvider.GetFromGameIcon(new GameIconLookup(icon));
-        ImGui.Image(iconTexture.GetWrapOrEmpty().ImGuiHandle, size);
+        ImGui.Image(iconTexture.GetWrapOrEmpty().Handle, size);
       }
     }
 

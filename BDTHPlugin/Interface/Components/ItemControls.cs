@@ -3,7 +3,7 @@
 using Dalamud.Interface;
 using Dalamud.Interface.Components;
 
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 
 namespace BDTHPlugin.Interface.Components
 {
