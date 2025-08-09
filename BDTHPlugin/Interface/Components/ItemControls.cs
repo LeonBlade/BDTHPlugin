@@ -12,15 +12,19 @@ namespace BDTHPlugin.Interface.Components
     private static PluginMemory Memory => Plugin.GetMemory();
     private static Configuration Configuration => Plugin.GetConfiguration();
 
-    private static float drag => Configuration.Drag;
-    
+    private static float Drag => Configuration.Drag;
+
     private float? lockX;
     private float? lockY;
     private float? lockZ;
-    
+
     private Vector3? copyPosition;
     private float? copyRotation;
-    
+
+    private Vector4 RED = new(1, .2f, .2f, 1);
+    private Vector4 GREEN = new(.2f, 1, .2f, 1);
+    private Vector4 BLUE = new(.2f, .2f, 1, 1);
+
     public unsafe void Draw()
     {
       if (Memory.HousingStructure->ActiveItem != null)
@@ -86,17 +90,17 @@ namespace BDTHPlugin.Interface.Components
 
       ImGui.EndGroup();
 
-      DrawInputCoord("x coord##bdth-x", ref Memory.position.X, ref lockX);
-      DrawInputCoord("y coord##bdth-y", ref Memory.position.Y, ref lockY);
-      DrawInputCoord("z coord##bdth-z", ref Memory.position.Z, ref lockZ);
+      DrawInputCoord("x coord##bdth-x", ref Memory.position.X, ref lockX, BLUE);
+      DrawInputCoord("y coord##bdth-y", ref Memory.position.Y, ref lockY, GREEN);
+      DrawInputCoord("z coord##bdth-z", ref Memory.position.Z, ref lockZ, RED);
       DrawInputRotate("ry degree##bdth-ry", ref Memory.rotation.Y);
     }
-    
+
     private void HandleScrollInput(ref float f)
     {
       if (ImGui.IsMouseHoveringRect(ImGui.GetItemRectMin(), ImGui.GetItemRectMax()))
       {
-        var delta = ImGui.GetIO().MouseWheel * drag;
+        var delta = ImGui.GetIO().MouseWheel * Drag;
         if (delta != 0)
         {
           f += delta;
@@ -104,10 +108,10 @@ namespace BDTHPlugin.Interface.Components
         }
       }
     }
-    
+
     private bool DrawDrag(string name, ref float f)
     {
-      var changed = ImGui.DragFloat(name, ref f, drag);
+      var changed = ImGui.DragFloat(name, ref f, Drag);
       ImGui.SameLine(0, 4);
       HandleScrollInput(ref f);
       return changed;
@@ -118,21 +122,21 @@ namespace BDTHPlugin.Interface.Components
       if (DrawDrag(name, ref f))
         Memory.WritePosition(Memory.position);
     }
-    
+
     private void DrawDragRotate(string name, ref float f)
     {
       if (DrawDrag(name, ref f))
         Memory.WriteRotation(Memory.rotation);
     }
-    
+
     private bool DrawInput(string name, ref float f)
     {
-      var changed = ImGui.InputFloat(name, ref f, drag);
+      var changed = ImGui.InputFloat(name, ref f, Drag);
       HandleScrollInput(ref f);
       ImGui.SameLine();
       return changed;
     }
-    
+
     private void DrawInputCoord(string name, ref float f)
     {
       if (DrawInput(name, ref f))
@@ -145,11 +149,21 @@ namespace BDTHPlugin.Interface.Components
         Memory.WriteRotation(Memory.rotation);
     }
 
-    private void DrawInputCoord(string name, ref float f, ref float? locked)
+    static void DrawCircle(Vector4 color)
+    {
+      ImGui.SameLine();
+      var pos = ImGui.GetCursorScreenPos();
+      var center = pos.Y + ImGui.GetTextLineHeight() / 2f + 3f;
+      ImGui.GetWindowDrawList().AddCircleFilled(new Vector2(pos.X + 12, center), 8, ImGui.GetColorU32(color));
+      ImGui.Dummy(new Vector2(24, 24));
+    }
+
+    private void DrawInputCoord(string name, ref float f, ref float? locked, Vector4 color)
     {
       DrawInputCoord(name, ref f);
       if (ImGuiComponents.IconButton((int)ImGui.GetID(name), locked == null ? FontAwesomeIcon.Unlock : FontAwesomeIcon.Lock))
         locked = locked == null ? f : null;
+      DrawCircle(color);
     }
   }
 }

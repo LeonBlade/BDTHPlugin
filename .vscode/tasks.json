@@ -9,7 +9,8 @@
         "build",
         "${workspaceFolder}/BDTHPlugin/BDTHPlugin.csproj",
         "/property:GenerateFullPaths=true",
-        "/consoleloggerparameters:NoSummary"
+        "/consoleloggerparameters:NoSummary",
+        "/p:Platform=x64"
       ],
       "problemMatcher": "$msCompile",
       "group": {
@@ -25,6 +26,7 @@
         "${workspaceFolder}/BDTHPlugin/BDTHPlugin.csproj",
         "/property:GenerateFullPaths=true",
         "/consoleloggerparameters:NoSummary",
+        "/p:Platform=x64",
         "-c",
         "Release"
       ],

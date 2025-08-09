@@ -9,8 +9,6 @@ using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
 using CameraManager = FFXIVClientStructs.FFXIV.Client.Game.Control.CameraManager;
 
-using Dalamud.Utility.Signatures;
-
 namespace BDTHPlugin
 {
   public class PluginMemory
@@ -397,7 +395,7 @@ namespace BDTHPlugin
       if (sortByDistance == true)
         return GetFurnishingByDistance(out objects, point);
 
-      objects = new List<HousingGameObject>();
+      objects = [];
 
       if (HousingModule == null || HousingModule->GetCurrentManager() == null || HousingModule->GetCurrentManager()->Objects == null)
         return false;

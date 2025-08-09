@@ -165,7 +165,7 @@ namespace BDTHPlugin.Interface.Windows
       DrawTooltip([text]);
     }
 
-    private void DrawError(string text)
+    private static void DrawError(string text)
     {
       ImGui.PushStyleColor(ImGuiCol.Text, RED_COLOR);
       ImGui.Text(text);
