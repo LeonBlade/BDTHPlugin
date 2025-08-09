@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Dalamud.NET.Sdk/13.0.0">
   <PropertyGroup>
-    <Version>1.6.9</Version>
+    <Version>2.0.0</Version>
     <TargetFramework>net9.0-windows</TargetFramework>
+    <DalamudApiLevel>13</DalamudApiLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
