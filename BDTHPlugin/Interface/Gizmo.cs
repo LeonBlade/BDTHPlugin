@@ -1,8 +1,8 @@
 ﻿using System.Net.WebSockets;
 using System.Numerics;
 using Dalamud.Interface.Utility;
-using ImGuiNET;
-using ImGuizmoNET;
+using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGuizmo;
 
 namespace BDTHPlugin.Interface
 {
@@ -13,7 +13,7 @@ namespace BDTHPlugin.Interface
 
     private static unsafe bool CanEdit => Configuration.UseGizmo && Memory.CanEditItem() && Memory.HousingStructure->ActiveItem != null;
 
-    public MODE Mode = MODE.LOCAL;
+    public ImGuizmoMode Mode = ImGuizmoMode.Local;
 
     private Vector3 translate;
     private Vector3 rotation;
@@ -82,7 +82,7 @@ namespace BDTHPlugin.Interface
 
       var snap = Configuration.DoSnap ? new(Configuration.Drag, Configuration.Drag, Configuration.Drag) : Vector3.Zero;
 
-      if (Manipulate(ref view.M11, ref proj.M11, OPERATION.TRANSLATE, Mode, ref matrix.M11, ref snap.X))
+      if (Manipulate(ref view.M11, ref proj.M11, ImGuizmoOperation.Translate, Mode, ref matrix.M11, ref snap.X))
         WriteMatrix();
 
       ImGuizmo.SetID(-1);
@@ -107,7 +107,7 @@ namespace BDTHPlugin.Interface
       Memory.WritePosition(translate);
     }
 
-    private unsafe bool Manipulate(ref float view, ref float proj, OPERATION op, MODE mode, ref float matrix, ref float snap)
+    private unsafe bool Manipulate(ref float view, ref float proj, ImGuizmoOperation op, ImGuizmoMode mode, ref float matrix, ref float snap)
     {
       fixed (float* native_view = &view)
       {
@@ -117,7 +117,7 @@ namespace BDTHPlugin.Interface
           {
             fixed (float* native_snap = &snap)
             {
-              return ImGuizmoNative.ImGuizmo_Manipulate(
+              return ImGuizmo.Manipulate(
                 native_view,
                 native_proj,
                 op,
@@ -127,7 +127,7 @@ namespace BDTHPlugin.Interface
                 native_snap,
                 null,
                 null
-              ) != 0;
+              ) != false;
             }
           }
         }

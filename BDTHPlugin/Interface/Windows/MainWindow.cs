@@ -4,8 +4,8 @@ using System.Numerics;
 using Dalamud.Interface.Components;
 using Dalamud.Interface.Windowing;
 
-using ImGuiNET;
-using ImGuizmoNET;
+using Dalamud.Bindings.ImGui;
+using Dalamud.Bindings.ImGuizmo;
 
 using BDTHPlugin.Interface.Components;
 
@@ -78,12 +78,12 @@ namespace BDTHPlugin.Interface.Windows
       DrawTooltip("Enables snapping of gizmo movement based on the drag value set below.");
 
       ImGui.SameLine();
-      if (ImGuiComponents.IconButton(1, Gizmo.Mode == MODE.LOCAL ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
-        Gizmo.Mode = Gizmo.Mode == MODE.LOCAL ? MODE.WORLD : MODE.LOCAL;
+      if (ImGuiComponents.IconButton(1, Gizmo.Mode == ImGuizmoMode.Local ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
+        Gizmo.Mode = Gizmo.Mode == ImGuizmoMode.Local ? ImGuizmoMode.World : ImGuizmoMode.Local;
 
       DrawTooltip(
       [
-        $"Mode: {(Gizmo.Mode == MODE.LOCAL ? "Local" : "World")}",
+        $"Mode: {(Gizmo.Mode == ImGuizmoMode.Local ? "Local" : "World")}",
         "Changes gizmo mode between local and world movement."
       ]);
 
@@ -113,7 +113,7 @@ namespace BDTHPlugin.Interface.Windows
       }
       DrawTooltip("Sets the amount to change when dragging the controls, also influences the gizmo snap feature.");
 
-      var dummyHousingGoods = PluginMemory.HousingGoods != null && PluginMemory.HousingGoods->IsVisible;
+      var dummyHousingGoods = PluginMemory.HousingGoods != null && PluginMemory.HousingGoods.IsVisible;
       var dummyInventory = Memory.InventoryVisible;
 
       if (ImGui.Checkbox("Display in-game list", ref dummyHousingGoods))
