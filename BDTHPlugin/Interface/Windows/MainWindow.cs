@@ -113,12 +113,12 @@ namespace BDTHPlugin.Interface.Windows
       }
       DrawTooltip("Sets the amount to change when dragging the controls, also influences the gizmo snap feature.");
 
-      var dummyHousingGoods = PluginMemory.HousingGoods != null && PluginMemory.HousingGoods.IsVisible;
-      var dummyInventory = Memory.InventoryVisible;
+      var dummyHousingGoods = AtkManager.HousingGoods != null && AtkManager.HousingGoods.IsVisible;
+      var dummyInventory = AtkManager.InventoryVisible;
 
       if (ImGui.Checkbox("Display in-game list", ref dummyHousingGoods))
       {
-        Memory.ShowFurnishingList(dummyHousingGoods);
+        AtkManager.ShowFurnishingList(dummyHousingGoods);
 
         Configuration.DisplayFurnishingList = dummyHousingGoods;
         Configuration.Save();
@@ -127,7 +127,7 @@ namespace BDTHPlugin.Interface.Windows
 
       if (ImGui.Checkbox("Display inventory", ref dummyInventory))
       {
-        Memory.ShowInventory(dummyInventory);
+        AtkManager.ShowInventory(dummyInventory);
 
         Configuration.DisplayInventory = dummyInventory;
         Configuration.Save();

@@ -1,4 +1,3 @@
-using FFXIVClientStructs.FFXIV.Component.GUI;
 using Dalamud.Game.NativeWrapper;
 using System;
 using System.Collections.Generic;
@@ -14,7 +13,13 @@ namespace BDTHPlugin
   public class PluginMemory
   {
     private bool isHousingOpen = false;
-    private int inventoryType = 0;
+
+    private enum InventoryType
+    {
+      Normal,
+      Large,
+      Expanded
+    }
 
     // Pointers to modify assembly to enable place anywhere.
     public IntPtr placeAnywhere;
@@ -33,94 +38,9 @@ namespace BDTHPlugin
     public unsafe HousingObjectManager* CurrentManager => HousingModule->GetCurrentManager();
     public unsafe Camera* Camera => &CameraManager.Instance()->GetActiveCamera()->CameraBase.SceneCamera;
 
-    public static unsafe AtkUnitBasePtr HousingLayout => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("HousingLayout", 1);
+    public static unsafe AtkUnitBasePtr HousingLayout => Plugin.GameGui.GetAddonByName("HousingLayout", 1);
     public static unsafe bool GamepadMode => !(HousingLayout != null && HousingLayout.IsVisible);
 
-    public static unsafe AtkUnitBasePtr HousingGoods => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("HousingGoods", 1);
-    public static unsafe AtkUnitBasePtr InventoryExpansion => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryExpansion", 1);
-    public static unsafe AtkUnitBasePtr InventoryGrid0E => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryGrid0E", 1);
-    public static unsafe AtkUnitBasePtr InventoryGrid1E => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryGrid1E", 1);
-    public static unsafe AtkUnitBasePtr InventoryGrid2E => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryGrid2E", 1);
-    public static unsafe AtkUnitBasePtr InventoryGrid3E => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryGrid3E", 1);
-    public static unsafe AtkUnitBasePtr InventoryLarge => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryLarge", 1);
-    public static unsafe AtkUnitBasePtr Inventory => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("Inventory", 1);
-    public static unsafe AtkUnitBasePtr InventoryGrid0 => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryGrid0", 1);
-    public static unsafe AtkUnitBasePtr InventoryGrid1 => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryGrid1", 1);
-    public static unsafe AtkUnitBasePtr InventoryEventGrid0 => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryEventGrid0", 1);
-    public static unsafe AtkUnitBasePtr InventoryEventGrid1 => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryEventGrid1", 1);
-    public static unsafe AtkUnitBasePtr InventoryEventGrid2 => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryEventGrid2", 1);
-    public static unsafe AtkUnitBasePtr InventoryGrid => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryGrid", 1);
-    public static unsafe AtkUnitBasePtr InventoryEventGrid0E => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryEventGrid0E", 1);
-    public static unsafe AtkUnitBasePtr InventoryEventGrid1E => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryEventGrid1E", 1);
-    public static unsafe AtkUnitBasePtr InventoryEventGrid2E => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryEventGrid2E", 1);
-    public static unsafe AtkUnitBasePtr InventoryGridCrystal => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryGridCrystal", 1);
-    public static unsafe AtkUnitBasePtr InventoryCrystalGrid => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 1);
-    public static unsafe AtkUnitBasePtr InventoryCrystalGrid2 => (AtkUnitBasePtr)Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 2);
-
-    public unsafe bool InventoryVisible
-    {
-      get => InventoryExpansion != null && InventoryExpansion.IsVisible ||
-          InventoryLarge != null && InventoryLarge.IsVisible ||
-          Inventory != null && Inventory.IsVisible;
-
-      set
-      {
-        if (HousingGoods == null || InventoryExpansion == null || InventoryLarge == null || Inventory == null)
-          return;
-
-        // Determine which inventory is open assuming it's visible
-        if (InventoryExpansion.IsVisible || InventoryLarge.IsVisible || Inventory.IsVisible)
-        {
-          if (InventoryExpansion.IsVisible) inventoryType = 1;
-          else if (InventoryLarge.IsVisible) inventoryType = 2;
-          else if (Inventory.IsVisible) inventoryType = 3;
-        }
-
-        try
-        {
-          switch (inventoryType) // these values are read only with the Dalamud 13 implementation of AtkUnitBasePtr
-          {
-            case 1:
-              /*
-              InventoryExpansion.Address.ToPointer->IsVisible = value;
-              InventoryGrid0E->IsVisible = value;
-              InventoryGrid1E->IsVisible = value;
-              InventoryGrid2E->IsVisible = value;
-              InventoryGrid3E->IsVisible = value;
-              InventoryEventGrid0E->IsVisible = value;
-              InventoryEventGrid1E->IsVisible = value;
-              InventoryEventGrid2E->IsVisible = value;
-              InventoryCrystalGrid2->IsVisible = value;
-              */
-              break;
-            case 2:
-                /*
-              InventoryLarge->IsVisible = value;
-              InventoryGrid0->IsVisible = value;
-              InventoryGrid1->IsVisible = value;
-              InventoryEventGrid0->IsVisible = value;
-              InventoryEventGrid1->IsVisible = value;
-              InventoryEventGrid2->IsVisible = value;
-              InventoryCrystalGrid->IsVisible = value;
-              */
-              break;
-            case 3:
-              /*
-              Inventory->IsVisible = value;
-              InventoryGrid->IsVisible = value;
-              InventoryGridCrystal->IsVisible = value;
-              */
-              break;
-            default:
-              break;
-          }
-        }
-        catch
-        {
-          Plugin.Log.Error("IsVisible setter not present");
-        }
-      }
-    }
 
     // Local references to position and rotation to use to free them when an item isn't selected but to keep the UI bound to a reference.
     public Vector3 position;
@@ -183,14 +103,6 @@ namespace BDTHPlugin
       }
     }
 
-    public unsafe void ShowFurnishingList(bool state)
-    {
-            if (HousingGoods != null)
-                ;//HousingGoods->IsVisible = state;//same as above, this value is read only with dalamud 13
-    }
-
-    public void ShowInventory(bool state) => InventoryVisible = state;
-
     /// <summary>
     /// Dispose for the memory functions.
     /// </summary>
@@ -200,9 +112,7 @@ namespace BDTHPlugin
       {
         // Disable the place anywhere in case it's on.
         SetPlaceAnywhere(false);
-
-                // Enable the housing goods menu again.
-                if (HousingGoods != null) ;// HousingGoods->IsVisible = true;//same as above, this value is read only with dalamud 13
+        AtkManager.ShowFurnishingList(true);
       }
       catch (Exception ex)
       {
@@ -355,9 +265,9 @@ namespace BDTHPlugin
           Plugin.Log.Info("Housing opened");
           var config = Plugin.GetConfiguration();
           if (!config.DisplayFurnishingList)
-            ShowFurnishingList(false);
+            AtkManager.ShowFurnishingList(false);
           if (!config.DisplayInventory)
-            ShowInventory(false);
+            AtkManager.ShowInventory(false);
         }
 
         if (CanEditItem())
