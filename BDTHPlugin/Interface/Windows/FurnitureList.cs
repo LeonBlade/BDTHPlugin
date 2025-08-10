@@ -108,7 +108,6 @@ namespace BDTHPlugin.Interface.Windows
               if (thisActive && lastActiveItem != (ulong)Memory.HousingStructure->ActiveItem)
               {
                 ImGui.SetScrollHereY();
-                Plugin.Log.Info($"{ImGui.GetScrollY()} {ImGui.GetScrollMaxY()}");
               }
 
               ImGui.SameLine();

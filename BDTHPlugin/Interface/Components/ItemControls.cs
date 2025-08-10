@@ -90,9 +90,9 @@ namespace BDTHPlugin.Interface.Components
 
       ImGui.EndGroup();
 
-      DrawInputCoord("x coord##bdth-x", ref Memory.position.X, ref lockX, BLUE);
+      DrawInputCoord("x coord##bdth-x", ref Memory.position.X, ref lockX, RED);
       DrawInputCoord("y coord##bdth-y", ref Memory.position.Y, ref lockY, GREEN);
-      DrawInputCoord("z coord##bdth-z", ref Memory.position.Z, ref lockZ, RED);
+      DrawInputCoord("z coord##bdth-z", ref Memory.position.Z, ref lockZ, BLUE);
       DrawInputRotate("ry degree##bdth-ry", ref Memory.rotation.Y);
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Dalamud.Game.NativeWrapper;
 using FFXIVClientStructs.FFXIV.Component.GUI;
@@ -55,24 +56,24 @@ namespace BDTHPlugin
 
       set
       {
-        if (HousingGoods == null || InventoryExpansion == null || InventoryLarge == null || Inventory == null)
-          return;
-
-        // Determine which inventory is open assuming it's visible
-        if (InventoryExpansion.IsVisible || InventoryLarge.IsVisible || Inventory.IsVisible)
-        {
-          if (InventoryExpansion.IsVisible) inventoryType = InventoryType.Expanded;
-          else if (InventoryLarge.IsVisible) inventoryType = InventoryType.Large;
-          else if (Inventory.IsVisible) inventoryType = InventoryType.Base;
-        }
-
         try
         {
+          if (HousingGoods == null || InventoryExpansion == null || InventoryLarge == null || Inventory == null)
+            return;
+
+          // Determine which inventory is open assuming it's visible
+          if (InventoryExpansion.IsVisible || InventoryLarge.IsVisible || Inventory.IsVisible)
+          {
+            if (InventoryExpansion.IsVisible) inventoryType = InventoryType.Expanded;
+            else if (InventoryLarge.IsVisible) inventoryType = InventoryType.Large;
+            else if (Inventory.IsVisible) inventoryType = InventoryType.Base;
+          }
+
           Atks[inventoryType].ForEach((atk) => SetVisible(atk, value));
         }
-        catch
+        catch (Exception ex)
         {
-          Plugin.Log.Error("IsVisible setter not present");
+          Plugin.Log.Error("Could not set visibility", ex);
         }
       }
     }
@@ -83,11 +84,7 @@ namespace BDTHPlugin
         SetVisible(HousingGoods, state);
     }
 
-    private static unsafe void SetVisible(AtkUnitBasePtr ptr, bool visible)
-    {
-      Plugin.Log.Debug(ptr.Name);
-      ((AtkUnitBase*)ptr.Address)->IsVisible = visible;
-    }
+    private static unsafe void SetVisible(AtkUnitBasePtr ptr, bool visible) => ((AtkUnitBase*)ptr.Address)->IsVisible = visible;
 
     public static void ShowInventory(bool state) => InventoryVisible = state;
   }

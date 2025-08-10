@@ -262,7 +262,6 @@ namespace BDTHPlugin
         // Just perform once when housing is opened
         if (lastIsHousingOpen != isHousingOpen && isHousingOpen)
         {
-          Plugin.Log.Info("Housing opened");
           var config = Plugin.GetConfiguration();
           if (!config.DisplayFurnishingList)
             AtkManager.ShowFurnishingList(false);
