@@ -2,7 +2,6 @@
   <PropertyGroup>
     <Version>1.6.9</Version>
     <TargetFramework>net9.0-windows</TargetFramework>
-    <DalamudApiLevel>13</DalamudApiLevel>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
