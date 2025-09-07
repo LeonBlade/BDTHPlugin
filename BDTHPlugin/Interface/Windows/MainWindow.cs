@@ -147,6 +147,8 @@ namespace BDTHPlugin.Interface.Windows
         Configuration.AutoVisible = autoVisible;
         Configuration.Save();
       }
+
+      ImGui.EndGroup();
     }
 
     private static void DrawTooltip(string[] text)
