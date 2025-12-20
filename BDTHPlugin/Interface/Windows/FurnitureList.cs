@@ -4,6 +4,8 @@ using System.Numerics;
 using Dalamud.Interface.Windowing;
 
 using Dalamud.Bindings.ImGui;
+using Dalamud.Game.ClientState;
+using Dalamud.Game.ClientState.Objects;
 
 namespace BDTHPlugin.Interface.Windows
 {
@@ -51,10 +53,10 @@ namespace BDTHPlugin.Interface.Windows
 
       ImGui.BeginChild("FurnishingList");
 
-      if (Plugin.ClientState.LocalPlayer == null)
+      if (Plugin.ObjectTable.LocalPlayer == null)
         return;
 
-      var playerPos = Plugin.ClientState.LocalPlayer.Position;
+      var playerPos = Plugin.ObjectTable.LocalPlayer.Position;
       // An active item is being selected.
       // var hasActiveItem = Memory.HousingStructure->ActiveItem != null;
 
