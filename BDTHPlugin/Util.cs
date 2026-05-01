@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Numerics;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
 namespace BDTHPlugin
 {
@@ -46,8 +47,8 @@ namespace BDTHPlugin
       return pitchYawRoll;
     }
 
-    public static float DistanceFromPlayer(HousingGameObject obj, Vector3 playerPos)
-      => Vector3.Distance(playerPos, new(obj.X, obj.Y, obj.Z));
+    public static float DistanceFromPlayer(GameObject obj, Vector3 playerPos)
+      => Vector3.Distance(playerPos, obj.Position);
   }
 
   public static class QuaternionExtensions
@@ -82,7 +83,6 @@ namespace BDTHPlugin
 
     public static Quaternion FromAngles(Vector3 angles)
     {
-
       float cy = (float)Math.Cos(angles.Z * 0.5f);
       float sy = (float)Math.Sin(angles.Z * 0.5f);
       float cp = (float)Math.Cos(angles.Y * 0.5f);

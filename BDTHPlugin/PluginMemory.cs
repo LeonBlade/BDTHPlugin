@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
-
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
 using CameraManager = FFXIVClientStructs.FFXIV.Client.Game.Control.CameraManager;
 
@@ -12,29 +12,22 @@ namespace BDTHPlugin
 {
   public class PluginMemory
   {
-    private bool isHousingOpen = false;
-
-    private enum InventoryType
-    {
-      Normal,
-      Large,
-      Expanded
-    }
+    private bool _isHousingOpen = false;
 
     // Pointers to modify assembly to enable place anywhere.
-    public IntPtr placeAnywhere;
-    public IntPtr wallAnywhere;
-    public IntPtr wallmountAnywhere;
+    public IntPtr PlaceAnywhere;
+    public IntPtr WallAnywhere;
+    public IntPtr WallmountAnywhere;
     // public IntPtr showcaseAnywhereRotate;
     // public IntPtr showcaseAnywherePlace;
 
     // Layout and housing module pointers.
-    private readonly IntPtr layoutWorldPtr;
-    private readonly IntPtr housingModulePtr;
+    private readonly IntPtr _layoutWorldPtr;
+    private readonly IntPtr _housingModulePtr;
 
-    public unsafe LayoutWorld* Layout => (LayoutWorld*)layoutWorldPtr;
+    public unsafe LayoutWorld* Layout => (LayoutWorld*)_layoutWorldPtr;
     public unsafe HousingStructure* HousingStructure => Layout->HousingStruct;
-    public unsafe HousingModule* HousingModule => housingModulePtr != IntPtr.Zero ? (HousingModule*)Marshal.ReadIntPtr(housingModulePtr) : null;
+    public unsafe HousingModule* HousingModule => _housingModulePtr != IntPtr.Zero ? (HousingModule*)Marshal.ReadIntPtr(_housingModulePtr) : null;
     public unsafe HousingObjectManager* CurrentManager => HousingModule->GetCurrentManager();
     public unsafe Camera* Camera => &CameraManager.Instance()->GetActiveCamera()->CameraBase.SceneCamera;
 
@@ -43,8 +36,8 @@ namespace BDTHPlugin
 
 
     // Local references to position and rotation to use to free them when an item isn't selected but to keep the UI bound to a reference.
-    public Vector3 position;
-    public Vector3 rotation;
+    public Vector3 Position;
+    public Vector3 Rotation;
 
     // Function for selecting an item, usually used when clicking on one in game.
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -52,10 +45,10 @@ namespace BDTHPlugin
     private readonly IntPtr selectItemAddress;
     public SelectItemDelegate SelectItem = null!;
 
-    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void PlaceHousingItemDelegate(IntPtr item, Vector3 position);
-    private readonly IntPtr placeHousingItemAddress;
-    public PlaceHousingItemDelegate PlaceHousingItem = null!;
+    // [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    // public delegate void PlaceHousingItemDelegate(IntPtr item, Vector3 position);
+    // private readonly IntPtr placeHousingItemAddress;
+    // public PlaceHousingItemDelegate PlaceHousingItem = null!;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void HousingLayoutModelUpdateDelegate(IntPtr item);
@@ -67,26 +60,26 @@ namespace BDTHPlugin
       try
       {
         // Assembly address for asm rewrites.
-        placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 ?? ?? ?? 00 00 00 8B FE 48 89") + 6;
-        wallAnywhere = Plugin.TargetModuleScanner.ScanText("48 85 C0 74 ?? C6 87 ?? ?? 00 00 00") + 11;
-        wallmountAnywhere = Plugin.TargetModuleScanner.ScanText("c6 87 83 01 00 00 00 48 83 c4 ??") + 6;
+        PlaceAnywhere = Plugin.TargetModuleScanner.ScanText("C6 83 ?? ?? 00 00 00 0F 29 44 24") + 6;
+        WallAnywhere = Plugin.TargetModuleScanner.ScanText("48 85 C0 74 ?? C6 87 ?? ?? 00 00 00") + 11;
+        WallmountAnywhere = Plugin.TargetModuleScanner.ScanText("c6 87 83 01 00 00 00 48 83 c4 ??") + 6;
         // showcaseAnywhereRotate = Plugin.TargetModuleScanner.ScanText("88 87 98 02 00 00 48 8b 9c ?? ?? 00 00 00 4C 8B");
         // showcaseAnywherePlace = Plugin.TargetModuleScanner.ScanText("88 87 98 02 00 00 48 8B");
 
         // Pointers for housing structures.
-        layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B D1 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 0A", 3);
-        housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 8B 52");
+        _layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B D1 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 0A", 3);
+        _housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 8B 52");
 
         // Read the pointers.
-        layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
+        _layoutWorldPtr = Marshal.ReadIntPtr(_layoutWorldPtr);
 
         // Select housing item.
-        selectItemAddress = Plugin.TargetModuleScanner.ScanText("48 85 D2 0F 84 49 09 00 00 53 41 56 48 83 EC 48 48 89 6C 24 60 48 8B DA 48 89 74 24 70 4C 8B F1");
+        selectItemAddress = Plugin.TargetModuleScanner.ScanText("48 85 D2 0F 84 ?? ?? ?? ?? 53 41 ?? 48 83 ?? ?? 48 89");
         SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(selectItemAddress);
 
         // Address for the place item function.
-        placeHousingItemAddress = Plugin.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
-        PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(placeHousingItemAddress);
+        // placeHousingItemAddress = Plugin.TargetModuleScanner.ScanText("40 53 48 83 EC 20 8B 02 48 8B D9 89 41 50 8B 42 04 89 41 54 8B 42 08 89 41 58 48 83 E9 80");
+        // PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(placeHousingItemAddress);
 
         // Housing item model update.
         housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.ScanText("48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 50 48 8B E9 48 8B 49");
@@ -120,29 +113,24 @@ namespace BDTHPlugin
       }
     }
 
-    public unsafe int GetHousingObjectSelectedIndex()
-    {
-      for (var i = 0; i < 400; i++)
-      {
-        if (HousingModule->GetCurrentManager()->Objects[i] == 0)
-          continue;
-        if ((ulong)HousingModule->GetCurrentManager()->IndoorActiveObject == HousingModule->GetCurrentManager()->Objects[i])
-          return i;
-      }
-      return -1;
-    }
-
     /// <summary>
     /// Is the housing menu open.
     /// </summary>
     /// <returns>Boolean state.</returns>
     public unsafe bool IsHousingOpen()
     {
-      if (HousingStructure == null)
-        return false;
+      try
+      {
+        if (HousingStructure == null)
+          return false;
 
-      // Anything other than none means the housing menu is open.
-      return HousingStructure->Mode != HousingLayoutMode.None;
+        // Anything other than none means the housing menu is open.
+        return HousingStructure->Mode != HousingLayoutMode.None;
+      }
+      catch
+      {
+        return false;
+      }
     }
 
     /// <summary>
@@ -181,7 +169,7 @@ namespace BDTHPlugin
         throw new PluginException("No valid item selected!");
 
       // Return the position vector.
-      return item->Position;
+      return item->Transform.Translation;
     }
 
     /// <summary>
@@ -200,7 +188,7 @@ namespace BDTHPlugin
         throw new PluginException("No valid item selected!");
 
       // Return the rotation radian.
-      return Util.FromQ(item->Rotation);
+      return Util.FromQ(item->Transform.Rotation);
     }
 
     /// <summary>
@@ -220,7 +208,7 @@ namespace BDTHPlugin
           return;
 
         // Set the position.
-        item->Position = newPosition;
+        item->Transform.Translation = newPosition;
       }
       catch (Exception ex)
       {
@@ -241,7 +229,7 @@ namespace BDTHPlugin
           return;
 
         // Convert into a quaternion.
-        item->Rotation = Util.ToQ(newRotation);
+        item->Transform.Rotation = Util.ToQ(newRotation);
       }
       catch (Exception ex)
       {
@@ -256,11 +244,11 @@ namespace BDTHPlugin
     {
       try
       {
-        var lastIsHousingOpen = isHousingOpen;
-        isHousingOpen = IsHousingOpen();
+        var lastIsHousingOpen = _isHousingOpen;
+        _isHousingOpen = IsHousingOpen();
 
         // Just perform once when housing is opened
-        if (lastIsHousingOpen != isHousingOpen && isHousingOpen)
+        if (lastIsHousingOpen != _isHousingOpen && _isHousingOpen)
         {
           var config = Plugin.GetConfiguration();
           if (!config.DisplayFurnishingList)
@@ -272,8 +260,8 @@ namespace BDTHPlugin
         if (CanEditItem())
         {
           // Don't really need to load position if we're reading it in the UI thread anyway, but leaving it for now for redudency...
-          position = ReadPosition();
-          rotation = ReadRotation();
+          Position = ReadPosition();
+          Rotation = ReadRotation();
 
           // Update the model of active item, the game doesn't do this for wall mounted and outside in rotate mode
           var item = HousingStructure->ActiveItem;
@@ -283,14 +271,14 @@ namespace BDTHPlugin
       }
       catch (PluginException)
       {
-        position = Vector3.Zero;
-        rotation = Vector3.Zero;
+        Position = Vector3.Zero;
+        Rotation = Vector3.Zero;
       }
       catch (Exception ex)
       {
         Plugin.Log.Error(ex, "Unknown exception");
-        position = Vector3.Zero;
-        rotation = Vector3.Zero;
+        Position = Vector3.Zero;
+        Rotation = Vector3.Zero;
       }
     }
 
@@ -298,53 +286,30 @@ namespace BDTHPlugin
     /// Get furnishings as they appear in the array in memory.
     /// </summary>
     /// <param name="objects"></param>
-    /// <returns></returns>
-    public unsafe bool GetFurnishings(out List<HousingGameObject> objects, Vector3 point, bool sortByDistance = false)
-    {
-      if (sortByDistance == true)
-        return GetFurnishingByDistance(out objects, point);
-
-      objects = [];
-
-      if (HousingModule == null || HousingModule->GetCurrentManager() == null || HousingModule->GetCurrentManager()->Objects == null)
-        return false;
-
-      for (var i = 0; i < 400; i++)
-      {
-        var oPtr = HousingModule->GetCurrentManager()->Objects[i];
-        if (oPtr == 0)
-          continue;
-
-        objects.Add(*(HousingGameObject*)oPtr);
-      }
-      return true;
-    }
-
-    /// <summary>
-    /// Get furnishings and sort by distance to a given point.
-    /// </summary>
-    /// <param name="objects"></param>
     /// <param name="point"></param>
+    /// <param name="sortByDistance"></param>
     /// <returns></returns>
-    public unsafe bool GetFurnishingByDistance(out List<HousingGameObject> objects, Vector3 point)
+    public unsafe bool GetFurnishings(out List<GameObject> objects, Vector3 point, bool sortByDistance = false)
     {
       objects = [];
 
       if (HousingModule == null || HousingModule->GetCurrentManager() == null || HousingModule->GetCurrentManager()->Objects == null)
         return false;
 
-      var tmpObjects = new List<(HousingGameObject gObj, float distance)>();
-      objects = new List<HousingGameObject>();
-      for (var i = 0; i < 400; i++)
+      var tmpObjects = new List<(GameObject gObj, float distance)>();
+      objects = [];
+      for (var i = 0; i < 600; i++)
       {
-        var oPtr = HousingModule->GetCurrentManager()->Objects[i];
-        if (oPtr == 0)
+        var objectAddress = HousingModule->GetCurrentManager()->Objects[i];
+        if (objectAddress == 0)
           continue;
-        var o = *(HousingGameObject*)oPtr;
-        tmpObjects.Add((o, Util.DistanceFromPlayer(o, point)));
+        var gameObject = *(GameObject*)objectAddress;
+        tmpObjects.Add((gameObject, Util.DistanceFromPlayer(gameObject, point)));
       }
 
-      tmpObjects.Sort((obj1, obj2) => obj1.distance.CompareTo(obj2.distance));
+      if (sortByDistance)
+        tmpObjects.Sort((obj1, obj2) => obj1.distance.CompareTo(obj2.distance));
+
       objects = tmpObjects.Select(obj => obj.gObj).ToList();
 
       return true;
@@ -370,16 +335,16 @@ namespace BDTHPlugin
     /// <param name="state">Boolean state for if you can place anywhere.</param>
     public void SetPlaceAnywhere(bool state)
     {
-      if (placeAnywhere == IntPtr.Zero || wallAnywhere == IntPtr.Zero || wallmountAnywhere == IntPtr.Zero)
+      if (PlaceAnywhere == IntPtr.Zero || WallAnywhere == IntPtr.Zero || WallmountAnywhere == IntPtr.Zero)
         return;
 
       // The byte state from boolean.
       var bstate = (byte)(state ? 1 : 0);
 
       // Write the bytes for place anywhere.
-      WriteProtectedBytes(placeAnywhere, bstate);
-      WriteProtectedBytes(wallAnywhere, bstate);
-      WriteProtectedBytes(wallmountAnywhere, bstate);
+      WriteProtectedBytes(PlaceAnywhere, bstate);
+      WriteProtectedBytes(WallAnywhere, bstate);
+      WriteProtectedBytes(WallmountAnywhere, bstate);
 
       // Which bytes to write.
       // byte[] showcaseBytes = state ? [0x90, 0x90, 0x90, 0x90, 0x90, 0x90] : [0x88, 0x87, 0x98, 0x02, 0x00, 0x00];

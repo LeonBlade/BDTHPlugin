@@ -29,27 +29,27 @@ namespace BDTHPlugin.Interface.Components
     {
       if (Memory.HousingStructure->ActiveItem != null)
       {
-        Memory.position = Memory.ReadPosition();
+        Memory.Position = Memory.ReadPosition();
         // Handle lock logic.
         if (lockX != null)
-          Memory.position.X = (float)lockX;
+          Memory.Position.X = (float)lockX;
         if (lockY != null)
-          Memory.position.Y = (float)lockY;
+          Memory.Position.Y = (float)lockY;
         if (lockZ != null)
-          Memory.position.Z = (float)lockZ;
-        Memory.WritePosition(Memory.position);
+          Memory.Position.Z = (float)lockZ;
+        Memory.WritePosition(Memory.Position);
       }
 
       ImGui.BeginGroup();
       {
         ImGui.PushItemWidth(73f);
         {
-          DrawDragCoord("##bdth-xdrag", ref Memory.position.X);
-          DrawDragCoord("##bdth-ydrag", ref Memory.position.Y);
-          DrawDragCoord("##bdth-zdrag", ref Memory.position.Z);
+          DrawDragCoord("##bdth-xdrag", ref Memory.Position.X);
+          DrawDragCoord("##bdth-ydrag", ref Memory.Position.Y);
+          DrawDragCoord("##bdth-zdrag", ref Memory.Position.Z);
           ImGui.Text("position");
 
-          DrawDragRotate("##bdth-rydrag", ref Memory.rotation.Y);
+          DrawDragRotate("##bdth-rydrag", ref Memory.Rotation.Y);
           ImGui.Text("rotation");
         }
         ImGui.PopItemWidth();
@@ -69,8 +69,8 @@ namespace BDTHPlugin.Interface.Components
       {
         if (ImGuiComponents.IconButton(FontAwesomeIcon.Copy))
         {
-          copyPosition = Memory.position;
-          copyRotation = Memory.rotation.Y;
+          copyPosition = Memory.Position;
+          copyRotation = Memory.Rotation.Y;
         }
         if (ImGui.IsItemHovered())
           ImGui.SetTooltip("Copy Position & Rotation");
@@ -80,7 +80,7 @@ namespace BDTHPlugin.Interface.Components
           if (ImGuiComponents.IconButton(FontAwesomeIcon.Paste) && copyPosition != null && copyRotation != null)
           {
             Memory.WritePosition(copyPosition.Value);
-            Memory.WriteRotation(Memory.rotation with { Y = copyRotation.Value });
+            Memory.WriteRotation(Memory.Rotation with { Y = copyRotation.Value });
           }
           if (ImGui.IsItemHovered())
             ImGui.SetTooltip("Paste Position & Rotation");
@@ -90,10 +90,10 @@ namespace BDTHPlugin.Interface.Components
 
       ImGui.EndGroup();
 
-      DrawInputCoord("x coord##bdth-x", ref Memory.position.X, ref lockX, RED);
-      DrawInputCoord("y coord##bdth-y", ref Memory.position.Y, ref lockY, GREEN);
-      DrawInputCoord("z coord##bdth-z", ref Memory.position.Z, ref lockZ, BLUE);
-      DrawInputRotate("ry degree##bdth-ry", ref Memory.rotation.Y);
+      DrawInputCoord("x coord##bdth-x", ref Memory.Position.X, ref lockX, RED);
+      DrawInputCoord("y coord##bdth-y", ref Memory.Position.Y, ref lockY, GREEN);
+      DrawInputCoord("z coord##bdth-z", ref Memory.Position.Z, ref lockZ, BLUE);
+      DrawInputRotate("ry degree##bdth-ry", ref Memory.Rotation.Y);
     }
 
     private void HandleScrollInput(ref float f)
@@ -104,7 +104,7 @@ namespace BDTHPlugin.Interface.Components
         if (delta != 0)
         {
           f += delta;
-          Memory.WritePosition(Memory.position);
+          Memory.WritePosition(Memory.Position);
         }
       }
     }
@@ -120,13 +120,13 @@ namespace BDTHPlugin.Interface.Components
     private void DrawDragCoord(string name, ref float f)
     {
       if (DrawDrag(name, ref f))
-        Memory.WritePosition(Memory.position);
+        Memory.WritePosition(Memory.Position);
     }
 
     private void DrawDragRotate(string name, ref float f)
     {
       if (DrawDrag(name, ref f))
-        Memory.WriteRotation(Memory.rotation);
+        Memory.WriteRotation(Memory.Rotation);
     }
 
     private bool DrawInput(string name, ref float f)
@@ -140,13 +140,13 @@ namespace BDTHPlugin.Interface.Components
     private void DrawInputCoord(string name, ref float f)
     {
       if (DrawInput(name, ref f))
-        Memory.WritePosition(Memory.position);
+        Memory.WritePosition(Memory.Position);
     }
 
     private void DrawInputRotate(string name, ref float f)
     {
       if (DrawInput(name, ref f))
-        Memory.WriteRotation(Memory.rotation);
+        Memory.WriteRotation(Memory.Rotation);
     }
 
     static void DrawCircle(Vector4 color)

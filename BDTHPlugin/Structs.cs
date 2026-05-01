@@ -1,8 +1,11 @@
 ﻿using System.Numerics;
 using System.Runtime.InteropServices;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
+using FFXIVClientStructs.FFXIV.Client.LayoutEngine.Group;
 
 namespace BDTHPlugin
 {
+
   public enum HousingLayoutMode
   {
     None,
@@ -31,13 +34,13 @@ namespace BDTHPlugin
   [StructLayout(LayoutKind.Explicit)]
   public unsafe struct HousingObjectManager
   {
-    [FieldOffset(0x8980)] public fixed ulong Objects[400];
-    [FieldOffset(0x96E8)] public HousingGameObject* IndoorActiveObject2;
-    [FieldOffset(0x96F0)] public HousingGameObject* IndoorHoverObject;
-    [FieldOffset(0x96F8)] public HousingGameObject* IndoorActiveObject;
-    [FieldOffset(0x9AB8)] public HousingGameObject* OutdoorActiveObject2;
-    [FieldOffset(0x9AC0)] public HousingGameObject* OutdoorHoverObject;
-    [FieldOffset(0x9AC8)] public HousingGameObject* OutdoorActiveObject;
+    [FieldOffset(0x11260)] public fixed ulong Objects[600];
+    [FieldOffset(0x12620)] public GameObject* IndoorActiveObject2;
+    [FieldOffset(0x12628)] public GameObject* IndoorHoverObject;
+    [FieldOffset(0x12630)] public GameObject* IndoorActiveObject;
+    [FieldOffset(0x12638)] public GameObject* OutdoorActiveObject2;
+    [FieldOffset(0x12640)] public GameObject* OutdoorHoverObject;
+    [FieldOffset(0x12648)] public GameObject* OutdoorActiveObject;
   }
 
   [StructLayout(LayoutKind.Explicit)]
@@ -49,17 +52,6 @@ namespace BDTHPlugin
 
     public HousingObjectManager* GetCurrentManager()
       => OutdoorTerritory != null ? OutdoorTerritory : IndoorTerritory;
-  }
-
-  [StructLayout(LayoutKind.Explicit)]
-  public unsafe struct HousingGameObject
-  {
-    [FieldOffset(0x30)] public fixed byte Name[64];
-    [FieldOffset(0x84)] public uint HousingRowId;
-    [FieldOffset(0xB0)] public float X;
-    [FieldOffset(0xB4)] public float Y;
-    [FieldOffset(0xB8)] public float Z;
-    [FieldOffset(0x108)] public HousingItem* Item;
   }
 
   [StructLayout(LayoutKind.Explicit)]
@@ -75,15 +67,8 @@ namespace BDTHPlugin
     [FieldOffset(0x4)] public HousingLayoutMode LastMode;
     [FieldOffset(0x8)] public ItemState State;
     [FieldOffset(0xC)] public ItemState2 State2;
-    [FieldOffset(0x10)] public HousingItem* HoverItem;
-    [FieldOffset(0x18)] public HousingItem* ActiveItem;
+    [FieldOffset(0x10)] public SharedGroupLayoutInstance* HoverItem;
+    [FieldOffset(0x18)] public SharedGroupLayoutInstance* ActiveItem;
     [FieldOffset(0xB8)] public bool Rotating;
-  }
-
-  [StructLayout(LayoutKind.Explicit)]
-  public unsafe struct HousingItem
-  {
-    [FieldOffset(0x50)] public Vector3 Position;
-    [FieldOffset(0x60)] public Quaternion Rotation;
   }
 }

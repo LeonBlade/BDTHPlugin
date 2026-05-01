@@ -36,7 +36,7 @@ namespace BDTHPlugin.Interface.Windows
       if (active != null)
       {
         ImGui.Separator();
-        var pos = Memory.HousingStructure->ActiveItem->Position;
+        var pos = Memory.HousingStructure->ActiveItem->Transform.Translation;
         ImGui.Text($"Position: {pos.X}, {pos.Y}, {pos.Z}");
       }
     }

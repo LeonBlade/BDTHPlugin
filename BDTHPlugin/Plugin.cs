@@ -38,22 +38,22 @@ namespace BDTHPlugin
     [PluginService] public static ITextureProvider TextureProvider { get; private set; } = null!;
     [PluginService] public static IPluginLog Log { get; private set; } = null!;
 
-    private static Configuration Configuration = null!;
-    private static PluginUI Ui = null!;
-    private static PluginMemory Memory = null!;
+    private static Configuration _configuration = null!;
+    private static PluginUI _ui = null!;
+    private static PluginMemory _memory = null!;
 
     // Sheets used to get housing item info.
-    private static Dictionary<uint, HousingFurniture> FurnitureDict = [];
-    private static Dictionary<uint, HousingYardObject> YardObjectDict = [];
+    private static Dictionary<uint, HousingFurniture> _furnitureDict = [];
+    private static Dictionary<uint, HousingYardObject> _yardObjectDict = [];
 
     public Plugin()
     {
-      Configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
-      Ui = new();
-      Memory = new();
+      _configuration = PluginInterface.GetPluginConfig() as Configuration ?? new Configuration();
+      _ui = new();
+      _memory = new();
 
-      FurnitureDict = Data.GetExcelSheet<HousingFurniture>()!.ToDictionary(row => row.RowId, row => row);
-      YardObjectDict = Data.GetExcelSheet<HousingYardObject>()!.ToDictionary(row => row.RowId, row => row);
+      _furnitureDict = Data.GetExcelSheet<HousingFurniture>()!.ToDictionary(row => row.RowId, row => row);
+      _yardObjectDict = Data.GetExcelSheet<HousingYardObject>()!.ToDictionary(row => row.RowId, row => row);
 
       CommandManager.AddHandler(commandName, new CommandInfo(OnCommand)
       {
@@ -63,7 +63,7 @@ namespace BDTHPlugin
       // Set the ImGui context 
       ImGuizmo.SetImGuiContext(ImGui.GetCurrentContext());
 
-      PluginInterface.UiBuilder.Draw += Ui.Draw;
+      PluginInterface.UiBuilder.Draw += _ui.Draw;
       PluginInterface.UiBuilder.OpenMainUi += OpenMainUI;
       Condition.ConditionChange += Condition_ConditionChange;
       Framework.Update += Framework_Update;
@@ -71,40 +71,40 @@ namespace BDTHPlugin
 
     public static Configuration GetConfiguration()
     {
-      return Configuration;
+      return _configuration;
     }
 
     public static PluginMemory GetMemory()
     {
-      return Memory;
+      return _memory;
     }
 
     public static PluginUI GetUi()
     {
-      return Ui;
+      return _ui;
     }
 
     private void Framework_Update(IFramework framework)
     {
-      Memory.Update();
+      _memory.Update();
     }
 
     private void Condition_ConditionChange(ConditionFlag flag, bool value)
     {
-      if (Configuration.AutoVisible && flag == ConditionFlag.UsingHousingFunctions)
-        Ui.Main.IsOpen = value;
+      if (_configuration.AutoVisible && flag == ConditionFlag.UsingHousingFunctions)
+        _ui.Main.IsOpen = value;
     }
 
     public void Dispose()
     {
-      PluginInterface.UiBuilder.Draw -= Ui.Draw;
+      PluginInterface.UiBuilder.Draw -= _ui.Draw;
 
       PluginInterface.UiBuilder.OpenMainUi -= OpenMainUI;
       Condition.ConditionChange -= Condition_ConditionChange;
       Framework.Update -= Framework_Update;
 
       // Dispose for stuff in Plugin Memory class.
-      Memory.Dispose();
+      _memory.Dispose();
 
       CommandManager.RemoveHandler(commandName);
 
@@ -113,7 +113,7 @@ namespace BDTHPlugin
 
     private void OpenMainUI()
     {
-      Ui.Main.IsOpen = true;
+      _ui.Main.IsOpen = true;
     }
 
     /// <summary>
@@ -130,10 +130,10 @@ namespace BDTHPlugin
       }
     }
 
-    public unsafe static bool IsOutdoors() => Memory.HousingModule->OutdoorTerritory != null;
+    public static unsafe bool IsOutdoors() => _memory.HousingModule->OutdoorTerritory != null;
 
-    public static bool TryGetFurnishing(uint id, out HousingFurniture furniture) => FurnitureDict.TryGetValue(id, out furniture);
-    public static bool TryGetYardObject(uint id, out HousingYardObject furniture) => YardObjectDict.TryGetValue(id, out furniture);
+    public static bool TryGetFurnishing(uint id, out HousingFurniture furniture) => _furnitureDict.TryGetValue(id, out furniture);
+    public static bool TryGetYardObject(uint id, out HousingYardObject furniture) => _yardObjectDict.TryGetValue(id, out furniture);
 
     private unsafe void OnCommand(string command, string args)
     {
@@ -146,7 +146,7 @@ namespace BDTHPlugin
         var argArray = args.Split(' ');
 
         // Check valid state for modifying memory.
-        var disabled = !(Memory.CanEditItem() && Memory.HousingStructure->ActiveItem != null);
+        var disabled = !(_memory.CanEditItem() && _memory.HousingStructure->ActiveItem != null);
 
         // Show/Hide the furnishing list.
         if (argArray.Length == 1)
@@ -155,10 +155,10 @@ namespace BDTHPlugin
           if (opt.Equals("list"))
           {
             // Only allow furnishing list when the housing window is open.
-            if (!Memory.IsHousingOpen())
+            if (!_memory.IsHousingOpen())
             {
               Chat.PrintError("Cannot open furnishing list unless housing menu is open.");
-              Ui.Furniture.IsOpen = false;
+              _ui.Furniture.IsOpen = false;
               return;
             }
 
@@ -166,18 +166,18 @@ namespace BDTHPlugin
             if (IsOutdoors())
             {
               Chat.PrintError("Cannot open furnishing outdoors currently.");
-              Ui.Furniture.IsOpen = false;
+              _ui.Furniture.IsOpen = false;
               return;
             }
 
-            Ui.Furniture.Toggle();
+            _ui.Furniture.Toggle();
           }
 
           if (opt.Equals("debug"))
-            Ui.Debug.Toggle();
+            _ui.Debug.Toggle();
 
           if (opt.Equals("reset"))
-            Ui.Main.Reset = true;
+            _ui.Main.Reset = true;
         }
 
         // Position or rotation values are being passed in, and we're not disabled.
@@ -191,19 +191,19 @@ namespace BDTHPlugin
             var z = float.Parse(argArray[2], NumberStyles.Any, CultureInfo.InvariantCulture);
 
             // Set the position in the memory object.
-            Memory.position.X = x;
-            Memory.position.Y = y;
-            Memory.position.Z = z;
+            _memory.Position.X = x;
+            _memory.Position.Y = y;
+            _memory.Position.Z = z;
 
             // Write the position.
-            Memory.WritePosition(Memory.position);
+            _memory.WritePosition(_memory.Position);
 
             // Specifying the rotation as well.
             if (argArray.Length == 4)
             {
               // Parse and write the rotation.
-              Memory.rotation.Y = (float)(float.Parse(argArray[3], NumberStyles.Any, CultureInfo.InvariantCulture) * 180 / Math.PI);
-              Memory.WriteRotation(Memory.rotation);
+              _memory.Rotation.Y = (float)(float.Parse(argArray[3], NumberStyles.Any, CultureInfo.InvariantCulture) * 180 / Math.PI);
+              _memory.WriteRotation(_memory.Rotation);
             }
           }
           catch (Exception ex)
@@ -215,7 +215,7 @@ namespace BDTHPlugin
       else
       {
         // Hide or show the UI.
-        Ui.Main.Toggle();
+        _ui.Main.Toggle();
       }
     }
   }

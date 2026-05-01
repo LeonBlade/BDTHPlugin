@@ -11,37 +11,28 @@ using BDTHPlugin.Interface.Components;
 
 namespace BDTHPlugin.Interface.Windows
 {
-  public class MainWindow : Window
+  public class MainWindow(Gizmo gizmo) : Window("Burning Down the House##BDTH",
+    ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize |
+    ImGuiWindowFlags.AlwaysAutoResize)
   {
     private static PluginMemory Memory => Plugin.GetMemory();
     private static Configuration Configuration => Plugin.GetConfiguration();
 
-    private static readonly Vector4 RED_COLOR = new(1, 0, 0, 1);
+    private static readonly Vector4 RedColor = new(1, 0, 0, 1);
 
-    private readonly Gizmo Gizmo;
-    private readonly ItemControls ItemControls = new();
+    private readonly ItemControls _itemControls = new();
 
     public bool Reset;
 
-    public MainWindow(Gizmo gizmo) : base(
-      "Burning Down the House##BDTH",
-      ImGuiWindowFlags.NoScrollbar | ImGuiWindowFlags.NoScrollWithMouse | ImGuiWindowFlags.NoResize |
-      ImGuiWindowFlags.AlwaysAutoResize
-    )
-    {
-      Gizmo = gizmo;
-    }
-
     public override void PreDraw()
     {
-      if (Reset)
-      {
-        Reset = false;
-        ImGui.SetNextWindowPos(new Vector2(69, 69), ImGuiCond.Always);
-      }
+      if (!Reset)
+        return;
+      Reset = false;
+      ImGui.SetNextWindowPos(new Vector2(69, 69), ImGuiCond.Always);
     }
 
-    public unsafe override void Draw()
+    public override unsafe void Draw()
     {
       ImGui.BeginGroup();
 
@@ -78,12 +69,12 @@ namespace BDTHPlugin.Interface.Windows
       DrawTooltip("Enables snapping of gizmo movement based on the drag value set below.");
 
       ImGui.SameLine();
-      if (ImGuiComponents.IconButton(1, Gizmo.Mode == ImGuizmoMode.Local ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
-        Gizmo.Mode = Gizmo.Mode == ImGuizmoMode.Local ? ImGuizmoMode.World : ImGuizmoMode.Local;
+      if (ImGuiComponents.IconButton(1, gizmo.Mode == ImGuizmoMode.Local ? Dalamud.Interface.FontAwesomeIcon.ArrowsAlt : Dalamud.Interface.FontAwesomeIcon.Globe))
+        gizmo.Mode = gizmo.Mode == ImGuizmoMode.Local ? ImGuizmoMode.World : ImGuizmoMode.Local;
 
       DrawTooltip(
       [
-        $"Mode: {(Gizmo.Mode == ImGuizmoMode.Local ? "Local" : "World")}",
+        $"Mode: {(gizmo.Mode == ImGuizmoMode.Local ? "Local" : "World")}",
         "Changes gizmo mode between local and world movement."
       ]);
 
@@ -99,7 +90,7 @@ namespace BDTHPlugin.Interface.Windows
         ImGuiComponents.HelpMarker("Are you doing everything right? Try using the /bdth debug command and report this issue in Discord!");
       }
       else
-        ItemControls.Draw();
+        _itemControls.Draw();
 
       ImGui.Separator();
 
@@ -169,7 +160,7 @@ namespace BDTHPlugin.Interface.Windows
 
     private static void DrawError(string text)
     {
-      ImGui.PushStyleColor(ImGuiCol.Text, RED_COLOR);
+      ImGui.PushStyleColor(ImGuiCol.Text, RedColor);
       ImGui.Text(text);
       ImGui.PopStyleColor();
     }

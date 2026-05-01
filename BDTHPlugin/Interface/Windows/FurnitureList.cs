@@ -4,23 +4,17 @@ using System.Numerics;
 using Dalamud.Interface.Windowing;
 
 using Dalamud.Bindings.ImGui;
-using Dalamud.Game.ClientState;
-using Dalamud.Game.ClientState.Objects;
+using FFXIVClientStructs.FFXIV.Client.Game.Object;
 
 namespace BDTHPlugin.Interface.Windows
 {
-  public class FurnitureList : Window
+  public class FurnitureList() : Window("Furnishing List")
   {
     private static PluginMemory Memory => Plugin.GetMemory();
     private static Configuration Configuration => Plugin.GetConfiguration();
 
-    private ulong? lastActiveItem;
-    private byte renderCount;
-
-    public FurnitureList() : base("Furnishing List")
-    {
-
-    }
+    private ulong? _lastActiveItem;
+    private byte _renderCount;
 
     public override void PreDraw()
     {
@@ -29,7 +23,43 @@ namespace BDTHPlugin.Interface.Windows
       IsOpen &= Memory.IsHousingOpen() && !Plugin.IsOutdoors();
     }
 
-    public unsafe override void Draw()
+    private static void DrawDistance(float distance)
+    {
+      ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(.5f, .5f, .5f, 1));
+  
+      var distanceString = distance.ToString("F2");
+              
+      var strWidth = ImGui.CalcTextSize(distanceString).X;
+      var containerWidth = ImGui.GetContentRegionAvail().X;
+
+      var padding = ImGui.GetStyle().ItemSpacing.X;
+      var x = ImGui.GetCursorPosX() + containerWidth - strWidth - padding;
+
+      ImGui.SetCursorPosX(x);
+      ImGui.Text(distanceString);
+      ImGui.PopStyleColor();
+    }
+
+    private static (string, ushort) GetHousingItem(GameObject gameObject)
+    {
+      var name = "";
+      ushort icon = 0;
+
+      if (Plugin.TryGetYardObject(gameObject.BaseId, out var yardObject))
+      {
+        name = yardObject.Item.Value.Name.ToString();
+        icon = yardObject.Item.Value.Icon;
+      }
+      else if (Plugin.TryGetFurnishing(gameObject.BaseId, out var furnitureObject))
+      {
+        name = furnitureObject.Item.Value.Name.ToString();
+        icon = furnitureObject.Item.Value.Icon;
+      }
+
+      return (name, icon);
+    }
+
+    public override unsafe void Draw()
     {
       var fontScale = ImGui.GetIO().FontGlobalScale;
       var hasActiveItem = Memory.HousingStructure->ActiveItem != null;
@@ -57,91 +87,77 @@ namespace BDTHPlugin.Interface.Windows
         return;
 
       var playerPos = Plugin.ObjectTable.LocalPlayer.Position;
-      // An active item is being selected.
-      // var hasActiveItem = Memory.HousingStructure->ActiveItem != null;
 
-      if (ImGui.BeginTable("FurnishingListItems", 3))
+      if (!ImGui.BeginTable("FurnishingListItems", 3))
+        return;
+
+      ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 0f);
+      ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 0f);
+      ImGui.TableSetupColumn("Distance", ImGuiTableColumnFlags.WidthFixed, 0f);
+      ImGui.TableHeadersRow();
+
+      try
       {
-        ImGui.TableSetupColumn("Icon", ImGuiTableColumnFlags.WidthFixed, 0f);
-        ImGui.TableSetupColumn("Name", ImGuiTableColumnFlags.WidthStretch, 0f);
-        ImGui.TableSetupColumn("Distance", ImGuiTableColumnFlags.WidthFixed, 0f);
+        if (!Memory.GetFurnishings(out var items, playerPos, sortByDistance))
+          return;
 
-        try
+        for (var i = 0; i < items.Count; i++)
         {
-          if (Memory.GetFurnishings(out var items, playerPos, sortByDistance))
-          {
-            for (var i = 0; i < items.Count; i++)
-            {
-              ImGui.TableNextRow(ImGuiTableRowFlags.None, 28 * fontScale);
-              ImGui.TableNextColumn();
-              ImGui.AlignTextToFramePadding();
+          var item = items[i];
 
-              var name = "";
-              ushort icon = 0;
+          ImGui.TableNextRow(ImGuiTableRowFlags.None, 28 * fontScale);
+          ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(4f, 4f));
+          ImGui.TableNextColumn();
+          ImGui.AlignTextToFramePadding();
 
-              if (Plugin.TryGetYardObject(items[i].HousingRowId, out var yardObject))
-              {
-                name = yardObject.Item.Value.Name.ToString();
-                icon = yardObject.Item.Value.Icon;
-              }
+          var (name, icon) = GetHousingItem(items[i]);
+          
+          // Skip item if we can't find a name or item icon.
+          if (name == string.Empty || icon == 0)
+            continue;
+          
+          // The currently selected item.
+          var thisActive = hasActiveItem && item.SharedGroupLayoutInstance == Memory.HousingStructure->ActiveItem;
+          
+          ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(2f, 4f));
+          if (ImGui.Selectable($"##Item{i}", thisActive, ImGuiSelectableFlags.SpanAllColumns, new(0, 20 * fontScale)))
+            Memory.SelectItem((IntPtr)Memory.HousingStructure, (IntPtr)item.SharedGroupLayoutInstance);
+          ImGui.PopStyleVar();
+          
+          if (thisActive)
+            ImGui.SetItemDefaultFocus();
+          
+          // Scroll if the active item has changed from last time.
+          if (thisActive && _lastActiveItem != (ulong)Memory.HousingStructure->ActiveItem)
+            ImGui.SetScrollHereY();
 
-              if (Plugin.TryGetFurnishing(items[i].HousingRowId, out var furnitureObject))
-              {
-                name = furnitureObject.Item.Value.Name.ToString();
-                icon = furnitureObject.Item.Value.Icon;
-              }
+          var distance = Util.DistanceFromPlayer(item, playerPos);
+          
+          ImGui.SameLine();
+          Plugin.DrawIcon(icon, new Vector2(24 * fontScale, 24 * fontScale));
+          
+          ImGui.TableNextColumn();
+          ImGui.Text(name);
 
-              // Skip item if we can't find a name or item icon.
-              if (name == string.Empty || icon == 0)
-                continue;
+          ImGui.TableNextColumn();
+          DrawDistance(distance);
 
-              // The currently selected item.
-              var thisActive = hasActiveItem && items[i].Item == Memory.HousingStructure->ActiveItem;
-
-              ImGui.PushStyleVar(ImGuiStyleVar.ItemSpacing, new Vector2(0f, 4f));
-              if (ImGui.Selectable($"##Item{i}", thisActive, ImGuiSelectableFlags.SpanAllColumns, new(0, 20 * fontScale)))
-                Memory.SelectItem((IntPtr)Memory.HousingStructure, (IntPtr)items[i].Item);
-              ImGui.PopStyleVar();
-
-              if (thisActive)
-                ImGui.SetItemDefaultFocus();
-
-              // Scroll if the active item has changed from last time.
-              if (thisActive && lastActiveItem != (ulong)Memory.HousingStructure->ActiveItem)
-              {
-                ImGui.SetScrollHereY();
-              }
-
-              ImGui.SameLine();
-              Plugin.DrawIcon(icon, new Vector2(24 * fontScale, 24 * fontScale));
-              var distance = Util.DistanceFromPlayer(items[i], playerPos);
-
-              ImGui.TableNextColumn();
-              ImGui.SetNextItemWidth(-1);
-              ImGui.Text(name);
-
-              ImGui.TableNextColumn();
-              ImGui.PushStyleColor(ImGuiCol.Text, new Vector4(.5f, .5f, .5f, 1));
-              ImGui.SetCursorPosX(ImGui.GetCursorPosX() + ImGui.GetColumnWidth() - ImGui.CalcTextSize(distance.ToString("F2")).X - ImGui.GetScrollX() - 2 * ImGui.GetStyle().ItemSpacing.X);
-              ImGui.Text($"{distance:F2}");
-              ImGui.PopStyleColor();
-            }
-
-            if (renderCount >= 10)
-              lastActiveItem = (ulong)Memory.HousingStructure->ActiveItem;
-            if (renderCount != 10)
-              renderCount++;
-          }
+          ImGui.PopStyleVar();
         }
-        catch (Exception ex)
-        {
-          Plugin.Log.Error(ex, ex.Source ?? "No source found");
-        }
-        finally
-        {
-          ImGui.EndTable();
-          ImGui.EndChild();
-        }
+          
+        if (_renderCount >= 10)
+          _lastActiveItem = (ulong)Memory.HousingStructure->ActiveItem;
+        if (_renderCount != 10)
+          _renderCount++;
+      }
+      catch (Exception ex)
+      {
+        Plugin.Log.Error(ex, ex.Source ?? "No source found");
+      }
+      finally
+      {
+        ImGui.EndTable();
+        ImGui.EndChild();
       }
     }
   }
