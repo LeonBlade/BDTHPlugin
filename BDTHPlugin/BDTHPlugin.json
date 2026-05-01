@@ -4,7 +4,7 @@
   "Description": "Move around housing items with coordinates and allows you to place anywhere.",
   "Punchline": "House decorating made easy!",
   "InternalName": "BDTHPlugin",
-  "AssemblyVersion": "1.7.3",
+  "AssemblyVersion": "1.7.3.1",
   "RepoUrl": "https://github.com/LeonBlade/BDTHPlugin",
   "ApplicableVersion": "any",
   "Tags": [
