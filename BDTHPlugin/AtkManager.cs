@@ -16,34 +16,36 @@ namespace BDTHPlugin
       Expanded
     }
 
-    public static unsafe AtkUnitBasePtr HousingGoods => Plugin.GameGui.GetAddonByName("HousingGoods", 1);
-    public static unsafe AtkUnitBasePtr Inventory => Plugin.GameGui.GetAddonByName("Inventory", 1);
-    public static unsafe AtkUnitBasePtr InventoryLarge => Plugin.GameGui.GetAddonByName("InventoryLarge", 1);
-    public static unsafe AtkUnitBasePtr InventoryExpansion => Plugin.GameGui.GetAddonByName("InventoryExpansion", 1);
+    public static AtkUnitBasePtr HousingGoods => Plugin.GameGui.GetAddonByName("HousingGoods");
+    public static AtkUnitBasePtr Inventory => Plugin.GameGui.GetAddonByName("Inventory");
+    public static AtkUnitBasePtr InventoryLarge => Plugin.GameGui.GetAddonByName("InventoryLarge");
+    public static AtkUnitBasePtr InventoryExpansion => Plugin.GameGui.GetAddonByName("InventoryExpansion");
 
-    private static readonly unsafe Dictionary<InventoryType, List<AtkUnitBasePtr>> Atks = new()
+    private static readonly Dictionary<InventoryType, List<AtkUnitBasePtr>> Atks = new()
     {
       [InventoryType.Base] = [
         Inventory,
-        Plugin.GameGui.GetAddonByName("InventoryGrid", 1),
-        Plugin.GameGui.GetAddonByName("InventoryGridCrystal", 1)
+        Plugin.GameGui.GetAddonByName("InventoryGrid"),
+        Plugin.GameGui.GetAddonByName("InventoryGridCrystal")
       ],
       [InventoryType.Large] = [
         InventoryLarge,
-        Plugin.GameGui.GetAddonByName("InventoryEventGrid0", 1),
-        Plugin.GameGui.GetAddonByName("InventoryEventGrid1", 1),
-        Plugin.GameGui.GetAddonByName("InventoryEventGrid2", 1),
-        Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 1)
+        Plugin.GameGui.GetAddonByName("InventoryGrid0"),
+        Plugin.GameGui.GetAddonByName("InventoryGrid1"),
+        Plugin.GameGui.GetAddonByName("InventoryEventGrid0"),
+        Plugin.GameGui.GetAddonByName("InventoryEventGrid1"),
+        Plugin.GameGui.GetAddonByName("InventoryEventGrid2"),
+        Plugin.GameGui.GetAddonByName("InventoryCrystalGrid")
       ],
       [InventoryType.Expanded] = [
         InventoryExpansion,
-        Plugin.GameGui.GetAddonByName("InventoryGrid0E", 1),
-        Plugin.GameGui.GetAddonByName("InventoryGrid1E", 1),
-        Plugin.GameGui.GetAddonByName("InventoryGrid2E", 1),
-        Plugin.GameGui.GetAddonByName("InventoryGrid3E", 1),
-        Plugin.GameGui.GetAddonByName("InventoryEventGrid0E", 1),
-        Plugin.GameGui.GetAddonByName("InventoryEventGrid1E", 1),
-        Plugin.GameGui.GetAddonByName("InventoryEventGrid2E", 1),
+        Plugin.GameGui.GetAddonByName("InventoryGrid0E"),
+        Plugin.GameGui.GetAddonByName("InventoryGrid1E"),
+        Plugin.GameGui.GetAddonByName("InventoryGrid2E"),
+        Plugin.GameGui.GetAddonByName("InventoryGrid3E"),
+        Plugin.GameGui.GetAddonByName("InventoryEventGrid0E"),
+        Plugin.GameGui.GetAddonByName("InventoryEventGrid1E"),
+        Plugin.GameGui.GetAddonByName("InventoryEventGrid2E"),
         Plugin.GameGui.GetAddonByName("InventoryCrystalGrid", 2)
       ]
     };
