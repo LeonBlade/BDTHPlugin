@@ -58,8 +58,8 @@ namespace BDTHPlugin.Interface
     {
       ImGuizmo.BeginFrame();
 
-      var cam = Memory.Camera->RenderCamera;
-      var view = Memory.Camera->ViewMatrix;
+      var cam = PluginMemory.Camera->RenderCamera;
+      var view = PluginMemory.Camera->ViewMatrix;
       var proj = cam->ProjectionMatrix;
 
       var far = cam->FarPlane;

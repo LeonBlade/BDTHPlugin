@@ -40,7 +40,7 @@ namespace BDTHPlugin.Interface.Windows
       if (ImGui.Checkbox("Place Anywhere", ref placeAnywhere))
       {
         // Set the place anywhere based on the checkbox state.
-        Memory.SetPlaceAnywhere(placeAnywhere);
+        PluginMemory.SetPlaceAnywhere(placeAnywhere);
         Configuration.PlaceAnywhere = placeAnywhere;
         Configuration.Save();
       }

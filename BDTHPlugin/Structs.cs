@@ -13,7 +13,7 @@ namespace BDTHPlugin
     Rotate,
     Store,
     Place,
-    Remove = 6
+    Remove = 6,
   }
 
   public enum ItemState
@@ -21,14 +21,15 @@ namespace BDTHPlugin
     None = 0,
     Hover,
     SoftSelect,
-    Active
+    Active,
   }
 
   public enum ItemState2
   {
     None = 0,
     SoftSelect = 3,
-    Active = 5
+    Active = 5,
+    Invalid = 6,
   }
 
   [StructLayout(LayoutKind.Explicit)]
