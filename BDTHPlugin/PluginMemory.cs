@@ -193,6 +193,12 @@ namespace BDTHPlugin
         if (item == null)
           return;
 
+        // The controls rewrite the position every frame, only a real change should pick up the item.
+        if (item->Transform.Translation == newPosition)
+          return;
+
+        PickUpSoftSelectedItem();
+
         // Set the position.
         item->Transform.Translation = newPosition;
       }
@@ -214,6 +220,8 @@ namespace BDTHPlugin
         if (item == null)
           return;
 
+        PickUpSoftSelectedItem();
+
         // Convert into a quaternion.
         item->Transform.Rotation = Util.ToQ(newRotation);
       }
@@ -221,6 +229,20 @@ namespace BDTHPlugin
       {
         Plugin.Log.Error(ex, "Error occured while writing rotation!");
       }
+    }
+
+    /// <summary>
+    /// Picks up an item that the in-game furnishing list only soft selected, the same way clicking on it does.
+    /// The game only saves the position of an item that was picked up and placed, so edits made to a
+    /// soft selected item revert when you leave and come back.
+    /// </summary>
+    private unsafe void PickUpSoftSelectedItem()
+    {
+      var item = HousingStructure->ActiveItem;
+      if (item == null || HousingStructure->State != ItemState.SoftSelect)
+        return;
+
+      SelectItem((IntPtr)HousingStructure, (IntPtr)item);
     }
 
     /// <summary>
